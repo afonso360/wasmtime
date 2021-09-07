@@ -6637,28 +6637,22 @@ fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             ctx.emit(Inst::gen_move(dst_hi, src.regs()[1], types::I64));
         }
 
-        Opcode::TlsValue => match flags.tls_model() {
-            TlsModel::ElfGd => {
-                let dst = get_output_reg(ctx, outputs[0]).only_reg().unwrap();
-                let (name, _, _) = ctx.symbol_value(insn).unwrap();
-                let symbol = name.clone();
-                ctx.emit(Inst::ElfTlsGetAddr { symbol });
-                ctx.emit(Inst::gen_move(dst, regs::rax(), types::I64));
-            }
-            TlsModel::Macho => {
-                let dst = get_output_reg(ctx, outputs[0]).only_reg().unwrap();
-                let (name, _, _) = ctx.symbol_value(insn).unwrap();
-                let symbol = name.clone();
-                ctx.emit(Inst::MachOTlsGetAddr { symbol });
-                ctx.emit(Inst::gen_move(dst, regs::rax(), types::I64));
-            }
-            _ => {
-                todo!(
+        Opcode::TlsValue => {
+            let dst = get_output_reg(ctx, outputs[0]).only_reg().unwrap();
+            let (name, _, _) = ctx.symbol_value(insn).unwrap();
+            let symbol = name.clone();
+
+            ctx.emit(match flags.tls_model() {
+                TlsModel::ElfGd => Inst::ElfTlsGetAddr { symbol },
+                TlsModel::Macho => Inst::MachOTlsGetAddr { symbol },
+                _ => todo!(
                     "Unimplemented TLS model in x64 backend: {:?}",
                     flags.tls_model()
-                );
-            }
-        },
+                ),
+            });
+
+            ctx.emit(Inst::gen_move(dst, regs::rax(), types::I64));
+        }
 
         Opcode::SqmulRoundSat => {
             // Lane-wise saturating rounding multiplication in Q15 format
