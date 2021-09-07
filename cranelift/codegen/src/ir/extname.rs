@@ -46,6 +46,8 @@ pub enum ExternalName {
     },
     /// A well-known runtime library function.
     LibCall(LibCall),
+    /// TLS index symbol for the current thread
+    TlsIndex,
 }
 
 impl ExternalName {
@@ -104,6 +106,7 @@ impl fmt::Display for ExternalName {
                 Ok(())
             }
             Self::LibCall(lc) => write!(f, "%{}", lc),
+            Self::TlsIndex => write!(f, "_tls_index"),
         }
     }
 }

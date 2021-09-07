@@ -2685,6 +2685,45 @@ pub(crate) fn emit(
             sink.put1(0x17);
         }
 
+        Inst::CoffTlsGetAddr { ref symbol } => {
+            // See: https://gcc.godbolt.org/z/M8or9x6ss
+            // And: https://github.com/bjorn3/rustc_codegen_cranelift/issues/388#issuecomment-532930282
+
+            // Load TLS index for current thread
+            // mov eax, dword ptr [rip + _tls_index]
+            sink.put1(0x8b); // MOV
+            sink.put1(0x05);
+            emit_reloc(sink, state, Reloc::X86PCRel4, &ExternalName::TlsIndex, -4);
+            sink.put4(0); // offset
+
+            // mov rcx, qword ptr gs:[0x58]
+            // Load the TLS Storage Array pointer
+            // The gs segment register refers to the base address of the TEB on x64.
+            // 0x58 is the offset in the TEB for the ThreadLocalStoragePointer member on x64:
+            sink.put1(0x65); // data?
+            sink.put_data(&[
+                0b01001000, // REX.W
+                0x8b,       // MOV
+                0x0c, 0x25, 0x58, // ThreadLocalStoragePointer offset
+                0x00, 0x00, 0x00,
+            ]);
+
+            // mov rax, qword ptr [rcx + 8*rax]
+            // Load the actual TLS entry for this thread.
+            // Computes ThreadLocalStoragePointer + _tls_index*8
+            sink.put1(0b01001000); // REX.W
+            sink.put1(0x8b); // MOV
+            sink.put1(0x04);
+            sink.put1(0xc1);
+
+            // lea rax, [rax + example::A@SECREL32]
+            sink.put1(0b01001000); // REX.W
+            sink.put1(0x8d); // LEA
+            sink.put1(0x80); // ModRM byte
+            emit_reloc(sink, state, Reloc::X86SecRel, symbol, -4);
+            sink.put4(0); // offset
+        }
+
         Inst::ValueLabelMarker { .. } => {
             // Nothing; this is only used to compute debug info.
         }

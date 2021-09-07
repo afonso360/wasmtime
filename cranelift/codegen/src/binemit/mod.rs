@@ -52,6 +52,9 @@ pub enum Reloc {
     X86CallPLTRel4,
     /// x86 GOT PC-relative 4-byte
     X86GOTPCRel4,
+    /// The 32-bit offset of the target from the beginning of its section.
+    /// Equivalent to `IMAGE_REL_AMD64_SECREL` See [PE Format](https://docs.microsoft.com/en-us/windows/win32/debug/pe-format)
+    X86SecRel,
     /// Arm32 call target
     Arm32Call,
     /// Arm64 call target. Encoded as bottom 26 bits of instruction. This
@@ -97,6 +100,7 @@ impl fmt::Display for Reloc {
 
             Self::ElfX86_64TlsGd => write!(f, "ElfX86_64TlsGd"),
             Self::MachOX86_64Tlv => write!(f, "MachOX86_64Tlv"),
+            Self::X86SecRel => write!(f, "X86SecRel"),
             Self::Aarch64TlsGdAdrPage21 => write!(f, "Aarch64TlsGdAdrPage21"),
             Self::Aarch64TlsGdAddLo12Nc => write!(f, "Aarch64TlsGdAddLo12Nc"),
         }

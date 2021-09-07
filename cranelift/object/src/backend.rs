@@ -566,6 +566,21 @@ impl ObjectModule {
                     symbol
                 }
             }
+            ir::ExternalName::TlsIndex => {
+                let name = b"_tls_index";
+                self.object.symbol_id(name).unwrap_or_else(|| {
+                    self.object.add_symbol(Symbol {
+                        name: name.to_vec(),
+                        value: 0,
+                        size: 32,
+                        kind: SymbolKind::Data,
+                        scope: SymbolScope::Unknown,
+                        weak: false,
+                        section: SymbolSection::Undefined,
+                        flags: SymbolFlags::None,
+                    })
+                })
+            }
             _ => panic!("invalid ExternalName {}", name),
         }
     }
@@ -585,6 +600,11 @@ impl ObjectModule {
                 32,
             ),
             Reloc::X86GOTPCRel4 => (RelocationKind::GotRelative, RelocationEncoding::Generic, 32),
+            Reloc::X86SecRel => (
+                RelocationKind::SectionOffset,
+                RelocationEncoding::Generic,
+                32,
+            ),
             Reloc::Arm64Call => (
                 RelocationKind::Relative,
                 RelocationEncoding::AArch64Call,

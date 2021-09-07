@@ -500,6 +500,10 @@ pub enum Inst {
     /// symbol in rax.
     MachOTlsGetAddr { symbol: ExternalName },
 
+    /// A Coff TLS symbol access. Returns address of the TLS
+    /// symbol in rax.
+    CoffTlsGetAddr { symbol: ExternalName },
+
     /// A definition of a value label.
     ValueLabelMarker { reg: Reg, label: ValueLabel },
 
@@ -570,6 +574,7 @@ impl Inst {
             | Inst::XmmUninitializedValue { .. }
             | Inst::ElfTlsGetAddr { .. }
             | Inst::MachOTlsGetAddr { .. }
+            | Inst::CoffTlsGetAddr { .. }
             | Inst::ValueLabelMarker { .. }
             | Inst::Unwind { .. } => smallvec![],
 
@@ -1849,6 +1854,10 @@ impl PrettyPrint for Inst {
                 format!("macho_tls_get_addr {:?}", symbol)
             }
 
+            Inst::CoffTlsGetAddr { ref symbol } => {
+                format!("coff_tls_get_addr {:?}", symbol)
+            }
+
             Inst::ValueLabelMarker { label, reg } => {
                 format!("value_label {:?}, {}", label, reg.show_rru(mb_rru))
             }
@@ -2142,7 +2151,7 @@ fn x64_get_regs(inst: &Inst, collector: &mut RegUsageCollector) {
             // No registers are used.
         }
 
-        Inst::ElfTlsGetAddr { .. } | Inst::MachOTlsGetAddr { .. } => {
+        Inst::ElfTlsGetAddr { .. } | Inst::MachOTlsGetAddr { .. } | Inst::CoffTlsGetAddr { .. } => {
             // All caller-saves are clobbered.
             //
             // We use the SysV calling convention here because the
@@ -2572,6 +2581,7 @@ fn x64_map_regs<RUM: RegUsageMapper>(inst: &mut Inst, mapper: &RUM) {
         | Inst::AtomicRmwSeq { .. }
         | Inst::ElfTlsGetAddr { .. }
         | Inst::MachOTlsGetAddr { .. }
+        | Inst::CoffTlsGetAddr { .. }
         | Inst::Fence { .. }
         | Inst::Unwind { .. } => {
             // Instruction doesn't explicitly mention any regs, so it can't have any virtual

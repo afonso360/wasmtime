@@ -6643,6 +6643,7 @@ fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             let symbol = name.clone();
 
             ctx.emit(match flags.tls_model() {
+                TlsModel::Coff => Inst::CoffTlsGetAddr { symbol },
                 TlsModel::ElfGd => Inst::ElfTlsGetAddr { symbol },
                 TlsModel::Macho => Inst::MachOTlsGetAddr { symbol },
                 _ => todo!(
