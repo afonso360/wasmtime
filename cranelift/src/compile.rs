@@ -1,13 +1,18 @@
 //! CLI tool to read Cranelift IR files and compile them into native code.
 
 use crate::disasm::{print_all, PrintRelocs, PrintStackMaps, PrintTraps};
-use crate::utils::{parse_sets_and_triple, read_to_string};
+use crate::utils::{parse_sets_and_triple, read_to_string, OwnedFlagsOrIsa};
 use anyhow::{Context as _, Result};
+use cranelift::codegen::binemit::{NullStackMapSink, NullTrapSink};
+use cranelift::codegen::isa::TargetIsa;
 use cranelift_codegen::print_errors::pretty_error;
 use cranelift_codegen::settings::FlagsOrIsa;
 use cranelift_codegen::timing;
 use cranelift_codegen::Context;
-use cranelift_reader::{parse_test, ParseOptions};
+use cranelift_module::{DataContext, Linkage, Module};
+use cranelift_native::builder as host_isa_builder;
+use cranelift_object::{ObjectBuilder, ObjectModule};
+use cranelift_reader::{parse_test, ParseOptions, TestFile};
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -42,6 +47,10 @@ pub struct Options {
     /// Enable debug output on stderr/stdout
     #[structopt(short = "d")]
     debug: bool,
+
+    /// Output the object file to
+    #[structopt(short = "o")]
+    output: Option<PathBuf>,
 }
 
 pub fn run(options: &Options) -> Result<()> {
@@ -67,14 +76,14 @@ fn handle_module(options: &Options, path: &Path, name: &str, fisa: FlagsOrIsa) -
         anyhow::bail!("compilation requires a target isa");
     };
 
-    for (func, _) in test_file.functions {
+    for (func, _) in &test_file.functions {
         let mut relocs = PrintRelocs::new(options.print);
         let mut traps = PrintTraps::new(options.print);
         let mut stack_maps = PrintStackMaps::new(options.print);
 
         if let Some(isa) = isa {
             let mut context = Context::new();
-            context.func = func;
+            context.func = func.clone();
             let mut mem = vec![];
 
             // Compile and encode the result to machine code.
@@ -102,8 +111,62 @@ fn handle_module(options: &Options, path: &Path, name: &str, fisa: FlagsOrIsa) -
         }
     }
 
+    if let Some(out_path) = options.output.clone() {
+        write_output(test_file, out_path, options)?;
+    }
+
     if options.report_times {
         print!("{}", timing::take_current());
+    }
+
+    Ok(())
+}
+
+fn write_output(test_file: TestFile, path: PathBuf, options: &Options) -> Result<()> {
+    let filename = format!(
+        "{}.o",
+        path.file_name()
+            .expect("Expected file name")
+            .to_str()
+            .unwrap()
+    );
+
+    let isa = {
+        let parsed = parse_sets_and_triple(&options.settings, &options.target)?;
+        match parsed {
+            OwnedFlagsOrIsa::Isa(isa) => isa,
+            OwnedFlagsOrIsa::Flags(flags) => host_isa_builder()
+                .map_err(|s| anyhow::anyhow!("{}", s))?
+                .finish(flags),
+        }
+    };
+
+    let builder =
+        ObjectBuilder::new(isa, filename, cranelift_module::default_libcall_names()).unwrap();
+    let mut module = ObjectModule::new(builder);
+
+    for (func, _) in test_file.functions {
+        let mut context = Context::new();
+        context.func = func.clone();
+
+        let mut dctx = DataContext::new();
+        let data_id = module.declare_anonymous_data(true, true)?;
+        let _gv = module.declare_data_in_data(data_id, &mut dctx);
+
+        let name = format!("{}", func.name);
+        let func_id = module.declare_function(&name, Linkage::Local, &func.signature)?;
+
+        let mut trap_sink = NullTrapSink {};
+        let mut stack_map_sink = NullStackMapSink {};
+        module
+            .define_function(func_id, &mut context, &mut trap_sink, &mut stack_map_sink)
+            .unwrap();
+    }
+
+    let product = module.finish();
+    let obj = product.object.write().unwrap();
+    if let Err(err) = std::fs::write(&path, obj) {
+        anyhow::bail!("error writing object file: {}", err);
     }
 
     Ok(())
