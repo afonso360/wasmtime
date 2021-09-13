@@ -572,7 +572,7 @@ impl ObjectModule {
                     self.object.add_symbol(Symbol {
                         name: name.to_vec(),
                         value: 0,
-                        size: 32,
+                        size: 0,
                         kind: SymbolKind::Data,
                         scope: SymbolScope::Unknown,
                         weak: false,

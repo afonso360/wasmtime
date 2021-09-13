@@ -2151,7 +2151,7 @@ fn x64_get_regs(inst: &Inst, collector: &mut RegUsageCollector) {
             // No registers are used.
         }
 
-        Inst::ElfTlsGetAddr { .. } | Inst::MachOTlsGetAddr { .. } | Inst::CoffTlsGetAddr { .. } => {
+        Inst::ElfTlsGetAddr { .. } | Inst::MachOTlsGetAddr { .. } => {
             // All caller-saves are clobbered.
             //
             // We use the SysV calling convention here because the
@@ -2161,6 +2161,14 @@ fn x64_get_regs(inst: &Inst, collector: &mut RegUsageCollector) {
             for reg in X64ABIMachineSpec::get_regs_clobbered_by_call(CallConv::SystemV) {
                 collector.add_def(reg);
             }
+        }
+
+        // Unlike `ElfTlsGetAddr` and `MachOTlsGetAddr` we don't perform a function call, so we
+        // only need to clobber the registers we actually use.
+        Inst::CoffTlsGetAddr { .. } => {
+            collector.add_def(Writable::from_reg(regs::rax()));
+            collector.add_def(Writable::from_reg(regs::rcx()));
+            collector.add_def(Writable::from_reg(regs::rdx())); // TODO: We don't use this
         }
 
         Inst::ValueLabelMarker { reg, .. } => {
