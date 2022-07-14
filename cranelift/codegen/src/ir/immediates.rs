@@ -877,37 +877,37 @@ impl Neg for Ieee32 {
     }
 }
 
-impl Add for Ieee32 {
-    type Output = Ieee32;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self::with_float(self.as_f32() + rhs.as_f32())
-    }
-}
-
-impl Sub for Ieee32 {
-    type Output = Ieee32;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Self::with_float(self.as_f32() - rhs.as_f32())
-    }
-}
-
-impl Mul for Ieee32 {
-    type Output = Ieee32;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        Self::with_float(self.as_f32() * rhs.as_f32())
-    }
-}
-
-impl Div for Ieee32 {
-    type Output = Ieee32;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Self::with_float(self.as_f32() / rhs.as_f32())
-    }
-}
+// impl Add for Ieee32 {
+//     type Output = Ieee32;
+//
+//     fn add(self, rhs: Self) -> Self::Output {
+//         Self::with_float(self.as_f32() + rhs.as_f32())
+//     }
+// }
+//
+// impl Sub for Ieee32 {
+//     type Output = Ieee32;
+//
+//     fn sub(self, rhs: Self) -> Self::Output {
+//         Self::with_float(self.as_f32() - rhs.as_f32())
+//     }
+// }
+//
+// impl Mul for Ieee32 {
+//     type Output = Ieee32;
+//
+//     fn mul(self, rhs: Self) -> Self::Output {
+//         Self::with_float(self.as_f32() * rhs.as_f32())
+//     }
+// }
+//
+// impl Div for Ieee32 {
+//     type Output = Ieee32;
+//
+//     fn div(self, rhs: Self) -> Self::Output {
+//         Self::with_float(self.as_f32() / rhs.as_f32())
+//     }
+// }
 
 impl Ieee64 {
     /// Create a new `Ieee64` containing the bits of `x`.
