@@ -457,19 +457,34 @@ impl Value for DataValue {
     }
 
     fn add(self, other: Self) -> ValueResult<Self> {
-        // TODO: floats must handle NaNs, +/-0
-        binary_match!(wrapping_add(&self, &other); [I8, I16, I32, I64, I128, U8, U16, U32, U64, U128])
+        if self.is_float() {
+            binary_match!(+(&self, &other); [F32, F64])
+        } else {
+            binary_match!(wrapping_add(&self, &other); [I8, I16, I32, I64, I128, U8, U16, U32, U64, U128])
+        }
     }
 
     fn sub(self, other: Self) -> ValueResult<Self> {
-        binary_match!(wrapping_sub(&self, &other); [I8, I16, I32, I64, I128]) // TODO: floats must handle NaNs, +/-0
+        if self.is_float() {
+            binary_match!(-(&self, &other); [F32, F64])
+        } else {
+            binary_match!(wrapping_sub(&self, &other); [I8, I16, I32, I64, I128])
+        }
     }
 
     fn mul(self, other: Self) -> ValueResult<Self> {
-        binary_match!(wrapping_mul(&self, &other); [I8, I16, I32, I64, I128])
+        if self.is_float() {
+            binary_match!(*(&self, &other); [F32, F64])
+        } else {
+            binary_match!(wrapping_mul(&self, &other); [I8, I16, I32, I64, I128])
+        }
     }
 
     fn div(self, other: Self) -> ValueResult<Self> {
+        if self.is_float() {
+            return binary_match!(/(&self, &other); [F32, F64]);
+        }
+
         let denominator = other.clone().into_int()?;
 
         // Check if we are dividing INT_MIN / -1. This causes an integer overflow trap.

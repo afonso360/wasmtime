@@ -12,7 +12,7 @@ use core::str::FromStr;
 use core::{i32, u32};
 #[cfg(feature = "enable-serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::Neg;
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Convert a type into a vector of bytes; all implementors in this file must use little-endian
 /// orderings of bytes to match WebAssembly's little-endianness.
@@ -874,6 +874,38 @@ impl Neg for Ieee32 {
 
     fn neg(self) -> Self::Output {
         Self::with_float(self.as_f32().neg())
+    }
+}
+
+impl Add for Ieee32 {
+    type Output = Ieee32;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::with_float(self.as_f32() + rhs.as_f32())
+    }
+}
+
+impl Sub for Ieee32 {
+    type Output = Ieee32;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::with_float(self.as_f32() - rhs.as_f32())
+    }
+}
+
+impl Mul for Ieee32 {
+    type Output = Ieee32;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self::with_float(self.as_f32() * rhs.as_f32())
+    }
+}
+
+impl Div for Ieee32 {
+    type Output = Ieee32;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Self::with_float(self.as_f32() / rhs.as_f32())
     }
 }
 
