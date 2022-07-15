@@ -3023,3 +3023,14 @@
 (decl synthetic_amode_to_xmm_mem (SyntheticAmode) XmmMem)
 (rule (synthetic_amode_to_xmm_mem amode)
       (synthetic_amode_to_reg_mem amode))
+
+
+;;;; Helpers for Emitting LibCalls ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(type LibCall extern
+      (enum
+        FmaF32
+        FmaF64))
+
+(decl libcall_3_ret_1 (LibCall Reg Reg Reg) Reg)
+(extern constructor libcall_3_ret_1 libcall_3_ret_1)
