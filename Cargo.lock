@@ -585,6 +585,7 @@ dependencies = [
  "anyhow",
  "arbitrary",
  "cranelift",
+ "cranelift-native",
 ]
 
 [[package]]
