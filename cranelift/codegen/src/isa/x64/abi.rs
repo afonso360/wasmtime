@@ -482,19 +482,30 @@ impl ABIMachineSpec for X64ABIMachineSpec {
     fn gen_probestack(frame_size: u32) -> SmallInstVec<Self::I> {
         let mut insts = SmallVec::new();
         insts.push(Inst::imm(
-            OperandSize::Size32,
+            OperandSize::Size64,
             frame_size as u64,
             Writable::from_reg(regs::rax()),
         ));
-        insts.push(Inst::CallKnown {
-            dest: ExternalName::LibCall(LibCall::Probestack),
-            info: Box::new(CallInfo {
-                uses: smallvec![regs::rax()],
-                defs: smallvec![],
-                clobbers: PRegSet::empty(),
-                opcode: Opcode::Call,
-            }),
-        });
+
+        // Use r11 as a tmp for lowering the address, we should be ok to do this
+        // since its clobbered by the probestack function
+        insts.extend(Self::gen_call(
+            // We don't know where probestack is located, so be conservative and
+            // do a Far relocation.
+            &CallDest::ExtName(
+                ExternalName::LibCall(LibCall::Probestack),
+                RelocDistance::Far,
+            ),
+            smallvec![regs::rax(), regs::r11()],
+            smallvec![],
+            PRegSet::empty().with(regs::gpr_preg(regs::ENC_R11)),
+            Opcode::Call,
+            Writable::from_reg(regs::r11()),
+            isa::CallConv::Probestack,
+            // This is wrong, but its also unused by gen_call and likely to fail if
+            // we start using it.
+            isa::CallConv::Probestack,
+        ));
         insts
     }
 

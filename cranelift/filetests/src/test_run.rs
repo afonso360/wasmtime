@@ -41,7 +41,7 @@ fn build_host_isa(
         builder.set(value.name, &value.value_string()).unwrap();
     }
 
-    // We need to force disable stack probing, since we don't support it yet.
+    // We need to disable stack probing, since we don't support it yet.
     let flags = {
         let mut flags_builder = settings::builder();
 
@@ -50,7 +50,16 @@ fn build_host_isa(
             flags_builder.set(flag.name, &flag.value_string()).unwrap();
         }
 
-        flags_builder.set("enable_probestack", "false").unwrap();
+        // Disable stack probing on windows and non x86
+        let probestack_enabled = if cfg!(not(windows)) && cfg!(target_arch = "x86_64") {
+            "true"
+        } else {
+            "false"
+        };
+        flags_builder
+            .set("enable_probestack", probestack_enabled)
+            .unwrap();
+
         settings::Flags::new(flags_builder)
     };
 

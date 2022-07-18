@@ -75,7 +75,10 @@ impl JITBuilder {
         libcall_names: Box<dyn Fn(ir::LibCall) -> String + Send + Sync>,
     ) -> Self {
         let symbols = HashMap::new();
-        let lookup_symbols = vec![Box::new(lookup_with_dlsym) as Box<_>];
+        let lookup_symbols = vec![
+            Box::new(lookup_compiler_rt) as Box<_>,
+            Box::new(lookup_with_dlsym) as Box<_>,
+        ];
         Self {
             isa,
             symbols,
@@ -872,6 +875,14 @@ impl Module for JITModule {
         }
 
         Ok(())
+    }
+}
+
+fn lookup_compiler_rt(name: &str) -> Option<*const u8> {
+    match name {
+        #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+        "__cranelift_probestack" => Some(cranelift_rt::__cranelift_probestack as *const u8),
+        _ => None,
     }
 }
 

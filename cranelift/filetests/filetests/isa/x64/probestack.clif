@@ -13,7 +13,8 @@ block0:
 ;   pushq   %rbp
 ;   movq    %rsp, %rbp
 ;   movl    $100000, %eax
-;   call    LibCall(Probestack)
+;   load_ext_name %Probestack+0, %r11
+;   call    *%r11
 ;   subq    %rsp, $100000, %rsp
 ; block0:
 ;   lea     rsp(0 + virtual offset), %rax
@@ -21,4 +22,3 @@ block0:
 ;   movq    %rbp, %rsp
 ;   popq    %rbp
 ;   ret
-

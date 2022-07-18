@@ -620,6 +620,7 @@ dependencies = [
  "cranelift-frontend",
  "cranelift-module",
  "cranelift-native",
+ "cranelift-rt",
  "libc",
  "log",
  "memmap2",
@@ -674,6 +675,13 @@ dependencies = [
  "cranelift-codegen",
  "smallvec",
  "target-lexicon",
+]
+
+[[package]]
+name = "cranelift-rt"
+version = "0.87.0"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
