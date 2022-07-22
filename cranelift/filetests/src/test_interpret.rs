@@ -12,7 +12,6 @@ use cranelift_interpreter::environment::FunctionStore;
 use cranelift_interpreter::interpreter::{HeapInit, Interpreter, InterpreterState};
 use cranelift_interpreter::step::ControlFlow;
 use cranelift_reader::{parse_run_command, TestCommand};
-use log::trace;
 use std::borrow::Cow;
 
 struct TestInterpret;
@@ -42,7 +41,7 @@ impl SubTest for TestInterpret {
         let test_env = RuntestEnvironment::parse(&context.details.comments[..])?;
         for comment in context.details.comments.iter() {
             if let Some(command) = parse_run_command(comment.text, &func.signature)? {
-                trace!("Parsed run command: {}", command);
+                println!("Parsed run command: {} ------ {:?}", command, command);
 
                 let mut env = FunctionStore::default();
                 env.add(func.name.to_string(), &func);
