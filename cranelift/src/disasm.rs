@@ -59,6 +59,7 @@ pub fn print_stack_maps(traps: &[MachStackMap]) -> String {
             }
             write!(text, "{i}").unwrap();
         }
+        writeln!(text).unwrap();
     }
     text
 }
