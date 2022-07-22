@@ -1,5 +1,16 @@
 use wasmtime_asm_macros::asm_func;
 
+cfg_if::cfg_if! {
+    if #[cfg(windows)] {
+        macro_rules! arg0 { () => ("rcx") }
+        macro_rules! arg1 { () => ("rdx") }
+    } else {
+        macro_rules! arg0 { () => ("rdi") }
+        macro_rules! arg1 { () => ("rsi") }
+    }
+}
+
+#[rustfmt::skip]
 asm_func!(
     "host_to_wasm_trampoline",
     "
@@ -7,10 +18,10 @@ asm_func!(
         .cfi_def_cfa_offset 0
 
         // Load the pointer to `VMRuntimeLimits` in `r10`.
-        mov r10, 8[rsi]
+        mov r10, 8[", arg1!(), "]
 
         // Check to see if this is a core `VMContext` (MAGIC == 'core').
-        cmp DWORD PTR [rdi], 0x65726f63
+        cmp DWORD PTR [", arg0!(), "], 0x65726f63
 
         // Store the last Wasm SP into the `last_wasm_entry_sp` in the limits, if this
         // was core Wasm, otherwise store an invalid sentinal value.
@@ -19,7 +30,7 @@ asm_func!(
         mov 40[r10], r11
 
         // Tail call to the callee function pointer in the vmctx.
-        jmp 16[rsi]
+        jmp 16[", arg1!(), "]
 
         .cfi_endproc
     ",
@@ -41,6 +52,7 @@ mod host_to_wasm_trampoline_offsets_tests {
     }
 }
 
+#[rustfmt::skip]
 asm_func!(
     "wasm_to_host_trampoline",
     "
@@ -48,7 +60,7 @@ asm_func!(
         .cfi_def_cfa_offset 0
 
         // Load the pointer to `VMRuntimeLimits` in `r10`.
-        mov r10, 8[rsi]
+        mov r10, 8[", arg1!(), "]
 
         // Store the last Wasm FP into the `last_wasm_exit_fp` in the limits.
         mov 24[r10], rbp
@@ -61,7 +73,7 @@ asm_func!(
         //
         // This *must* be a tail call so that we do not push to the stack and mess
         // up the offsets of stack arguments (if any).
-        jmp 8[rdi]
+        jmp 8[", arg0!(), "]
 
         .cfi_endproc
     ",
@@ -95,7 +107,7 @@ macro_rules! wasm_to_libcall_trampoline {
                .cfi_def_cfa_offset 0
 
                 // Load the pointer to `VMRuntimeLimits` in `r10`.
-                mov r10, 8[rdi]
+                mov r10, 8[", arg0!(), "]
 
                 // Store the last Wasm FP into the `last_wasm_exit_fp` in the limits.
                 mov 24[r10], rbp
