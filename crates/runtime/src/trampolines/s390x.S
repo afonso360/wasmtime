@@ -2,7 +2,7 @@
 // Currently `global_asm!` isn't stable on s390x, so this is an external
 // assembler file built with the `build.rs`.
 
-        .machine z14
+        .machine z13
         .text
 
         .hidden host_to_wasm_trampoline
