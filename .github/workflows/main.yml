@@ -9,11 +9,6 @@ defaults:
   run:
     shell: bash
 
-# Cancel any in-flight jobs for the same PR/branch so there's only one active
-# at a time
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   # Check Code style quickly by running `rustfmt` over all code
@@ -279,10 +274,6 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.target == ''
       env:
         RUST_BACKTRACE: 1
-
-    # Test the component-model related functionality which is gated behind a
-    # compile-time feature
-    - run: cargo test --test all --features component-model component_model
 
   # Build and test the wasi-nn module.
   test_wasi_nn:
