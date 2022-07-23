@@ -37,7 +37,7 @@ jobs:
     - uses: ./.github/actions/install-rust
 
     # Build and test all features
-    - run: cargo run -- test .\filetests\filetests\runtests\fma.clif
+    - run: cargo run -- test .\\filetests\\filetests\\runtests\\fma.clif
       working-directory: cranelift
       env:
         RUST_BACKTRACE: 1
