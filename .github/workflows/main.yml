@@ -36,19 +36,8 @@ jobs:
         submodules: true
     - uses: ./.github/actions/install-rust
 
-    # Install targets in order to build various tests throughout the repo
-    - run: rustup target add wasm32-wasi wasm32-unknown-unknown ${{ matrix.target }}
-    - run: echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
-      if: matrix.target != ''
-
-    # Fix an ICE for now in gcc when compiling zstd with debuginfo (??)
-    - run: echo CFLAGS=-g0 >> $GITHUB_ENV
-      if: matrix.target == 'x86_64-pc-windows-gnu'
-
-    - run: cargo fetch --locked
-    - run: cargo fetch --locked --manifest-path crates/test-programs/wasi-tests/Cargo.toml
-
     # Build and test all features
-    - run: ./ci/run-tests.sh --locked
+    - run: cargo run -- test .\filetests\filetests\runtests\fma.clif
+      working-directory: cranelift
       env:
         RUST_BACKTRACE: 1
