@@ -264,6 +264,12 @@ jobs:
         RUST_BACKTRACE: 1
       if: matrix.target == ''
 
+
+    - run: cargo run -- test .\\filetests\\filetests\\runtests\\fma.clif
+      working-directory: cranelift
+      env:
+        RUST_BACKTRACE: 1
+
     # Build and test all features
     - run: ./ci/run-tests.sh --locked
       env:
