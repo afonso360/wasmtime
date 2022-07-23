@@ -43,7 +43,7 @@ jobs:
 
     - uses: ilammy/msvc-dev-cmd@v1
       if: matrix.target == ''
-    - run: cl.exe /out:testfmacl.exe .\\test_fma.c
+    - run: cl.exe /Fe testfmacl.exe .\\test_fma.c
       if: matrix.target == ''
     - run: .\\testfmacl.exe
       if: matrix.target == ''
