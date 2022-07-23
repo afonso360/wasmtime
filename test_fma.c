@@ -69,7 +69,7 @@ int main(void)
             bool same = isnan(expected) ? isnan(result) : expected == result && signbit(expected) == signbit(result);
             if (!same) {
                 all_tests_passed = false;
-                printf("fmaf(%a, %a, %a): Expected %a, but got %a.\n", a, b, c, expected, result);
+                printf("Testcase[%zd]: fmaf(%a, %a, %a): Expected %a, but got %a.\n", i, a, b, c, expected, result);
             }
         }
         if (all_tests_passed) {
