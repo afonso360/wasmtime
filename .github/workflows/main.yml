@@ -209,6 +209,16 @@ jobs:
     - run: echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
       if: matrix.target != ''
 
+    - run: cl.exe /out:testfmacl.exe .\\test_fma.c
+      if: matrix.target == ''
+    - run: .\\testfmacl.exe
+      if: matrix.target == ''
+
+    - run: gcc.exe -o testfmagcc.exe .\\test_fma.c
+      if: matrix.target == 'x86_64-pc-windows-gnu'
+    - run: .\\testfmagcc.exe
+      if: matrix.target == 'x86_64-pc-windows-gnu'
+
     - run: cargo run -- test .\\filetests\\filetests\\runtests\\fma.clif
       working-directory: cranelift
       env:
