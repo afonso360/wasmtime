@@ -30,6 +30,9 @@ jobs:
           - os: windows-2019
           - os: windows-2019
             target: x86_64-pc-windows-gnu
+          - os: windows-latest
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
     steps:
     - uses: actions/checkout@v2
       with:
