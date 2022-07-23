@@ -204,6 +204,9 @@ jobs:
         submodules: true
     - uses: ./.github/actions/install-rust
 
+    - run: echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
+      if: matrix.target != ''
+
     - run: cargo run -- test .\\filetests\\filetests\\runtests\\fma.clif
       working-directory: cranelift
       env:
