@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main, fast-stack-walking2]
+    branches: [main, mingwtest]
     tags-ignore: [dev]
   pull_request:
     branches: ['main', 'release-*']
