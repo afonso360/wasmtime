@@ -37,6 +37,7 @@ jobs:
 
     # Install targets in order to build various tests throughout the repo
     - run: rustup target add ${{ matrix.target }}
+      if: matrix.target != ''
     - run: echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
       if: matrix.target != ''
 
