@@ -185,6 +185,26 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::SdivImm, &[I16], &[I16], insert_opcode_imm),
     (Opcode::SdivImm, &[I32], &[I32], insert_opcode_imm),
     (Opcode::SdivImm, &[I64], &[I64], insert_opcode_imm),
+    // Urem
+    (Opcode::Urem, &[I8, I8], &[I8], insert_opcode),
+    (Opcode::Urem, &[I16, I16], &[I16], insert_opcode),
+    (Opcode::Urem, &[I32, I32], &[I32], insert_opcode),
+    (Opcode::Urem, &[I64, I64], &[I64], insert_opcode),
+    // UremImm
+    (Opcode::UremImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::UremImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::UremImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::UremImm, &[I64], &[I64], insert_opcode_imm),
+    // Srem
+    (Opcode::Srem, &[I8, I8], &[I8], insert_opcode),
+    (Opcode::Srem, &[I16, I16], &[I16], insert_opcode),
+    (Opcode::Srem, &[I32, I32], &[I32], insert_opcode),
+    (Opcode::Srem, &[I64, I64], &[I64], insert_opcode),
+    // SremImm
+    (Opcode::SremImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::SremImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::SremImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::SremImm, &[I64], &[I64], insert_opcode_imm),
     // Ishl
     (Opcode::Ishl, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Ishl, &[I64, I32], &[I64], insert_opcode),
