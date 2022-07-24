@@ -50,16 +50,19 @@ fn insert_opcode_imm(
     debug_assert_eq!(args.len(), 1);
     debug_assert_eq!(rets.len(), 1);
 
-    let var = fgen.get_variable_of_type(args[0])?;
+    let arg_ty = args[0];
+    let ret_ty = rets[0];
+
+    let var = fgen.get_variable_of_type(arg_ty)?;
     let val = builder.use_var(var);
 
-    let imm = i64::arbitrary(fgen.u)?.into();
+    let ty_mask = ((1 << ret_ty.lane_bits()) - 1u128) as i64;
+    let imm = i64::arbitrary(fgen.u)? & ty_mask;
 
-    let typevar = rets.first().copied().unwrap_or(INVALID);
-    let (inst, dfg) = builder.ins().BinaryImm64(opcode, typevar, imm, val);
+    let (inst, dfg) = builder.ins().BinaryImm64(opcode, ret_ty, imm.into(), val);
 
     let res = dfg.first_result(inst);
-    let var = fgen.get_variable_of_type(rets[0])?;
+    let var = fgen.get_variable_of_type(ret_ty)?;
     builder.def_var(var, res);
 
     Ok(())
