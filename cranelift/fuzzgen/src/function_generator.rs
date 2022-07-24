@@ -40,6 +40,31 @@ fn insert_opcode(
     Ok(())
 }
 
+fn insert_opcode_imm(
+    fgen: &mut FunctionGenerator,
+    builder: &mut FunctionBuilder,
+    opcode: Opcode,
+    args: &'static [Type],
+    rets: &'static [Type],
+) -> Result<()> {
+    debug_assert_eq!(args.len(), 1);
+    debug_assert_eq!(rets.len(), 1);
+
+    let var = fgen.get_variable_of_type(args[0])?;
+    let val = builder.use_var(var);
+
+    let imm = i64::arbitrary(fgen.u)?.into();
+
+    let typevar = rets.first().copied().unwrap_or(INVALID);
+    let (inst, dfg) = builder.ins().BinaryImm64(opcode, typevar, imm, val);
+
+    let res = dfg.first_result(inst);
+    let var = fgen.get_variable_of_type(rets[0])?;
+    builder.def_var(var, res);
+
+    Ok(())
+}
+
 fn insert_stack_load(
     fgen: &mut FunctionGenerator,
     builder: &mut FunctionBuilder,
@@ -115,26 +140,51 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Iadd, &[I16, I16], &[I16], insert_opcode),
     (Opcode::Iadd, &[I32, I32], &[I32], insert_opcode),
     (Opcode::Iadd, &[I64, I64], &[I64], insert_opcode),
+    // IaddImm
+    (Opcode::IaddImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::IaddImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::IaddImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::IaddImm, &[I64], &[I64], insert_opcode_imm),
     // Isub
     (Opcode::Isub, &[I8, I8], &[I8], insert_opcode),
     (Opcode::Isub, &[I16, I16], &[I16], insert_opcode),
     (Opcode::Isub, &[I32, I32], &[I32], insert_opcode),
     (Opcode::Isub, &[I64, I64], &[I64], insert_opcode),
+    // IrsubImm
+    (Opcode::IrsubImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::IrsubImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::IrsubImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::IrsubImm, &[I64], &[I64], insert_opcode_imm),
     // Imul
     (Opcode::Imul, &[I8, I8], &[I8], insert_opcode),
     (Opcode::Imul, &[I16, I16], &[I16], insert_opcode),
     (Opcode::Imul, &[I32, I32], &[I32], insert_opcode),
     (Opcode::Imul, &[I64, I64], &[I64], insert_opcode),
+    // ImulImm
+    (Opcode::ImulImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::ImulImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::ImulImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::ImulImm, &[I64], &[I64], insert_opcode_imm),
     // Udiv
     (Opcode::Udiv, &[I8, I8], &[I8], insert_opcode),
     (Opcode::Udiv, &[I16, I16], &[I16], insert_opcode),
     (Opcode::Udiv, &[I32, I32], &[I32], insert_opcode),
     (Opcode::Udiv, &[I64, I64], &[I64], insert_opcode),
+    // UdivImm
+    (Opcode::UdivImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::UdivImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::UdivImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::UdivImm, &[I64], &[I64], insert_opcode_imm),
     // Sdiv
     (Opcode::Sdiv, &[I8, I8], &[I8], insert_opcode),
     (Opcode::Sdiv, &[I16, I16], &[I16], insert_opcode),
     (Opcode::Sdiv, &[I32, I32], &[I32], insert_opcode),
     (Opcode::Sdiv, &[I64, I64], &[I64], insert_opcode),
+    // SdivImm
+    (Opcode::SdivImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::SdivImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::SdivImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::SdivImm, &[I64], &[I64], insert_opcode_imm),
     // Ishl
     (Opcode::Ishl, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Ishl, &[I64, I32], &[I64], insert_opcode),
@@ -152,6 +202,11 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Ishl, &[I8, I32], &[I8], insert_opcode),
     (Opcode::Ishl, &[I8, I16], &[I8], insert_opcode),
     (Opcode::Ishl, &[I8, I8], &[I8], insert_opcode),
+    // IshlImm
+    (Opcode::IshlImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::IshlImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::IshlImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::IshlImm, &[I64], &[I64], insert_opcode_imm),
     // Sshr
     (Opcode::Sshr, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Sshr, &[I64, I32], &[I64], insert_opcode),
@@ -169,6 +224,11 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Sshr, &[I8, I32], &[I8], insert_opcode),
     (Opcode::Sshr, &[I8, I16], &[I8], insert_opcode),
     (Opcode::Sshr, &[I8, I8], &[I8], insert_opcode),
+    // SshrImm
+    (Opcode::SshrImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::SshrImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::SshrImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::SshrImm, &[I64], &[I64], insert_opcode_imm),
     // Ushr
     (Opcode::Ushr, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Ushr, &[I64, I32], &[I64], insert_opcode),
@@ -186,6 +246,11 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Ushr, &[I8, I32], &[I8], insert_opcode),
     (Opcode::Ushr, &[I8, I16], &[I8], insert_opcode),
     (Opcode::Ushr, &[I8, I8], &[I8], insert_opcode),
+    // UshrImm
+    (Opcode::UshrImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::UshrImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::UshrImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::UshrImm, &[I64], &[I64], insert_opcode_imm),
     // Rotl
     (Opcode::Rotl, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Rotl, &[I64, I32], &[I64], insert_opcode),
@@ -203,6 +268,11 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Rotl, &[I8, I32], &[I8], insert_opcode),
     (Opcode::Rotl, &[I8, I16], &[I8], insert_opcode),
     (Opcode::Rotl, &[I8, I8], &[I8], insert_opcode),
+    // RotlImm
+    (Opcode::RotlImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::RotlImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::RotlImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::RotlImm, &[I64], &[I64], insert_opcode_imm),
     // Rotr
     (Opcode::Rotr, &[I64, I64], &[I64], insert_opcode),
     (Opcode::Rotr, &[I64, I32], &[I64], insert_opcode),
@@ -220,6 +290,11 @@ const OPCODE_SIGNATURES: &'static [(
     (Opcode::Rotr, &[I8, I32], &[I8], insert_opcode),
     (Opcode::Rotr, &[I8, I16], &[I8], insert_opcode),
     (Opcode::Rotr, &[I8, I8], &[I8], insert_opcode),
+    // RotrImm
+    (Opcode::RotrImm, &[I8], &[I8], insert_opcode_imm),
+    (Opcode::RotrImm, &[I16], &[I16], insert_opcode_imm),
+    (Opcode::RotrImm, &[I32], &[I32], insert_opcode_imm),
+    (Opcode::RotrImm, &[I64], &[I64], insert_opcode_imm),
     // Uextend
     (Opcode::Uextend, &[I8], &[I16], insert_opcode),
     (Opcode::Uextend, &[I8], &[I32], insert_opcode),
