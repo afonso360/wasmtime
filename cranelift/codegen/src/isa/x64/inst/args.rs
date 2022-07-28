@@ -1426,16 +1426,16 @@ pub enum Avx512Opcode {
     Vpermi2b,
     Vpmullq,
     Vpopcntb,
+    Vpsraq,
 }
 
 impl Avx512Opcode {
     /// Which `InstructionSet`s support the opcode?
     pub(crate) fn available_from(&self) -> SmallVec<[InstructionSet; 2]> {
         match self {
-            Avx512Opcode::Vcvtudq2ps => {
+            Avx512Opcode::Vcvtudq2ps | Avx512Opcode::Vpsraq | Avx512Opcode::Vpabsq => {
                 smallvec![InstructionSet::AVX512F, InstructionSet::AVX512VL]
             }
-            Avx512Opcode::Vpabsq => smallvec![InstructionSet::AVX512F, InstructionSet::AVX512VL],
             Avx512Opcode::Vpermi2b => {
                 smallvec![InstructionSet::AVX512VL, InstructionSet::AVX512VBMI]
             }
@@ -1455,6 +1455,7 @@ impl fmt::Debug for Avx512Opcode {
             Avx512Opcode::Vpermi2b => "vpermi2b",
             Avx512Opcode::Vpmullq => "vpmullq",
             Avx512Opcode::Vpopcntb => "vpopcntb",
+            Avx512Opcode::Vpsraq => "vpsraq",
         };
         write!(fmt, "{}", name)
     }

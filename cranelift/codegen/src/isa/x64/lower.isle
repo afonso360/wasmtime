@@ -793,14 +793,11 @@
       (let ((masked_amt Reg (x64_and $I64 amt (RegMemImm.Imm (shift_mask ty)))))
         (x64_psrad src (mov_rmi_to_xmm masked_amt))))
 
-;; The `sshr.i64x2` CLIF instruction has no single x86 instruction in the older
-;; feature sets. Newer ones like AVX512VL + AVX512F include `vpsraq`, a 128-bit
-;; instruction that would fit here, but this backend does not currently have
-;; support for EVEX encodings. To remedy this, we extract each 64-bit lane to a
-;; GPR, shift each using a scalar instruction, and insert the shifted values
-;; back in the `dst` XMM register.
-;;
-;; (TODO: when EVEX support is available, add an alternate lowering here).
+
+;; There is no SSE/AVX Instruction for sshr.i64x2 so, if AVX512 is not
+;; available we fall back to extract each 64-bit lane to a GPR, shift
+;; each using a scalar instruction, and insert the shifted values back
+;; in the `dst` XMM register.
 (rule (lower (has_type $I64X2 (sshr src amt)))
       (let ((src_ Xmm (put_in_xmm src))
             (lo Gpr (x64_pextrd $I64 src_ 0))
@@ -810,6 +807,18 @@
             (shifted_hi Gpr (x64_sar $I64 hi amt_)))
         (make_i64x2_from_lanes shifted_lo
                                shifted_hi)))
+
+
+;; When AVX512 is available, we can use a single `vpsraq` instruction.
+;; TODO: There is a better lowering of this instruction for constant values
+;; that encodes the imm field in the instruction.
+(rule 1 (lower (has_type (and (avx512vl_enabled)
+                              (avx512f_enabled)
+                              ty @ $I64X2)
+                       (sshr src amt)))
+      (let ((masked_amt Reg (x64_and $I64 amt (RegMemImm.Imm (shift_mask ty))))
+            (masked_xmm Xmm (mov_rmi_to_xmm masked_amt)))
+              (x64_vpsraq masked_xmm src)))
 
 ;;;; Rules for `rotl` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

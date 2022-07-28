@@ -1734,16 +1734,17 @@ pub(crate) fn emit(
             let src2 = allocs.next(src2.to_reg());
             let src1 = src1.clone().to_reg_mem().with_allocs(allocs);
 
-            let (w, opcode) = match op {
-                Avx512Opcode::Vpermi2b => (false, 0x75),
-                Avx512Opcode::Vpmullq => (true, 0x40),
+            let (map, w, opcode) = match op {
+                Avx512Opcode::Vpermi2b => (OpcodeMap::_0F38, false, 0x75),
+                Avx512Opcode::Vpmullq => (OpcodeMap::_0F38, true, 0x40),
+                Avx512Opcode::Vpsraq => (OpcodeMap::_0F, true, 0xE2),
                 _ => unimplemented!("Opcode {:?} not implemented", op),
             };
             match src1 {
                 RegMem::Reg { reg: src } => EvexInstruction::new()
                     .length(EvexVectorLength::V128)
                     .prefix(LegacyPrefixes::_66)
-                    .map(OpcodeMap::_0F38)
+                    .map(map)
                     .w(w)
                     .opcode(opcode)
                     .reg(dst.to_real_reg().unwrap().hw_enc())

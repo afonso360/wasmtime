@@ -1059,7 +1059,8 @@
             Vpabsq
             Vpermi2b
             Vpmullq
-            Vpopcntb))
+            Vpopcntb
+            Vpsraq))
 
 (type FcmpImm extern
       (enum Equal
@@ -1087,7 +1088,11 @@
 (type WritableXmm (primitive WritableXmm))
 (type OptionWritableXmm (primitive OptionWritableXmm))
 (type XmmMem extern (enum))
-(type XmmMemImm extern (enum))
+(type XmmMemImm extern
+      (enum
+       (Reg (reg Xmm))
+       (Mem (addr SyntheticAmode))
+       (Imm (simm32 u32)))))
 
 ;; Convert an `Imm8Reg` into an `Imm8Gpr`.
 (decl imm8_reg_to_imm8_gpr (Imm8Reg) Imm8Gpr)
@@ -1506,6 +1511,14 @@
                   r
                   (OperandSize.Size32)))
 
+;; Convert a `XmmMemImm` into a `XmmMem`, materializing the imm into a xmm register if necessary.
+(decl mov_xmm_mem_imm_to_xmm_mem (XmmMemImm) XmmMem)
+(rule (mov_xmm_mem_imm_to_xmm_mem (XmmMemImm.Reg r)) (XmmMem.Reg r))
+(rule (mov_xmm_mem_imm_to_xmm_mem (XmmMemImm.Mem m)) (XmmMem.Mem m))
+;(rule (mov_xmm_mem_imm_to_xmm_mem (RegMemImm.Imm imm))
+;      (gpr_to_xmm (SseOpcode.Movd)
+;                  r
+;                  (OperandSize.Size32)))
 
 ;;;; Helpers for Emitting Loads ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -2603,6 +2616,15 @@
 (decl x64_vpmullq (XmmMem Xmm) Xmm)
 (rule (x64_vpmullq src1 src2)
       (xmm_rm_r_evex (Avx512Opcode.Vpmullq)
+                     src1
+                     src2))
+
+;; Helper for creating `vpsraq` instructions.
+;;
+;; Requires AVX-512 vl and f.
+(decl x64_vpsraq (XmmMem Xmm) Xmm)
+(rule (x64_vpsraq src1 src2)
+      (xmm_rm_r_evex (Avx512Opcode.Vpsraq)
                      src1
                      src2))
 
