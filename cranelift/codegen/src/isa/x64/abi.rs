@@ -398,6 +398,77 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         insts
     }
 
+    fn gen_inline_probestack(frame_size: u32, guard_size: u32) -> SmallInstVec<Self::I> {
+        // Number of probes that we need to perform
+        let probe_count = align_to(frame_size, guard_size) / guard_size;
+
+        // TODO: CHECK CallConv
+        let tmp_reg = regs::r11();
+
+        let mut insts = SmallVec::new();
+
+        // Generate the following code:
+        //         mov  tmp_reg, rsp
+        //         sub  tmp_reg, GUARD_SIZE * probe_count
+        // .loop:
+        //         sub  rsp, GUARD_SIZE
+        //         mov  [rsp], 0
+        //         cmp  rsp, tmp_reg
+        //         jne  .loop
+        //         add  rsp, GUARD_SIZE * probe_count
+
+        // Create the guard bound register
+        insts.push(Inst::gen_move(
+            Writable::from_reg(tmp_reg),
+            regs::rsp(),
+            I64,
+        ));
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Sub,
+            RegMemImm::imm(guard_size * probe_count),
+            Writable::from_reg(tmp_reg),
+        ));
+
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Sub,
+            RegMemImm::imm(guard_size),
+            Writable::from_reg(regs::rsp()),
+        ));
+
+        // TODO: `mov [rsp], 0` would be better, but we don't have that instruction
+        // Probe the stack!
+        insts.push(Inst::mov_r_m(
+            OperandSize::Size64,
+            regs::rsp(),
+            SyntheticAmode::Real(Amode::imm_reg(0, regs::rsp())),
+        ));
+
+        // Compare and jump if we are not done yet
+        insts.push(Inst::cmp_rmi_r(
+            OperandSize::Size64,
+            RegMemImm::reg(regs::rsp()),
+            tmp_reg,
+        ));
+        // insts.push(jump!)
+
+        // The regular prologue code is going to emit a `sub` after this, so we need to
+        // reset the stack pointer
+        // TODO: It would be better if we could avoid the `add` + `sub` that is generated here
+        // and in the stack adj portion of the prologue
+        //
+        // add rsp, GUARD_SIZE * probe_count
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Add,
+            RegMemImm::imm(guard_size * probe_count),
+            Writable::from_reg(regs::rsp()),
+        ));
+
+        insts
+    }
+
     fn gen_clobber_save(
         _call_conv: isa::CallConv,
         setup_frame: bool,

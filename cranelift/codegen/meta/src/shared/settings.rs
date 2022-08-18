@@ -284,6 +284,13 @@ pub(crate) fn define() -> SettingGroup {
         12,
     );
 
+    settings.add_bool(
+        "enable_inline_probestack",
+        "Enable the use of inline stack probes for supported calling conventions.",
+        "",
+        false,
+    );
+
     // Jump table options.
 
     settings.add_bool(
