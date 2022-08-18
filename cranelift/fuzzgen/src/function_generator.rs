@@ -89,7 +89,7 @@ fn insert_stack_load(
     rets: &'static [Type],
 ) -> Result<()> {
     let typevar = rets[0];
-    let slot = fgen.stack_slot_with_size(builder, typevar.bytes())?;
+    let slot = fgen.stack_slot_with_size(typevar.bytes())?;
     let slot_size = builder.func.sized_stack_slots[slot].size;
     let type_size = typevar.bytes();
     let offset = fgen.u.int_in_range(0..=(slot_size - type_size))? as i32;
@@ -109,7 +109,7 @@ fn insert_stack_store(
     _rets: &'static [Type],
 ) -> Result<()> {
     let typevar = args[0];
-    let slot = fgen.stack_slot_with_size(builder, typevar.bytes())?;
+    let slot = fgen.stack_slot_with_size(typevar.bytes())?;
     let slot_size = builder.func.sized_stack_slots[slot].size;
     let type_size = typevar.bytes();
     let offset = fgen.u.int_in_range(0..=(slot_size - type_size))? as i32;
@@ -504,12 +504,13 @@ where
 {
     u: &'r mut Unstructured<'data>,
     config: &'r Config,
-    vars: Vec<(Type, Variable)>,
+    vars: HashMap<Type, Vec<Variable>>,
     blocks: Vec<(Block, BlockSignature)>,
+    blocks_without_params: Vec<Block>,
     jump_tables: Vec<JumpTable>,
     func_refs: Vec<(Signature, FuncRef)>,
     next_func_index: u32,
-    static_stack_slots: Vec<StackSlot>,
+    static_stack_slots: Vec<(u32, StackSlot)>,
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -520,8 +521,9 @@ where
         Self {
             u,
             config,
-            vars: vec![],
+            vars: HashMap::new(),
             blocks: vec![],
+            blocks_without_params: vec![],
             jump_tables: vec![],
             func_refs: vec![],
             static_stack_slots: vec![],
@@ -592,38 +594,17 @@ where
     }
 
     /// Finds a stack slot with size of at least n bytes
-    fn stack_slot_with_size(&mut self, builder: &mut FunctionBuilder, n: u32) -> Result<StackSlot> {
-        let opts: Vec<_> = self
+    fn stack_slot_with_size(&mut self, n: u32) -> Result<StackSlot> {
+        let first = self
             .static_stack_slots
-            .iter()
-            .filter(|ss| builder.func.sized_stack_slots[**ss].size >= n)
-            .map(|ss| *ss)
-            .collect();
-
-        Ok(*self.u.choose(&opts[..])?)
-    }
-
-    /// Creates a new var
-    fn create_var(&mut self, builder: &mut FunctionBuilder, ty: Type) -> Result<Variable> {
-        let id = self.vars.len();
-        let var = Variable::new(id);
-        builder.declare_var(var, ty);
-        self.vars.push((ty, var));
-        Ok(var)
-    }
-
-    fn vars_of_type(&self, ty: Type) -> Vec<Variable> {
-        self.vars
-            .iter()
-            .filter(|(var_ty, _)| *var_ty == ty)
-            .map(|(_, v)| *v)
-            .collect()
+            .partition_point(|&(bytes, _slot)| bytes < n);
+        Ok(self.u.choose(&self.static_stack_slots[first..])?.1)
     }
 
     /// Get a variable of type `ty` from the current function
     fn get_variable_of_type(&mut self, ty: Type) -> Result<Variable> {
-        let opts = self.vars_of_type(ty);
-        let var = self.u.choose(&opts[..])?;
+        let opts = self.vars.get(&ty).map_or(&[][..], Vec::as_slice);
+        let var = self.u.choose(opts)?;
         Ok(*var)
     }
 
@@ -673,16 +654,6 @@ where
         Ok((block, args))
     }
 
-    /// Valid blocks for jump tables have to have no parameters in the signature, and must also
-    /// not be the first block.
-    fn generate_valid_jumptable_target_blocks(&mut self) -> Vec<Block> {
-        self.blocks[1..]
-            .iter()
-            .filter(|(_, sig)| sig.len() == 0)
-            .map(|(b, _)| *b)
-            .collect()
-    }
-
     fn generate_values_for_signature<I: Iterator<Item = Type>>(
         &mut self,
         builder: &mut FunctionBuilder,
@@ -719,8 +690,7 @@ where
         let var = self.get_variable_of_type(I32)?; // br_table only supports I32
         let val = builder.use_var(var);
 
-        let valid_blocks = self.generate_valid_jumptable_target_blocks();
-        let default_block = *self.u.choose(&valid_blocks[..])?;
+        let default_block = *self.u.choose(&self.blocks_without_params[..])?;
 
         let jt = *self.u.choose(&self.jump_tables[..])?;
         builder.ins().br_table(val, default_block, jt);
@@ -778,8 +748,7 @@ where
         let switch_var = self.get_variable_of_type(_type)?;
         let switch_val = builder.use_var(switch_var);
 
-        let valid_blocks = self.generate_valid_jumptable_target_blocks();
-        let default_block = *self.u.choose(&valid_blocks[..])?;
+        let default_block = *self.u.choose(&self.blocks_without_params[..])?;
 
         // Build this into a HashMap since we cannot have duplicate entries.
         let mut entries = HashMap::new();
@@ -800,7 +769,7 @@ where
             // Build the switch entries
             for i in 0..range_size {
                 let index = range_start.wrapping_add(i) % ty_max;
-                let block = *self.u.choose(&valid_blocks[..])?;
+                let block = *self.u.choose(&self.blocks_without_params[..])?;
                 entries.insert(index, block);
             }
         }
@@ -842,13 +811,11 @@ where
     }
 
     fn generate_jumptables(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let valid_blocks = self.generate_valid_jumptable_target_blocks();
-
         for _ in 0..self.param(&self.config.jump_tables_per_function)? {
             let mut jt_data = JumpTableData::new();
 
             for _ in 0..self.param(&self.config.jump_table_entries)? {
-                let block = *self.u.choose(&valid_blocks[..])?;
+                let block = *self.u.choose(&self.blocks_without_params[..])?;
                 jt_data.push_entry(block);
             }
 
@@ -898,8 +865,12 @@ where
             let ss_data = StackSlotData::new(StackSlotKind::ExplicitSlot, bytes);
             let slot = builder.create_sized_stack_slot(ss_data);
 
-            self.static_stack_slots.push(slot);
+            self.static_stack_slots.push((bytes, slot));
         }
+
+        self.static_stack_slots
+            .sort_unstable_by_key(|&(bytes, _slot)| bytes);
+
         Ok(())
     }
 
@@ -911,8 +882,7 @@ where
         let i16_zero = builder.ins().iconst(I16, 0);
         let i8_zero = builder.ins().iconst(I8, 0);
 
-        for &slot in self.static_stack_slots.iter() {
-            let init_size = builder.func.sized_stack_slots[slot].size;
+        for &(init_size, slot) in self.static_stack_slots.iter() {
             let mut size = init_size;
 
             // Insert the largest available store for the remaining size.
@@ -944,7 +914,7 @@ where
         // the entry block.
         let block_count = 1 + extra_block_count;
 
-        let blocks = (0..block_count)
+        (0..block_count)
             .map(|i| {
                 let is_entry = i == 0;
                 let block = builder.create_block();
@@ -969,9 +939,7 @@ where
                     Ok((block, sig))
                 }
             })
-            .collect::<Result<Vec<_>>>()?;
-
-        Ok(blocks)
+            .collect()
     }
 
     fn generate_block_signature(&mut self) -> Result<BlockSignature> {
@@ -986,21 +954,29 @@ where
 
     fn build_variable_pool(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
         let block = builder.current_block().unwrap();
-        let func_params = builder.func.signature.params.clone();
 
         // Define variables for the function signature
-        for (i, param) in func_params.iter().enumerate() {
-            let var = self.create_var(builder, param.value_type)?;
-            let block_param = builder.block_params(block)[i];
-            builder.def_var(var, block_param);
-        }
+        let mut vars: Vec<_> = builder
+            .func
+            .signature
+            .params
+            .iter()
+            .map(|param| param.value_type)
+            .zip(builder.block_params(block).iter().copied())
+            .collect();
 
         // Create a pool of vars that are going to be used in this function
         for _ in 0..self.param(&self.config.vars_per_function)? {
             let ty = self.generate_type()?;
-            let var = self.create_var(builder, ty)?;
             let value = self.generate_const(builder, ty)?;
+            vars.push((ty, value));
+        }
+
+        for (id, (ty, value)) in vars.into_iter().enumerate() {
+            let var = Variable::new(id);
+            builder.declare_var(var, ty);
             builder.def_var(var, value);
+            self.vars.entry(ty).or_insert_with(Vec::new).push(var);
         }
 
         Ok(())
@@ -1024,6 +1000,14 @@ where
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
         self.blocks = self.generate_blocks(&mut builder, &sig)?;
+
+        // Valid blocks for jump tables have to have no parameters in the signature, and must also
+        // not be the first block.
+        self.blocks_without_params = self.blocks[1..]
+            .iter()
+            .filter(|(_, sig)| sig.len() == 0)
+            .map(|(b, _)| *b)
+            .collect();
 
         // Function preamble
         self.generate_jumptables(&mut builder)?;
