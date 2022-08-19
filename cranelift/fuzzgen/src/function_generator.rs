@@ -70,7 +70,7 @@ fn insert_call(
     _rets: &'static [Type],
 ) -> Result<()> {
     assert_eq!(opcode, Opcode::Call, "only call handled at the moment");
-    let (sig, func_ref) = fgen.u.choose(&fgen.func_refs)?.clone();
+    let (sig, func_ref) = fgen.u.choose(&fgen.resources.func_refs)?.clone();
 
     let actuals = fgen.generate_values_for_signature(
         builder,
@@ -504,12 +504,17 @@ where
 {
     u: &'r mut Unstructured<'data>,
     config: &'r Config,
+    resources: Resources,
+}
+
+#[derive(Default)]
+struct Resources {
     vars: HashMap<Type, Vec<Variable>>,
     blocks: Vec<(Block, BlockSignature)>,
     blocks_without_params: Vec<Block>,
     jump_tables: Vec<JumpTable>,
     func_refs: Vec<(Signature, FuncRef)>,
-    static_stack_slots: Vec<(u32, StackSlot)>,
+    stack_slots: Vec<(u32, StackSlot)>,
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -520,12 +525,7 @@ where
         Self {
             u,
             config,
-            vars: HashMap::new(),
-            blocks: vec![],
-            blocks_without_params: vec![],
-            jump_tables: vec![],
-            func_refs: vec![],
-            static_stack_slots: vec![],
+            resources: Resources::default(),
         }
     }
 
@@ -594,14 +594,15 @@ where
     /// Finds a stack slot with size of at least n bytes
     fn stack_slot_with_size(&mut self, n: u32) -> Result<StackSlot> {
         let first = self
-            .static_stack_slots
+            .resources
+            .stack_slots
             .partition_point(|&(bytes, _slot)| bytes < n);
-        Ok(self.u.choose(&self.static_stack_slots[first..])?.1)
+        Ok(self.u.choose(&self.resources.stack_slots[first..])?.1)
     }
 
     /// Get a variable of type `ty` from the current function
     fn get_variable_of_type(&mut self, ty: Type) -> Result<Variable> {
-        let opts = self.vars.get(&ty).map_or(&[][..], Vec::as_slice);
+        let opts = self.resources.vars.get(&ty).map_or(&[][..], Vec::as_slice);
         let var = self.u.choose(opts)?;
         Ok(*var)
     }
@@ -646,7 +647,7 @@ where
         &mut self,
         builder: &mut FunctionBuilder,
     ) -> Result<(Block, Vec<Value>)> {
-        let block_targets = &self.blocks[1..];
+        let block_targets = &self.resources.blocks[1..];
         let (block, signature) = self.u.choose(block_targets)?.clone();
         let args = self.generate_values_for_signature(builder, signature.into_iter())?;
         Ok((block, args))
@@ -688,9 +689,9 @@ where
         let var = self.get_variable_of_type(I32)?; // br_table only supports I32
         let val = builder.use_var(var);
 
-        let default_block = *self.u.choose(&self.blocks_without_params[..])?;
+        let default_block = *self.u.choose(&self.resources.blocks_without_params)?;
 
-        let jt = *self.u.choose(&self.jump_tables[..])?;
+        let jt = *self.u.choose(&self.resources.jump_tables)?;
         builder.ins().br_table(val, default_block, jt);
         Ok(())
     }
@@ -746,7 +747,7 @@ where
         let switch_var = self.get_variable_of_type(_type)?;
         let switch_val = builder.use_var(switch_var);
 
-        let default_block = *self.u.choose(&self.blocks_without_params[..])?;
+        let default_block = *self.u.choose(&self.resources.blocks_without_params)?;
 
         // Build this into a HashMap since we cannot have duplicate entries.
         let mut entries = HashMap::new();
@@ -767,7 +768,7 @@ where
             // Build the switch entries
             for i in 0..range_size {
                 let index = range_start.wrapping_add(i) % ty_max;
-                let block = *self.u.choose(&self.blocks_without_params[..])?;
+                let block = *self.u.choose(&self.resources.blocks_without_params)?;
                 entries.insert(index, block);
             }
         }
@@ -813,11 +814,13 @@ where
             let mut jt_data = JumpTableData::new();
 
             for _ in 0..self.param(&self.config.jump_table_entries)? {
-                let block = *self.u.choose(&self.blocks_without_params[..])?;
+                let block = *self.u.choose(&self.resources.blocks_without_params)?;
                 jt_data.push_entry(block);
             }
 
-            self.jump_tables.push(builder.create_jump_table(jt_data));
+            self.resources
+                .jump_tables
+                .push(builder.create_jump_table(jt_data));
         }
         Ok(())
     }
@@ -850,7 +853,7 @@ where
                 colocated: self.u.arbitrary()?,
             });
 
-            self.func_refs.push((sig, func_ref));
+            self.resources.func_refs.push((sig, func_ref));
         }
 
         Ok(())
@@ -862,10 +865,11 @@ where
             let ss_data = StackSlotData::new(StackSlotKind::ExplicitSlot, bytes);
             let slot = builder.create_sized_stack_slot(ss_data);
 
-            self.static_stack_slots.push((bytes, slot));
+            self.resources.stack_slots.push((bytes, slot));
         }
 
-        self.static_stack_slots
+        self.resources
+            .stack_slots
             .sort_unstable_by_key(|&(bytes, _slot)| bytes);
 
         Ok(())
@@ -879,7 +883,7 @@ where
         let i16_zero = builder.ins().iconst(I16, 0);
         let i8_zero = builder.ins().iconst(I8, 0);
 
-        for &(init_size, slot) in self.static_stack_slots.iter() {
+        for &(init_size, slot) in self.resources.stack_slots.iter() {
             let mut size = init_size;
 
             // Insert the largest available store for the remaining size.
@@ -973,7 +977,11 @@ where
             let var = Variable::new(id);
             builder.declare_var(var, ty);
             builder.def_var(var, value);
-            self.vars.entry(ty).or_insert_with(Vec::new).push(var);
+            self.resources
+                .vars
+                .entry(ty)
+                .or_insert_with(Vec::new)
+                .push(var);
         }
 
         Ok(())
@@ -996,11 +1004,11 @@ where
 
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
-        self.blocks = self.generate_blocks(&mut builder, &sig)?;
+        self.resources.blocks = self.generate_blocks(&mut builder, &sig)?;
 
         // Valid blocks for jump tables have to have no parameters in the signature, and must also
         // not be the first block.
-        self.blocks_without_params = self.blocks[1..]
+        self.resources.blocks_without_params = self.resources.blocks[1..]
             .iter()
             .filter(|(_, sig)| sig.len() == 0)
             .map(|(b, _)| *b)
@@ -1012,7 +1020,7 @@ where
         self.generate_stack_slots(&mut builder)?;
 
         // Main instruction generation loop
-        for (i, (block, block_sig)) in self.blocks.clone().iter().enumerate() {
+        for (i, (block, block_sig)) in self.resources.blocks.clone().iter().enumerate() {
             let is_block0 = i == 0;
             builder.switch_to_block(*block);
 
