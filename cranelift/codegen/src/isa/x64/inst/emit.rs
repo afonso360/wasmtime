@@ -1300,6 +1300,19 @@ pub(crate) fn emit(
             sink.put4(0x0);
         }
 
+        Inst::JmpIfRelOffset { cc, offset } => {
+            assert!(
+                *offset >= -128 && *offset <= 127,
+                "Only Short jumps available for JmpIfRelOffset"
+            );
+            // Encode a Short jump
+            // A near jump where the jump range is limited to -128 to +127 from the current EIP value.
+
+            let offset = (*offset as i8) as u8;
+            sink.put1(0x70 + cc.get_enc());
+            sink.put1(offset);
+        }
+
         Inst::JmpCond {
             cc,
             taken,

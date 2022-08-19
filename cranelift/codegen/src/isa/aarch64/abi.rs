@@ -9,6 +9,7 @@ use crate::ir::{ExternalName, LibCall, Signature};
 use crate::isa;
 use crate::isa::aarch64::{inst::EmitState, inst::*, settings as aarch64_settings};
 use crate::isa::unwind::UnwindInst;
+use crate::isa::CallConv;
 use crate::machinst::*;
 use crate::settings;
 use crate::{CodegenError, CodegenResult};
@@ -616,7 +617,11 @@ impl ABIMachineSpec for AArch64MachineDeps {
         smallvec![]
     }
 
-    fn gen_inline_probestack(_frame_size: u32, _guard_size: u32) -> SmallInstVec<Self::I> {
+    fn gen_inline_probestack(
+        _call_conv: CallConv,
+        _frame_size: u32,
+        _guard_size: u32,
+    ) -> SmallInstVec<Self::I> {
         unimplemented!("Inline stack probing is unimplemented on AArch64");
     }
 

@@ -82,6 +82,7 @@ impl Inst {
             | Inst::Imm { .. }
             | Inst::JmpCond { .. }
             | Inst::JmpIf { .. }
+            | Inst::JmpIfRelOffset { .. }
             | Inst::JmpKnown { .. }
             | Inst::JmpTableSeq { .. }
             | Inst::JmpUnknown { .. }
@@ -623,6 +624,10 @@ impl Inst {
     pub(crate) fn jmp_unknown(target: RegMem) -> Inst {
         target.assert_regclass_is(RegClass::Int);
         Inst::JmpUnknown { target }
+    }
+
+    pub(crate) fn jmp_if_rel_offset(cc: CC, offset: i32) -> Inst {
+        Inst::JmpIfRelOffset { cc, offset }
     }
 
     pub(crate) fn trap_if(cc: CC, trap_code: TrapCode) -> Inst {
@@ -1506,6 +1511,10 @@ impl PrettyPrint for Inst {
                 taken.to_string(),
             ),
 
+            Inst::JmpIfRelOffset { cc, offset } => {
+                format!("{} ${}", ljustify2("j".to_string(), cc.to_string()), offset)
+            }
+
             Inst::JmpCond {
                 cc,
                 taken,
@@ -2051,6 +2060,7 @@ fn x64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut OperandCol
 
         Inst::JmpKnown { .. }
         | Inst::JmpIf { .. }
+        | Inst::JmpIfRelOffset { .. }
         | Inst::JmpCond { .. }
         | Inst::Nop { .. }
         | Inst::TrapIf { .. }

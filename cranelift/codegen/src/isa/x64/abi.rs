@@ -398,15 +398,44 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         insts
     }
 
-    fn gen_inline_probestack(frame_size: u32, guard_size: u32) -> SmallInstVec<Self::I> {
+    fn gen_inline_probestack(
+        call_conv: CallConv,
+        frame_size: u32,
+        guard_size: u32,
+    ) -> SmallInstVec<Self::I> {
         // Number of probes that we need to perform
         let probe_count = align_to(frame_size, guard_size) / guard_size;
 
-        // TODO: CHECK CallConv
-        let tmp_reg = regs::r11();
+        // We have to use a callee saved register since clobbering only happens
+        // after stack probing.
+        //
+        // R12 is callee saved on both Fastcall and SystemV
+        let tmp_reg = regs::r12();
+        assert!(
+            call_conv.extends_windows_fastcall() || call_conv == CallConv::SystemV,
+            "Unsupported calling convention ({:?}) for inline stack probing",
+            call_conv
+        );
 
         let mut insts = SmallVec::new();
 
+        // The inline stack probe loop has 3 phases
+        //
+        // We generate the "guard area" register which is essentially the framze_size aligned to
+        // guard_size. We copy the stack pointer and and subtract the guard area from it. This
+        // gets us a register that we can use to compare when looping.
+        //
+        // After that we emit the loop, Essentially we just adjust the stack pointer one guard_size'd
+        // distance at a time and then touch the stack by writing anything to it. We use the previously
+        // created "guard area" register to know when to stop looping.
+        //
+        // When we have touched all the pages that we need, we have to restore the stack pointer
+        // to where it was before.
+        //
+        // If you are editing this code, make sure to manually update the jump offset below
+        // We don't have relocations/labels on this part of the pipeline, so we need
+        // to manually do the offsets.
+        //
         // Generate the following code:
         //         mov  tmp_reg, rsp
         //         sub  tmp_reg, GUARD_SIZE * probe_count
@@ -418,11 +447,13 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         //         add  rsp, GUARD_SIZE * probe_count
 
         // Create the guard bound register
+        // mov  tmp_reg, rsp
         insts.push(Inst::gen_move(
             Writable::from_reg(tmp_reg),
             regs::rsp(),
             I64,
         ));
+        // sub  tmp_reg, GUARD_SIZE * probe_count
         insts.push(Inst::alu_rmi_r(
             OperandSize::Size64,
             AluRmiROpcode::Sub,
@@ -430,6 +461,8 @@ impl ABIMachineSpec for X64ABIMachineSpec {
             Writable::from_reg(tmp_reg),
         ));
 
+        // Emit the main loop!
+        // sub  rsp, GUARD_SIZE
         insts.push(Inst::alu_rmi_r(
             OperandSize::Size64,
             AluRmiROpcode::Sub,
@@ -438,7 +471,9 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         ));
 
         // TODO: `mov [rsp], 0` would be better, but we don't have that instruction
-        // Probe the stack!
+        // Probe the stack! We don't use Inst::gen_store_stack here because we need a predictable
+        // instruction size.
+        // mov  [rsp], rsp
         insts.push(Inst::mov_r_m(
             OperandSize::Size64,
             regs::rsp(),
@@ -446,15 +481,23 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         ));
 
         // Compare and jump if we are not done yet
+        // cmp  rsp, tmp_reg
         insts.push(Inst::cmp_rmi_r(
             OperandSize::Size64,
             RegMemImm::reg(regs::rsp()),
             tmp_reg,
         ));
-        // insts.push(jump!)
+
+        // jne  .loop_start
+        let loop_size = 7 + // sub
+            4 + // mov
+            3 + // cmp
+            2; // jmp
+        insts.push(Inst::jmp_if_rel_offset(CC::NZ, -loop_size));
 
         // The regular prologue code is going to emit a `sub` after this, so we need to
         // reset the stack pointer
+        //
         // TODO: It would be better if we could avoid the `add` + `sub` that is generated here
         // and in the stack adj portion of the prologue
         //

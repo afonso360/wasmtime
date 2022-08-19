@@ -75,6 +75,7 @@ use crate::ir::Type;
 use crate::isa;
 use crate::isa::s390x::{inst::*, settings as s390x_settings};
 use crate::isa::unwind::UnwindInst;
+use crate::isa::CallConv;
 use crate::machinst::*;
 use crate::machinst::{RealReg, Reg, RegClass, Writable};
 use crate::settings;
@@ -574,7 +575,11 @@ impl ABIMachineSpec for S390xMachineDeps {
         smallvec![]
     }
 
-    fn gen_inline_probestack(_frame_size: u32, _guard_size: u32) -> SmallInstVec<Self::I> {
+    fn gen_inline_probestack(
+        _call_conv: CallConv,
+        _frame_size: u32,
+        _guard_size: u32,
+    ) -> SmallInstVec<Self::I> {
         unimplemented!("Inline stack probing is unimplemented on S390x");
     }
 

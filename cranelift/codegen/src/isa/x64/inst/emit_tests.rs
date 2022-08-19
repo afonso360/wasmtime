@@ -3490,6 +3490,15 @@ fn test_x64_emit() {
     // JmpCondCompound isn't a real instruction
 
     // ========================================================
+    // JmpIfRelOffset
+    insns.push((Inst::jmp_if_rel_offset(CC::NZ, 55), "7537", "jnz     $55"));
+    insns.push((
+        Inst::jmp_if_rel_offset(CC::O, -100),
+        "709C",
+        "jo      $-100",
+    ));
+
+    // ========================================================
     // JmpUnknown
     insns.push((Inst::jmp_unknown(RegMem::reg(rbp)), "FFE5", "jmp     *%rbp"));
     insns.push((
