@@ -35,13 +35,9 @@ block0:
 
 ;   pushq   %rbp
 ;   movq    %rsp, %rbp
-;   movq    %rsp, %r12
-;   subq    %r12, $12288, %r12
-;   subq    %rsp, $4096, %rsp
-;   movq    %rsp, 0(%rsp)
-;   cmpq    %rsp, %r12
-;   jnz     $-16
-;   addq    %rsp, $12288, %rsp
+;   movl    %esp, -4096(%rsp)
+;   movl    %esp, -8192(%rsp)
+;   movl    %esp, -12288(%rsp)
 ;   subq    %rsp, $12288, %rsp
 ; block0:
 ;   lea     rsp(0 + virtual offset), %rax
@@ -60,12 +56,12 @@ block0:
 
 ;   pushq   %rbp
 ;   movq    %rsp, %rbp
-;   movq    %rsp, %r12
-;   subq    %r12, $102400, %r12
+;   movq    %rsp, %r11
+;   subq    %r11, $102400, %r11
 ;   subq    %rsp, $4096, %rsp
-;   movq    %rsp, 0(%rsp)
-;   cmpq    %rsp, %r12
-;   jnz     $-16
+;   movl    %esp, 0(%rsp)
+;   cmpq    %rsp, %r11
+;   jnz     $-15
 ;   addq    %rsp, $102400, %rsp
 ;   subq    %rsp, $100000, %rsp
 ; block0:
@@ -74,3 +70,4 @@ block0:
 ;   movq    %rbp, %rsp
 ;   popq    %rbp
 ;   ret
+

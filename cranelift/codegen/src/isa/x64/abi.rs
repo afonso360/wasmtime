@@ -29,6 +29,130 @@ pub(crate) type X64Caller = Caller<X64ABIMachineSpec>;
 /// Implementation of ABI primitives for x64.
 pub struct X64ABIMachineSpec;
 
+impl X64ABIMachineSpec {
+    fn gen_probestack_unroll(guard_size: u32, probe_count: u32) -> SmallInstVec<Inst> {
+        let mut insts = SmallVec::with_capacity(probe_count as usize);
+        for i in 0..probe_count {
+            let offset = (guard_size * (i + 1)) as i64;
+
+            // TODO: It would be nice if we could store the imm 0, but we don't have insts for those
+            // so store the stack pointer. Any register will do, since the stack is undefined at this point
+            insts.push(Self::gen_store_stack(
+                StackAMode::SPOffset(-offset, I8),
+                regs::rsp(),
+                I32,
+            ));
+        }
+        insts
+    }
+    fn gen_probestack_loop(guard_size: u32, probe_count: u32) -> SmallInstVec<Inst> {
+        // We have to use a caller saved register since clobbering only happens
+        // after stack probing.
+        //
+        // R11 is caller saved on both Fastcall and SystemV, and not used for argument
+        // passing, so it's pretty much free. It is also not used by the stacklimit mechanism.
+        let tmp_reg = regs::r11();
+        debug_assert!({
+            let real_reg = tmp_reg.to_real_reg().unwrap();
+            !is_callee_save_systemv(real_reg, false) && !is_callee_save_fastcall(real_reg, false)
+        });
+
+        let mut insts = SmallVec::with_capacity(7);
+
+        // The inline stack probe loop has 3 phases
+        //
+        // We generate the "guard area" register which is essentially the framze_size aligned to
+        // guard_size. We copy the stack pointer and and subtract the guard area from it. This
+        // gets us a register that we can use to compare when looping.
+        //
+        // After that we emit the loop, Essentially we just adjust the stack pointer one guard_size'd
+        // distance at a time and then touch the stack by writing anything to it. We use the previously
+        // created "guard area" register to know when to stop looping.
+        //
+        // When we have touched all the pages that we need, we have to restore the stack pointer
+        // to where it was before.
+        //
+        // If you are editing this code, make sure to manually update the jump offset below
+        // We don't have relocations/labels on this part of the pipeline, so we need
+        // to manually do the offsets.
+        //
+        // Generate the following code:
+        //         mov  tmp_reg, rsp
+        //         sub  tmp_reg, GUARD_SIZE * probe_count
+        // .loop:
+        //         sub  rsp, GUARD_SIZE
+        //         mov  [rsp], 0
+        //         cmp  rsp, tmp_reg
+        //         jne  .loop
+        //         add  rsp, GUARD_SIZE * probe_count
+
+        // Create the guard bound register
+        // mov  tmp_reg, rsp
+        insts.push(Inst::gen_move(
+            Writable::from_reg(tmp_reg),
+            regs::rsp(),
+            I64,
+        ));
+        // sub  tmp_reg, GUARD_SIZE * probe_count
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Sub,
+            RegMemImm::imm(guard_size * probe_count),
+            Writable::from_reg(tmp_reg),
+        ));
+
+        // Emit the main loop!
+        // sub  rsp, GUARD_SIZE
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Sub,
+            RegMemImm::imm(guard_size),
+            Writable::from_reg(regs::rsp()),
+        ));
+
+        // TODO: `mov [rsp], 0` would be better, but we don't have that instruction
+        // Probe the stack! We don't use Inst::gen_store_stack here because we need a predictable
+        // instruction size.
+        // mov  [rsp], rsp
+        insts.push(Inst::mov_r_m(
+            OperandSize::Size32, // Use Size32 since it saves us one byte
+            regs::rsp(),
+            SyntheticAmode::Real(Amode::imm_reg(0, regs::rsp())),
+        ));
+
+        // Compare and jump if we are not done yet
+        // cmp  rsp, tmp_reg
+        insts.push(Inst::cmp_rmi_r(
+            OperandSize::Size64,
+            RegMemImm::reg(regs::rsp()),
+            tmp_reg,
+        ));
+
+        // jne  .loop_start
+        let loop_size = 7 + // sub
+            3 + // mov
+            3 + // cmp
+            2; // jmp
+        insts.push(Inst::jmp_if_rel_offset(CC::NZ, -loop_size));
+
+        // The regular prologue code is going to emit a `sub` after this, so we need to
+        // reset the stack pointer
+        //
+        // TODO: It would be better if we could avoid the `add` + `sub` that is generated here
+        // and in the stack adj portion of the prologue
+        //
+        // add rsp, GUARD_SIZE * probe_count
+        insts.push(Inst::alu_rmi_r(
+            OperandSize::Size64,
+            AluRmiROpcode::Add,
+            RegMemImm::imm(guard_size * probe_count),
+            Writable::from_reg(regs::rsp()),
+        ));
+
+        insts
+    }
+}
+
 impl IsaFlags for x64_settings::Flags {}
 
 impl ABIMachineSpec for X64ABIMachineSpec {
@@ -398,118 +522,21 @@ impl ABIMachineSpec for X64ABIMachineSpec {
         insts
     }
 
-    fn gen_inline_probestack(
-        call_conv: CallConv,
-        frame_size: u32,
-        guard_size: u32,
-    ) -> SmallInstVec<Self::I> {
+    fn gen_inline_probestack(frame_size: u32, guard_size: u32) -> SmallInstVec<Self::I> {
+        // Unroll at most n consecutive probes, before falling back to using a loop
+        //
+        // This was number was picked because the loop version is 32 bytes long. We can fit
+        // 4 inline probes in that space, so unroll if its beneficial in terms of code size.
+        const PROBE_MAX_UNROLL: u32 = 4;
+
         // Number of probes that we need to perform
         let probe_count = align_to(frame_size, guard_size) / guard_size;
 
-        // We have to use a callee saved register since clobbering only happens
-        // after stack probing.
-        //
-        // R12 is callee saved on both Fastcall and SystemV
-        let tmp_reg = regs::r12();
-        assert!(
-            call_conv.extends_windows_fastcall() || call_conv == CallConv::SystemV,
-            "Unsupported calling convention ({:?}) for inline stack probing",
-            call_conv
-        );
-
-        let mut insts = SmallVec::new();
-
-        // The inline stack probe loop has 3 phases
-        //
-        // We generate the "guard area" register which is essentially the framze_size aligned to
-        // guard_size. We copy the stack pointer and and subtract the guard area from it. This
-        // gets us a register that we can use to compare when looping.
-        //
-        // After that we emit the loop, Essentially we just adjust the stack pointer one guard_size'd
-        // distance at a time and then touch the stack by writing anything to it. We use the previously
-        // created "guard area" register to know when to stop looping.
-        //
-        // When we have touched all the pages that we need, we have to restore the stack pointer
-        // to where it was before.
-        //
-        // If you are editing this code, make sure to manually update the jump offset below
-        // We don't have relocations/labels on this part of the pipeline, so we need
-        // to manually do the offsets.
-        //
-        // Generate the following code:
-        //         mov  tmp_reg, rsp
-        //         sub  tmp_reg, GUARD_SIZE * probe_count
-        // .loop:
-        //         sub  rsp, GUARD_SIZE
-        //         mov  [rsp], 0
-        //         cmp  rsp, tmp_reg
-        //         jne  .loop
-        //         add  rsp, GUARD_SIZE * probe_count
-
-        // Create the guard bound register
-        // mov  tmp_reg, rsp
-        insts.push(Inst::gen_move(
-            Writable::from_reg(tmp_reg),
-            regs::rsp(),
-            I64,
-        ));
-        // sub  tmp_reg, GUARD_SIZE * probe_count
-        insts.push(Inst::alu_rmi_r(
-            OperandSize::Size64,
-            AluRmiROpcode::Sub,
-            RegMemImm::imm(guard_size * probe_count),
-            Writable::from_reg(tmp_reg),
-        ));
-
-        // Emit the main loop!
-        // sub  rsp, GUARD_SIZE
-        insts.push(Inst::alu_rmi_r(
-            OperandSize::Size64,
-            AluRmiROpcode::Sub,
-            RegMemImm::imm(guard_size),
-            Writable::from_reg(regs::rsp()),
-        ));
-
-        // TODO: `mov [rsp], 0` would be better, but we don't have that instruction
-        // Probe the stack! We don't use Inst::gen_store_stack here because we need a predictable
-        // instruction size.
-        // mov  [rsp], rsp
-        insts.push(Inst::mov_r_m(
-            OperandSize::Size64,
-            regs::rsp(),
-            SyntheticAmode::Real(Amode::imm_reg(0, regs::rsp())),
-        ));
-
-        // Compare and jump if we are not done yet
-        // cmp  rsp, tmp_reg
-        insts.push(Inst::cmp_rmi_r(
-            OperandSize::Size64,
-            RegMemImm::reg(regs::rsp()),
-            tmp_reg,
-        ));
-
-        // jne  .loop_start
-        let loop_size = 7 + // sub
-            4 + // mov
-            3 + // cmp
-            2; // jmp
-        insts.push(Inst::jmp_if_rel_offset(CC::NZ, -loop_size));
-
-        // The regular prologue code is going to emit a `sub` after this, so we need to
-        // reset the stack pointer
-        //
-        // TODO: It would be better if we could avoid the `add` + `sub` that is generated here
-        // and in the stack adj portion of the prologue
-        //
-        // add rsp, GUARD_SIZE * probe_count
-        insts.push(Inst::alu_rmi_r(
-            OperandSize::Size64,
-            AluRmiROpcode::Add,
-            RegMemImm::imm(guard_size * probe_count),
-            Writable::from_reg(regs::rsp()),
-        ));
-
-        insts
+        if probe_count <= PROBE_MAX_UNROLL {
+            Self::gen_probestack_unroll(guard_size, probe_count)
+        } else {
+            Self::gen_probestack_loop(guard_size, probe_count)
+        }
     }
 
     fn gen_clobber_save(

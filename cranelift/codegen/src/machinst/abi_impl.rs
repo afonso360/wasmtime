@@ -105,7 +105,7 @@ use super::abi::*;
 use crate::binemit::StackMap;
 use crate::ir::types::*;
 use crate::ir::{ArgumentExtension, ArgumentPurpose, DynamicStackSlot, Signature, StackSlot};
-use crate::isa::{CallConv, TargetIsa};
+use crate::isa::TargetIsa;
 use crate::settings;
 use crate::CodegenResult;
 use crate::{ir, isa};
@@ -427,11 +427,7 @@ pub trait ABIMachineSpec {
     fn gen_probestack(_frame_size: u32) -> SmallInstVec<Self::I>;
 
     /// Generate a inline stack probe.
-    fn gen_inline_probestack(
-        _call_conv: CallConv,
-        _frame_size: u32,
-        _guard_size: u32,
-    ) -> SmallInstVec<Self::I>;
+    fn gen_inline_probestack(_frame_size: u32, _guard_size: u32) -> SmallInstVec<Self::I>;
 
     /// Get all clobbered registers that are callee-saved according to the ABI; the result
     /// contains the registers in a sorted order.
@@ -1530,7 +1526,7 @@ impl<M: ABIMachineSpec> Callee<M> {
             if needs_probestack {
                 insts.extend(if self.flags.enable_inline_probestack() {
                     let guard_size = 1 << self.flags.probestack_size_log2();
-                    M::gen_inline_probestack(self.call_conv, total_stacksize, guard_size)
+                    M::gen_inline_probestack(total_stacksize, guard_size)
                 } else {
                     M::gen_probestack(total_stacksize)
                 });
