@@ -225,12 +225,6 @@ pub struct Parser<'a> {
     /// Comments collected so far.
     comments: Vec<Comment<'a>>,
 
-    /// Maps inlined external names to a ref value, so they can be declared before parsing the rest
-    /// of the function later.
-    ///
-    /// This maintains backward compatibility with previous ways for declaring external names.
-    predeclared_external_names: PrimaryMap<UserExternalNameRef, ir::UserExternalName>,
-
     /// Default calling conventions; used when none is specified.
     default_calling_convention: CallConv,
 }
@@ -242,6 +236,12 @@ struct Context {
 
     /// Aliases to resolve once value definitions are known.
     aliases: Vec<Value>,
+
+    /// Maps inlined external names to a ref value, so they can be declared before parsing the rest
+    /// of the function later.
+    ///
+    /// This maintains backward compatibility with previous ways for declaring external names.
+    predeclared_external_names: PrimaryMap<UserExternalNameRef, ir::UserExternalName>,
 }
 
 impl Context {
@@ -250,6 +250,7 @@ impl Context {
             function: f,
             map: SourceMap::new(),
             aliases: Vec::new(),
+            predeclared_external_names: PrimaryMap::default(),
         }
     }
 
@@ -514,7 +515,6 @@ impl<'a> Parser<'a> {
             gathered_comments: Vec::new(),
             comments: Vec::new(),
             default_calling_convention: CallConv::Fast,
-            predeclared_external_names: Default::default(),
         }
     }
 
@@ -1315,9 +1315,7 @@ impl<'a> Parser<'a> {
         self.claim_gathered_comments(AnyEntity::Function);
 
         // Claim all the declared user-defined function names.
-        for (user_func_ref, user_external_name) in
-            std::mem::take(&mut self.predeclared_external_names)
-        {
+        for (user_func_ref, user_external_name) in ctx.predeclared_external_names {
             let actual_ref = ctx
                 .function
                 .declare_imported_user_function(user_external_name);
@@ -1377,7 +1375,7 @@ impl<'a> Parser<'a> {
     //
     // fn0 = * name signature
     //
-    fn parse_external_name(&mut self) -> ParseResult<ExternalName> {
+    fn parse_external_name(&mut self, ctx: &mut Context) -> ParseResult<ExternalName> {
         match self.token() {
             Some(Token::Name(s)) => {
                 self.consume();
@@ -1406,7 +1404,7 @@ impl<'a> Parser<'a> {
                             // Deduplicate the reference (O(n), but should be fine for tests),
                             // to follow `FunctionParameters::declare_imported_user_function`,
                             // otherwise this will cause ref mismatches when asserted below.
-                            let name_ref = self
+                            let name_ref = ctx
                                 .predeclared_external_names
                                 .iter()
                                 .find_map(|(reff, name)| {
@@ -1417,7 +1415,7 @@ impl<'a> Parser<'a> {
                                     }
                                 })
                                 .unwrap_or_else(|| {
-                                    self.predeclared_external_names
+                                    ctx.predeclared_external_names
                                         .push(ir::UserExternalName { namespace, index })
                                 });
 
@@ -1550,7 +1548,7 @@ impl<'a> Parser<'a> {
                 }
                 Some(Token::GlobalValue(..)) => {
                     self.start_gathering_comments();
-                    self.parse_global_value_decl()
+                    self.parse_global_value_decl(ctx)
                         .and_then(|(gv, dat)| ctx.add_gv(gv, dat, self.loc))
                 }
                 Some(Token::Heap(..)) => {
@@ -1669,7 +1667,10 @@ impl<'a> Parser<'a> {
     //                   | "symbol" ["colocated"] name + imm64
     //                   | "dyn_scale_target_const" "." type
     //
-    fn parse_global_value_decl(&mut self) -> ParseResult<(GlobalValue, GlobalValueData)> {
+    fn parse_global_value_decl(
+        &mut self,
+        ctx: &mut Context,
+    ) -> ParseResult<(GlobalValue, GlobalValueData)> {
         let gv = self.match_gv("expected global value number: gv«n»")?;
 
         self.match_token(Token::Equal, "expected '=' in global value declaration")?;
@@ -1717,7 +1718,7 @@ impl<'a> Parser<'a> {
             "symbol" => {
                 let colocated = self.optional(Token::Identifier("colocated"));
                 let tls = self.optional(Token::Identifier("tls"));
-                let name = self.parse_external_name()?;
+                let name = self.parse_external_name(ctx)?;
                 let offset = self.optional_offset_imm64()?;
                 GlobalValueData::Symbol {
                     name,
@@ -1917,7 +1918,7 @@ impl<'a> Parser<'a> {
         let colocated = self.optional(Token::Identifier("colocated"));
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] * name function-decl-sig
-        let name = self.parse_external_name()?;
+        let name = self.parse_external_name(ctx)?;
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] name * function-decl-sig
         let data = match self.token() {
