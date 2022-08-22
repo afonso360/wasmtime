@@ -27,6 +27,9 @@ use cranelift_codegen::isa::{self, CallConv};
 use cranelift_codegen::packed_option::ReservedValue;
 use cranelift_codegen::{settings, settings::Configurable, timing};
 use smallvec::SmallVec;
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+use std::fmt;
 use std::mem;
 use std::str::FromStr;
 use std::{u16, u32};
@@ -80,6 +83,14 @@ macro_rules! match_imm {
 /// After some quick benchmarks a program should never have more than 100,000 blocks.
 const MAX_BLOCKS_IN_A_FUNCTION: u32 = 100_000;
 
+/// Namespace to use when renaming test functions into user name functions
+///
+/// Using 0 / 1 is not ideal since it has a high chance of colliding with other functions defined
+/// in the same test file.
+///
+/// This value should pretty much never be presented to the user.
+const TESTCASE_NAMESPACE: u32 = 0x7E57_CA5E;
+
 /// Represents a name that was parsed. Some variants need further translation before being suitable
 /// for use in a [Function]
 enum ParsedExternalName<'a> {
@@ -91,6 +102,25 @@ enum ParsedExternalName<'a> {
 
     /// A [ExternalName] that needs no further translation.
     ExternalName(ExternalName),
+}
+
+/// A function name that exists in a Clif file.
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+enum ClifFunctionName<'a> {
+    /// A test case name such as `%test123`
+    TestCase(&'a str),
+
+    /// A user name  
+    User(UserExternalName),
+}
+
+impl<'a> fmt::Display for ClifFunctionName<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ClifFunctionName::User(u) => write!(f, "{}", u),
+            ClifFunctionName::TestCase(t) => write!(f, "{}", t),
+        }
+    }
 }
 
 /// Parse the entire `text` into a list of functions.
@@ -169,6 +199,7 @@ pub fn parse_test<'a>(text: &'a str, options: ParseOptions<'a>) -> ParseResult<T
 
     let preamble_comments = parser.take_comments();
     let functions = parser.parse_function_list()?;
+    let test_names = parser.build_test_names();
 
     Ok(TestFile {
         commands,
@@ -176,6 +207,7 @@ pub fn parse_test<'a>(text: &'a str, options: ParseOptions<'a>) -> ParseResult<T
         features,
         preamble_comments,
         functions,
+        test_names,
     })
 }
 
@@ -240,6 +272,10 @@ pub struct Parser<'a> {
 
     /// Default calling conventions; used when none is specified.
     default_calling_convention: CallConv,
+
+    /// Keeps track of the mapping between [ClifFunctionName]'s and their assigned
+    /// [UserExternalName]'s after translation.
+    function_names: HashMap<ClifFunctionName<'a>, UserExternalName>,
 }
 
 /// Context for resolving references when parsing a single function.
@@ -515,40 +551,49 @@ impl Context {
         self.function.layout.set_cold(block);
     }
 
+    /// Deduplicate the reference (O(n), but should be fine for tests),
+    /// to follow `FunctionParameters::declare_imported_user_function`,
+    /// otherwise this will cause ref mismatches.
+    fn resolve_user_external_name(&mut self, uext_name: &UserExternalName) -> UserExternalNameRef {
+        let UserExternalName { namespace, index } = *uext_name;
+        self.predeclared_external_names
+            .iter()
+            .find_map(|(reff, name)| {
+                if name.index == index && name.namespace == namespace {
+                    Some(reff)
+                } else {
+                    None
+                }
+            })
+            .unwrap_or_else(|| {
+                self.predeclared_external_names
+                    .push(UserExternalName { namespace, index })
+            })
+    }
+
     /// Resolves a [ParsedExternalName] into an [ExternalName] for this function.
-    fn resolve_external_name(&mut self, parsed: ParsedExternalName) -> ExternalName {
+    fn resolve_external_name(
+        &mut self,
+        parser: &Parser,
+        parsed: ParsedExternalName,
+    ) -> ParseResult<ExternalName> {
         match parsed {
-            ParsedExternalName::UserExternalName(UserExternalName { namespace, index }) => {
-                // Deduplicate the reference (O(n), but should be fine for tests),
-                // to follow `FunctionParameters::declare_imported_user_function`,
-                // otherwise this will cause ref mismatches when asserted below.
-                let name_ref = self
-                    .predeclared_external_names
-                    .iter()
-                    .find_map(|(reff, name)| {
-                        if name.index == index && name.namespace == namespace {
-                            Some(reff)
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or_else(|| {
-                        self.predeclared_external_names
-                            .push(UserExternalName { namespace, index })
-                    });
-
-                ExternalName::User(name_ref)
-            }
+            ParsedExternalName::UserExternalName(ref uext_name) => Ok(ExternalName::User(
+                self.resolve_user_external_name(uext_name),
+            )),
             ParsedExternalName::TestCase(name) => {
-                // Lookup the name in the global parser
-                // register it
-                // return it as a ref
+                let uext_name = parser
+                    .function_names
+                    .get(&ClifFunctionName::TestCase(name))
+                    .map(|name| self.resolve_user_external_name(name));
 
-                // This is temporary.
-                name.parse().unwrap()
+                match uext_name {
+                    Some(name_ref) => Ok(ExternalName::User(name_ref)),
+                    None => err!(parser.loc, "Unknown external name: {}", name),
+                }
             }
             // These cases need no further handling
-            ParsedExternalName::ExternalName(ext) => ext,
+            ParsedExternalName::ExternalName(ext) => Ok(ext),
         }
     }
 }
@@ -565,6 +610,7 @@ impl<'a> Parser<'a> {
             gathered_comments: Vec::new(),
             comments: Vec::new(),
             default_calling_convention: CallConv::Fast,
+            function_names: HashMap::default(),
         }
     }
 
@@ -575,6 +621,17 @@ impl<'a> Parser<'a> {
             default_calling_convention,
             ..self
         }
+    }
+
+    /// Builds a map of all the test names
+    pub fn build_test_names(&self) -> HashMap<&'a str, UserExternalName> {
+        self.function_names
+            .iter()
+            .filter_map(|(fname, ext_name)| match fname {
+                ClifFunctionName::TestCase(name) => Some((*name, ext_name.clone())),
+                _ => None,
+            })
+            .collect()
     }
 
     // Consume the current lookahead token and return it.
@@ -1339,12 +1396,12 @@ impl<'a> Parser<'a> {
         let location = self.loc;
 
         // function ::= "function" * name signature "{" preamble function-body "}"
-        let name = self.parse_user_func_name()?;
+        let name = self.parse_clif_func_name()?;
 
         // function ::= "function" name * signature "{" preamble function-body "}"
         let sig = self.parse_signature()?;
 
-        let mut ctx = Context::new(Function::with_name_signature(name, sig));
+        let mut ctx = Context::new(Function::with_name_signature(UserFuncName::User(name), sig));
 
         // function ::= "function" name signature * "{" preamble function-body "}"
         self.match_token(Token::LBrace, "expected '{' before function body")?;
@@ -1379,6 +1436,37 @@ impl<'a> Parser<'a> {
         };
 
         Ok((ctx.function, details))
+    }
+
+    /// Translates a [ClifFunctionName] into a [UserExternalName].
+    ///
+    /// This renames test cases into user external names
+    fn register_clif_func_name(
+        &mut self,
+        fname: ClifFunctionName<'a>,
+    ) -> ParseResult<UserExternalName> {
+        let function_count = self.function_names.len() as u32;
+        match self.function_names.entry(fname.clone()) {
+            Entry::Vacant(v) => {
+                let uname = match fname {
+                    // A `User` name does not get translated, we just need to register it.
+                    ClifFunctionName::User(uname) => uname,
+
+                    // A `TestCase` name gets translated into a user name in the TESTCASE_NAMESPACE.
+                    ClifFunctionName::TestCase(_) => UserExternalName {
+                        namespace: TESTCASE_NAMESPACE,
+                        // This should pretty much never clash
+                        index: function_count,
+                    },
+                };
+                v.insert(uname.clone());
+                Ok(uname)
+            }
+            // This is a duplicate test function declaration, so we need to error out
+            Entry::Occupied(_) => {
+                err!(self.loc, "Duplicate function name found: {}", fname)
+            }
+        }
     }
 
     // Parse a user external function name
@@ -1417,15 +1505,18 @@ impl<'a> Parser<'a> {
     //
     // function ::= "function" * name signature { ... }
     //
-    fn parse_user_func_name(&mut self) -> ParseResult<UserFuncName> {
-        match self.token() {
+    fn parse_clif_func_name(&mut self) -> ParseResult<UserExternalName> {
+        let clif_name = match self.token() {
             Some(Token::Name(s)) => {
                 self.consume();
-                Ok(UserFuncName::testcase(s))
+                Ok(ClifFunctionName::TestCase(s))
             }
-            Some(Token::UserRef(_)) => Ok(UserFuncName::User(self.parse_user_external_name()?)),
-            _ => err!(self.loc, "expected external name"),
-        }
+            Some(Token::UserRef(_)) => Ok(ClifFunctionName::User(self.parse_user_external_name()?)),
+            _ => err!(self.loc, "expected function name"),
+        }?;
+
+        let name = self.register_clif_func_name(clif_name)?;
+        Ok(name)
     }
 
     // Parse an external name.
@@ -1434,8 +1525,8 @@ impl<'a> Parser<'a> {
     //
     // fn0 = * name signature
     //
-    fn parse_external_name(&mut self, ctx: &mut Context) -> ParseResult<ParsedExternalName> {
-        match self.token() {
+    fn parse_external_name(&mut self, ctx: &mut Context) -> ParseResult<ExternalName> {
+        let parsed_name = match self.token() {
             Some(Token::Name(s)) => {
                 self.consume();
 
@@ -1462,7 +1553,10 @@ impl<'a> Parser<'a> {
             )),
 
             _ => err!(self.loc, "expected external name"),
-        }
+        }?;
+
+        let name = ctx.resolve_external_name(self, parsed_name)?;
+        Ok(name)
     }
 
     // Parse a function signature.
@@ -1751,8 +1845,7 @@ impl<'a> Parser<'a> {
             "symbol" => {
                 let colocated = self.optional(Token::Identifier("colocated"));
                 let tls = self.optional(Token::Identifier("tls"));
-                let parsed_name = self.parse_external_name(ctx)?;
-                let name = ctx.resolve_external_name(parsed_name);
+                let name = self.parse_external_name(ctx)?;
                 let offset = self.optional_offset_imm64()?;
                 GlobalValueData::Symbol {
                     name,
@@ -1952,8 +2045,7 @@ impl<'a> Parser<'a> {
         let colocated = self.optional(Token::Identifier("colocated"));
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] * name function-decl-sig
-        let parsed_name = self.parse_external_name(ctx)?;
-        let name = ctx.resolve_external_name(parsed_name);
+        let name = self.parse_external_name(ctx)?;
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] name * function-decl-sig
         let data = match self.token() {
@@ -3271,7 +3363,6 @@ mod tests {
         )
         .parse_function()
         .unwrap();
-        assert_eq!(func.name.to_string(), "%qux");
         let v4 = details.map.lookup_str("v4").unwrap();
         assert_eq!(v4.to_string(), "v4");
         let v3 = details.map.lookup_str("v3").unwrap();
@@ -3348,7 +3439,6 @@ mod tests {
         )
         .parse_function()
         .unwrap();
-        assert_eq!(func.name.to_string(), "%foo");
         let mut iter = func.sized_stack_slots.keys();
         let _ss0 = iter.next().unwrap();
         let ss1 = iter.next().unwrap();
@@ -3393,7 +3483,6 @@ mod tests {
         )
         .parse_function()
         .unwrap();
-        assert_eq!(func.name.to_string(), "%blocks");
 
         let mut blocks = func.layout.blocks();
 
@@ -3548,20 +3637,20 @@ mod tests {
         } = Parser::new(
             "function %blocks() system_v {
                 sig0 = ()
-                fn0 = %foo sig0
-                fn0 = %foo sig0",
+                fn0 = %ceil sig0
+                fn0 = %ceil sig0",
         )
         .parse_function()
         .unwrap_err();
 
-        assert_eq!(location.line_number, 4);
         assert_eq!(message, "duplicate entity: fn0");
+        assert_eq!(location.line_number, 4);
         assert!(!is_warning);
     }
 
     #[test]
     fn comments() {
-        let (func, Details { comments, .. }) = Parser::new(
+        let (_func, Details { comments, .. }) = Parser::new(
             "; before
                          function %comment() system_v { ; decl
                             ss10  = explicit_slot 13 ; stackslot.
@@ -3575,7 +3664,6 @@ mod tests {
         )
         .parse_function()
         .unwrap();
-        assert_eq!(func.name.to_string(), "%comment");
         assert_eq!(comments.len(), 8); // no 'before' comment.
         assert_eq!(
             comments[0],
@@ -3629,7 +3717,6 @@ mod tests {
         assert_eq!(tf.preamble_comments[0].text, "; before");
         assert_eq!(tf.preamble_comments[1].text, "; still preamble");
         assert_eq!(tf.functions.len(), 1);
-        assert_eq!(tf.functions[0].0.name.to_string(), "%comment");
     }
 
     #[test]
@@ -4008,5 +4095,83 @@ mod tests {
         assert!(func.layout.is_cold(Block::from_u32(0)));
         assert!(func.layout.is_cold(Block::from_u32(1)));
         assert!(!func.layout.is_cold(Block::from_u32(2)));
+    }
+
+    /// Tests the function test name renaming mechanism
+    mod rename {
+        use super::*;
+        use crate::parser::ParsedExternalName::ExternalName;
+        fn build_testfile(s: &str) -> TestFile {
+            parse_test(s, ParseOptions::default()).unwrap()
+        }
+
+        #[test]
+        fn simple_test_function() {
+            let testfile = build_testfile(
+                "function %test() {
+            block0:
+                return
+            }",
+            );
+
+            let name = &testfile.test_names["test"];
+            assert_eq!(
+                testfile.functions[0].0.name,
+                UserFuncName::User(name.clone())
+            );
+        }
+
+        #[test]
+        fn simple_user_function() {
+            let testfile = build_testfile(
+                "function u10:1() {
+            block0:
+                return
+            }",
+            );
+
+            assert_eq!(testfile.test_names.len(), 0);
+            assert_eq!(
+                testfile.functions[0].0.name,
+                UserFuncName::User(UserExternalName::new(10, 1))
+            );
+        }
+
+        #[test]
+        fn test_function_ref() {
+            let testfile = build_testfile(
+                "function %a_really_long_function_name_because_we_are_no_longer_limited_to_16_chars() {
+            block0:
+                return
+            }
+            
+            function u0:0() {
+                sig0 = ()
+                fn0 = %a_really_long_function_name_because_we_are_no_longer_limited_to_16_chars sig0
+            block0:
+                return
+            }",
+            );
+
+            assert_eq!(testfile.test_names.len(), 1);
+            assert_eq!(testfile.functions.len(), 2);
+
+            let test_name = &testfile.test_names
+                ["a_really_long_function_name_because_we_are_no_longer_limited_to_16_chars"];
+
+            let (user_func, _) = testfile
+                .functions
+                .iter()
+                .find(|(f, _)| f.name == UserFuncName::User(UserExternalName::new(0, 0)))
+                .unwrap();
+
+            // Check if the name that is in the function references matches the test_name
+            let user_named_funcs = user_func.params.user_named_funcs();
+            assert_eq!(user_named_funcs.len(), 1);
+            let (_, name) = user_named_funcs.iter().next().unwrap();
+            assert_eq!(name, test_name);
+        }
+
+        // TODO: ref to a libcall
     }
 }

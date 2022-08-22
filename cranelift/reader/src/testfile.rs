@@ -9,7 +9,8 @@ use crate::isaspec::IsaSpec;
 use crate::sourcemap::SourceMap;
 use crate::testcommand::TestCommand;
 use cranelift_codegen::ir::entities::AnyEntity;
-use cranelift_codegen::ir::Function;
+use cranelift_codegen::ir::{Function, UserExternalName};
+use std::collections::HashMap;
 
 /// A parsed test case.
 ///
@@ -27,6 +28,8 @@ pub struct TestFile<'a> {
     pub preamble_comments: Vec<Comment<'a>>,
     /// Parsed functions and additional details about each function.
     pub functions: Vec<(Function, Details<'a>)>,
+    /// Maps a test name into the final [UserExternalName].
+    pub test_names: HashMap<&'a str, UserExternalName>,
 }
 
 /// Additional details about a function parsed from a text string.

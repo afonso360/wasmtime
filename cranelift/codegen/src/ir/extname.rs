@@ -23,7 +23,7 @@ pub(crate) const TESTCASE_NAME_LENGTH: usize = 16;
 /// This is used both for naming a function (for debugging purposes) and for declaring external
 /// functions. In the latter case, this becomes an `ExternalName`, which gets embedded in
 /// relocations later, etc.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "enable-serde", derive(Serialize, Deserialize))]
 pub enum UserFuncName {
     /// A user-defined name, with semantics left to the user.
@@ -70,6 +70,13 @@ pub struct UserExternalName {
     pub namespace: u32,
     /// Arbitrary.
     pub index: u32,
+}
+
+impl UserExternalName {
+    /// Creates a new UserExternalName with the given `namespace` and `index`
+    pub fn new(namespace: u32, index: u32) -> Self {
+        Self { namespace, index }
+    }
 }
 
 impl fmt::Display for UserExternalName {
