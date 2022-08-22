@@ -1381,18 +1381,10 @@ impl<'a> Parser<'a> {
         Ok((ctx.function, details))
     }
 
-    // Parse a user-defined function name
+    // Parse a user external function name
     //
-    // For example, in a function decl, the parser would be in this state:
-    //
-    // function ::= "function" * name signature { ... }
-    //
-    fn parse_user_func_name(&mut self) -> ParseResult<UserFuncName> {
+    fn parse_user_external_name(&mut self) -> ParseResult<UserExternalName> {
         match self.token() {
-            Some(Token::Name(s)) => {
-                self.consume();
-                Ok(UserFuncName::testcase(s))
-            }
             Some(Token::UserRef(namespace)) => {
                 self.consume();
                 match self.token() {
@@ -1405,7 +1397,7 @@ impl<'a> Parser<'a> {
                                     u32::from_str_radix(index_str, 10).map_err(|_| {
                                         self.error("the integer given overflows the u32 type")
                                     })?;
-                                Ok(UserFuncName::user(namespace, index))
+                                Ok(UserExternalName { namespace, index })
                             }
                             _ => err!(self.loc, "expected integer"),
                         }
@@ -1415,6 +1407,23 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            _ => err!(self.loc, "expected user ref name"),
+        }
+    }
+
+    // Parse a user-defined function name
+    //
+    // For example, in a function decl, the parser would be in this state:
+    //
+    // function ::= "function" * name signature { ... }
+    //
+    fn parse_user_func_name(&mut self) -> ParseResult<UserFuncName> {
+        match self.token() {
+            Some(Token::Name(s)) => {
+                self.consume();
+                Ok(UserFuncName::testcase(s))
+            }
+            Some(Token::UserRef(_)) => Ok(UserFuncName::User(self.parse_user_external_name()?)),
             _ => err!(self.loc, "expected external name"),
         }
     }
@@ -1448,28 +1457,9 @@ impl<'a> Parser<'a> {
                 )))
             }
 
-            Some(Token::UserRef(namespace)) => {
-                self.consume();
-                if let Some(Token::Colon) = self.token() {
-                    self.consume();
-                    match self.token() {
-                        Some(Token::Integer(index_str)) => {
-                            let index: u32 = u32::from_str_radix(index_str, 10).map_err(|_| {
-                                self.error("the integer given overflows the u32 type")
-                            })?;
-                            self.consume();
-
-                            Ok(ParsedExternalName::UserExternalName(UserExternalName {
-                                namespace,
-                                index,
-                            }))
-                        }
-                        _ => err!(self.loc, "expected integer"),
-                    }
-                } else {
-                    err!(self.loc, "expected colon")
-                }
-            }
+            Some(Token::UserRef(_)) => Ok(ParsedExternalName::UserExternalName(
+                self.parse_user_external_name()?,
+            )),
 
             _ => err!(self.loc, "expected external name"),
         }
