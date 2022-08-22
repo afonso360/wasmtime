@@ -15,7 +15,7 @@ use cranelift_codegen::ir::immediates::{Ieee32, Ieee64, Imm64, Offset32, Uimm32,
 use cranelift_codegen::ir::instructions::{InstructionData, InstructionFormat, VariableArgs};
 use cranelift_codegen::ir::types::INVALID;
 use cranelift_codegen::ir::types::*;
-use cranelift_codegen::ir::{self, UserExternalNameRef};
+use cranelift_codegen::ir::{self, UserExternalName, UserExternalNameRef};
 use cranelift_codegen::ir::{
     AbiParam, ArgumentExtension, ArgumentPurpose, Block, Constant, ConstantData, DynamicStackSlot,
     DynamicStackSlotData, DynamicTypeData, ExtFuncData, ExternalName, FuncRef, Function,
@@ -79,6 +79,19 @@ macro_rules! match_imm {
 
 /// After some quick benchmarks a program should never have more than 100,000 blocks.
 const MAX_BLOCKS_IN_A_FUNCTION: u32 = 100_000;
+
+/// Represents a name that was parsed. Some variants need further translation before being suitable
+/// for use in a [Function]
+enum ParsedExternalName<'a> {
+    /// Needs translation into a [UserExternalName].
+    TestCase(&'a str),
+
+    /// Needs to be deduplicated and converted into a [UserExternalNameRef].
+    UserExternalName(UserExternalName),
+
+    /// A [ExternalName] that needs no further translation.
+    ExternalName(ExternalName),
+}
 
 /// Parse the entire `text` into a list of functions.
 ///
@@ -500,6 +513,43 @@ impl Context {
     /// Set a block as cold.
     fn set_cold_block(&mut self, block: Block) {
         self.function.layout.set_cold(block);
+    }
+
+    /// Resolves a [ParsedExternalName] into an [ExternalName] for this function.
+    fn resolve_external_name(&mut self, parsed: ParsedExternalName) -> ExternalName {
+        match parsed {
+            ParsedExternalName::UserExternalName(UserExternalName { namespace, index }) => {
+                // Deduplicate the reference (O(n), but should be fine for tests),
+                // to follow `FunctionParameters::declare_imported_user_function`,
+                // otherwise this will cause ref mismatches when asserted below.
+                let name_ref = self
+                    .predeclared_external_names
+                    .iter()
+                    .find_map(|(reff, name)| {
+                        if name.index == index && name.namespace == namespace {
+                            Some(reff)
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or_else(|| {
+                        self.predeclared_external_names
+                            .push(UserExternalName { namespace, index })
+                    });
+
+                ExternalName::User(name_ref)
+            }
+            ParsedExternalName::TestCase(name) => {
+                // Lookup the name in the global parser
+                // register it
+                // return it as a ref
+
+                // This is temporary.
+                name.parse().unwrap()
+            }
+            // These cases need no further handling
+            ParsedExternalName::ExternalName(ext) => ext,
+        }
     }
 }
 
@@ -1375,18 +1425,26 @@ impl<'a> Parser<'a> {
     //
     // fn0 = * name signature
     //
-    fn parse_external_name(&mut self, ctx: &mut Context) -> ParseResult<ExternalName> {
+    fn parse_external_name(&mut self, ctx: &mut Context) -> ParseResult<ParsedExternalName> {
         match self.token() {
             Some(Token::Name(s)) => {
                 self.consume();
-                s.parse()
-                    .map_err(|_| self.error("invalid test case or libcall name"))
+
+                let ext_name: ExternalName = s
+                    .parse()
+                    .map_err(|_| self.error("invalid test case or libcall name"))?;
+
+                // Temp hack that should be removed in future commits
+                Ok(match ext_name {
+                    ExternalName::TestCase(_) => ParsedExternalName::TestCase(s),
+                    ext_name => ParsedExternalName::ExternalName(ext_name),
+                })
             }
 
             Some(Token::UserNameRef(name_ref)) => {
                 self.consume();
-                Ok(ExternalName::user(UserExternalNameRef::new(
-                    name_ref as usize,
+                Ok(ParsedExternalName::ExternalName(ExternalName::user(
+                    UserExternalNameRef::new(name_ref as usize),
                 )))
             }
 
@@ -1401,25 +1459,10 @@ impl<'a> Parser<'a> {
                             })?;
                             self.consume();
 
-                            // Deduplicate the reference (O(n), but should be fine for tests),
-                            // to follow `FunctionParameters::declare_imported_user_function`,
-                            // otherwise this will cause ref mismatches when asserted below.
-                            let name_ref = ctx
-                                .predeclared_external_names
-                                .iter()
-                                .find_map(|(reff, name)| {
-                                    if name.index == index && name.namespace == namespace {
-                                        Some(reff)
-                                    } else {
-                                        None
-                                    }
-                                })
-                                .unwrap_or_else(|| {
-                                    ctx.predeclared_external_names
-                                        .push(ir::UserExternalName { namespace, index })
-                                });
-
-                            Ok(ExternalName::user(name_ref))
+                            Ok(ParsedExternalName::UserExternalName(UserExternalName {
+                                namespace,
+                                index,
+                            }))
                         }
                         _ => err!(self.loc, "expected integer"),
                     }
@@ -1718,7 +1761,8 @@ impl<'a> Parser<'a> {
             "symbol" => {
                 let colocated = self.optional(Token::Identifier("colocated"));
                 let tls = self.optional(Token::Identifier("tls"));
-                let name = self.parse_external_name(ctx)?;
+                let parsed_name = self.parse_external_name(ctx)?;
+                let name = ctx.resolve_external_name(parsed_name);
                 let offset = self.optional_offset_imm64()?;
                 GlobalValueData::Symbol {
                     name,
@@ -1918,7 +1962,8 @@ impl<'a> Parser<'a> {
         let colocated = self.optional(Token::Identifier("colocated"));
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] * name function-decl-sig
-        let name = self.parse_external_name(ctx)?;
+        let parsed_name = self.parse_external_name(ctx)?;
+        let name = ctx.resolve_external_name(parsed_name);
 
         // function-decl ::= FuncRef(fnref) "=" ["colocated"] name * function-decl-sig
         let data = match self.token() {
