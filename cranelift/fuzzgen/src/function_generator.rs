@@ -20,6 +20,34 @@ use std::ops::RangeInclusive;
 
 type BlockSignature = Vec<Type>;
 
+/// Generates an instruction(`iconst`/`fconst`/etc...) to introduce a constant value
+fn generate_const(u: &mut Unstructured, builder: &mut FunctionBuilder, ty: Type) -> Result<Value> {
+    Ok(match ty {
+        I128 => {
+            // See: https://github.com/bytecodealliance/wasmtime/issues/2906
+            let hi = builder.ins().iconst(I64, u.arbitrary::<i64>()?);
+            let lo = builder.ins().iconst(I64, u.arbitrary::<i64>()?);
+            builder.ins().iconcat(lo, hi)
+        }
+        ty if ty.is_int() => {
+            let imm64 = match ty {
+                I8 => u.arbitrary::<i8>()? as i64,
+                I16 => u.arbitrary::<i16>()? as i64,
+                I32 => u.arbitrary::<i32>()? as i64,
+                I64 => u.arbitrary::<i64>()?,
+                _ => unreachable!(),
+            };
+            builder.ins().iconst(ty, imm64)
+        }
+        ty if ty.is_bool() => builder.ins().bconst(ty, bool::arbitrary(u)?),
+        // f{32,64}::arbitrary does not generate a bunch of important values
+        // such as Signaling NaN's / NaN's with payload, so generate floats from integers.
+        F32 => builder.ins().f32const(f32::from_bits(u32::arbitrary(u)?)),
+        F64 => builder.ins().f64const(f64::from_bits(u64::arbitrary(u)?)),
+        _ => unimplemented!(),
+    })
+}
+
 fn insert_opcode(
     fgen: &mut FunctionGenerator,
     builder: &mut FunctionBuilder,
@@ -174,7 +202,7 @@ fn insert_const(
 ) -> Result<()> {
     let typevar = rets[0];
     let var = fgen.get_variable_of_type(typevar)?;
-    let val = fgen.generate_const(builder, typevar)?;
+    let val = generate_const(&mut fgen.u, builder, typevar)?;
     builder.def_var(var, val);
     Ok(())
 }
@@ -212,6 +240,229 @@ fn insert_load_store(
     }
 
     Ok(())
+}
+
+type InstTemplate<'a> = Box<dyn Fn(&mut Unstructured, &mut FunctionBuilder) -> Result<()> + 'a>;
+
+fn generate_instruction_templates(resources: &Resources) -> Vec<InstTemplate> {
+    let mut result: Vec<InstTemplate> = Vec::new();
+    result.push(Box::new(|_u, b| {
+        b.ins().nop();
+        Ok(())
+    }));
+
+    use cranelift::frontend::FuncInstBuilder;
+
+    for ty in [I8, I16, I32, I64, I128] {
+        if let Some(vars) = resources.vars.get(&ty) {
+            let ops = [
+                |i: FuncInstBuilder, x, y| i.iadd(x, y),
+                |i: FuncInstBuilder, x, y| i.isub(x, y),
+                |i: FuncInstBuilder, x, y| i.imul(x, y),
+                |i: FuncInstBuilder, x, y| i.udiv(x, y),
+                |i: FuncInstBuilder, x, y| i.sdiv(x, y),
+            ];
+            for op in ops {
+                result.push(Box::new(move |u, b| {
+                    let x = b.use_var(*u.choose(vars)?);
+                    let y = b.use_var(*u.choose(vars)?);
+                    let val = op(b.ins(), x, y);
+                    b.def_var(*u.choose(vars)?, val);
+                    Ok(())
+                }));
+            }
+
+            for ty2 in [I8, I16, I32, I64, I128] {
+                if let Some(vars2) = resources.vars.get(&ty2) {
+                    let ops = [
+                        |i: FuncInstBuilder, x, y| i.rotl(x, y),
+                        |i: FuncInstBuilder, x, y| i.rotr(x, y),
+                    ];
+                    for op in ops {
+                        result.push(Box::new(move |u, b| {
+                            let x = b.use_var(*u.choose(vars)?);
+                            let y = b.use_var(*u.choose(vars2)?);
+                            let val = op(b.ins(), x, y);
+                            b.def_var(*u.choose(vars)?, val);
+                            Ok(())
+                        }));
+                    }
+
+                    // Some test cases disabled due to:
+                    // https://github.com/bytecodealliance/wasmtime/issues/4699
+                    if ty.bits() >= 32 || ty2 != I128 {
+                        let ops = [
+                            |i: FuncInstBuilder, x, y| i.ishl(x, y),
+                            |i: FuncInstBuilder, x, y| i.sshr(x, y),
+                            |i: FuncInstBuilder, x, y| i.ushr(x, y),
+                        ];
+                        for op in ops {
+                            result.push(Box::new(move |u, b| {
+                                let x = b.use_var(*u.choose(vars)?);
+                                let y = b.use_var(*u.choose(vars2)?);
+                                let val = op(b.ins(), x, y);
+                                b.def_var(*u.choose(vars)?, val);
+                                Ok(())
+                            }));
+                        }
+                    }
+
+                    if ty.bits() < ty2.bits() {
+                        result.push(Box::new(move |u, b| {
+                            let x = b.use_var(*u.choose(vars)?);
+                            let val = b.ins().uextend(ty2, x);
+                            b.def_var(*u.choose(vars2)?, val);
+                            Ok(())
+                        }));
+                        result.push(Box::new(move |u, b| {
+                            let x = b.use_var(*u.choose(vars)?);
+                            let val = b.ins().sextend(ty2, x);
+                            b.def_var(*u.choose(vars2)?, val);
+                            Ok(())
+                        }));
+                        result.push(Box::new(move |u, b| {
+                            let x = b.use_var(*u.choose(vars2)?);
+                            let val = b.ins().ireduce(ty, x);
+                            b.def_var(*u.choose(vars)?, val);
+                            Ok(())
+                        }));
+                    }
+                }
+            }
+        }
+    }
+
+    if let (Some(vars128), Some(vars64)) = (resources.vars.get(&I128), resources.vars.get(&I64)) {
+        result.push(Box::new(|u, b| {
+            let x = b.use_var(*u.choose(vars128)?);
+            let (lo, hi) = b.ins().isplit(x);
+            b.def_var(*u.choose(vars64)?, lo);
+            b.def_var(*u.choose(vars64)?, hi);
+            Ok(())
+        }));
+        result.push(Box::new(|u, b| {
+            let lo = b.use_var(*u.choose(vars64)?);
+            let hi = b.use_var(*u.choose(vars64)?);
+            let val = b.ins().iconcat(lo, hi);
+            b.def_var(*u.choose(vars128)?, val);
+            Ok(())
+        }));
+    }
+
+    for ty in [F32, F64] {
+        if let Some(vars) = resources.vars.get(&ty) {
+            let ops = [
+                |i: FuncInstBuilder, x, y| i.fadd(x, y),
+                |i: FuncInstBuilder, x, y| i.fmul(x, y),
+                |i: FuncInstBuilder, x, y| i.fsub(x, y),
+                |i: FuncInstBuilder, x, y| i.fdiv(x, y),
+                |i: FuncInstBuilder, x, y| i.fmin(x, y),
+                |i: FuncInstBuilder, x, y| i.fmax(x, y),
+                |i: FuncInstBuilder, x, y| i.fmin_pseudo(x, y),
+                |i: FuncInstBuilder, x, y| i.fmax_pseudo(x, y),
+                |i: FuncInstBuilder, x, y| i.fcopysign(x, y),
+            ];
+            for op in ops {
+                result.push(Box::new(move |u, b| {
+                    let x = b.use_var(*u.choose(vars)?);
+                    let y = b.use_var(*u.choose(vars)?);
+                    let val = op(b.ins(), x, y);
+                    b.def_var(*u.choose(vars)?, val);
+                    Ok(())
+                }));
+            }
+
+            result.push(Box::new(move |u, b| {
+                let x = b.use_var(*u.choose(vars)?);
+                let y = b.use_var(*u.choose(vars)?);
+                let z = b.use_var(*u.choose(vars)?);
+                let val = b.ins().fma(x, y, z);
+                b.def_var(*u.choose(vars)?, val);
+                Ok(())
+            }));
+
+            let ops = [
+                |i: FuncInstBuilder, x| i.fabs(x),
+                |i: FuncInstBuilder, x| i.fneg(x),
+                |i: FuncInstBuilder, x| i.sqrt(x),
+                |i: FuncInstBuilder, x| i.ceil(x),
+                |i: FuncInstBuilder, x| i.floor(x),
+                |i: FuncInstBuilder, x| i.trunc(x),
+                |i: FuncInstBuilder, x| i.nearest(x),
+            ];
+            for op in ops {
+                result.push(Box::new(move |u, b| {
+                    let x = b.use_var(*u.choose(vars)?);
+                    let val = op(b.ins(), x);
+                    b.def_var(*u.choose(vars)?, val);
+                    Ok(())
+                }));
+            }
+        }
+    }
+
+    if let Some(bools) = resources.vars.get(&B1) {
+        for ty in [F32, F64] {
+            if let Some(vars) = resources.vars.get(&ty) {
+                result.push(Box::new(move |u, b| {
+                    let x = b.use_var(*u.choose(vars)?);
+                    let y = b.use_var(*u.choose(vars)?);
+                    let val = b.ins().fcmp(*u.choose(FloatCC::all())?, x, y);
+                    b.def_var(*u.choose(bools)?, val);
+                    Ok(())
+                }));
+            }
+        }
+
+        // TODO: icmp of/nof broken for i128 on x86_64
+        // See: https://github.com/bytecodealliance/wasmtime/issues/4406
+        for ty in [I8, I16, I32, I64] {
+            if let Some(vars) = resources.vars.get(&ty) {
+                result.push(Box::new(|u, b| {
+                    let x = b.use_var(*u.choose(vars)?);
+                    let y = b.use_var(*u.choose(vars)?);
+                    let val = b.ins().icmp(*u.choose(IntCC::all())?, x, y);
+                    b.def_var(*u.choose(bools)?, val);
+                    Ok(())
+                }));
+            }
+        }
+    }
+
+    for ty in [I8, I16, I32, I64, I128] {
+        if let Some(vars) = resources.vars.get(&ty) {
+            let type_size = ty.bytes();
+            let slots = resources.stack_slots_with_size(type_size);
+            if !slots.is_empty() {
+                result.push(Box::new(move |u, b| {
+                    let (slot, slot_size) = *u.choose(slots)?;
+                    let offset = u.int_in_range(0..=(slot_size - type_size))? as i32;
+                    let x = b.use_var(*u.choose(vars)?);
+                    b.ins().stack_store(x, slot, offset);
+                    Ok(())
+                }));
+                result.push(Box::new(move |u, b| {
+                    let (slot, slot_size) = *u.choose(slots)?;
+                    let offset = u.int_in_range(0..=(slot_size - type_size))? as i32;
+                    let val = b.ins().stack_load(ty, slot, offset);
+                    b.def_var(*u.choose(vars)?, val);
+                    Ok(())
+                }));
+            }
+        }
+    }
+
+    for ty in [I8, I16, I32, I64, I128, F32, F64, B1] {
+        if let Some(vars) = resources.vars.get(&ty) {
+            result.push(Box::new(move |u, b| {
+                let val = generate_const(u, b, ty)?;
+                b.def_var(*u.choose(vars)?, val);
+                Ok(())
+            }));
+        }
+    }
+
+    result
 }
 
 type OpcodeInserter = fn(
@@ -780,6 +1031,16 @@ impl Resources {
         let partition_point = self.blocks_without_params.partition_point(|b| *b <= block);
         &self.blocks_without_params[partition_point..]
     }
+
+    /// Returns the slice of stock slots with at least n bites
+    fn stack_slots_with_size(&self, n: StackSize) -> &[(StackSlot, StackSize)] {
+        let first = self.stack_slots.partition_point(|&(_, bytes)| bytes < n);
+        &self.stack_slots[first..]
+    }
+
+    fn get_variables_of_type(&self, ty: Type) -> &[Variable] {
+        self.vars.get(&ty).map_or(&[][..], Vec::as_slice)
+    }
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -857,12 +1118,8 @@ where
     }
 
     /// Finds a stack slot with size of at least n bytes
-    fn stack_slot_with_size(&mut self, n: u32) -> Result<(StackSlot, StackSize)> {
-        let first = self
-            .resources
-            .stack_slots
-            .partition_point(|&(_slot, size)| size < n);
-        Ok(*self.u.choose(&self.resources.stack_slots[first..])?)
+    fn stack_slot_with_size(&mut self, n: StackSize) -> Result<(StackSlot, StackSize)> {
+        Ok(*self.u.choose(self.resources.stack_slots_with_size(n))?)
     }
 
     /// Generates an address that should allow for a store or a load.
@@ -903,41 +1160,7 @@ where
 
     /// Get a variable of type `ty` from the current function
     fn get_variable_of_type(&mut self, ty: Type) -> Result<Variable> {
-        let opts = self.resources.vars.get(&ty).map_or(&[][..], Vec::as_slice);
-        let var = self.u.choose(opts)?;
-        Ok(*var)
-    }
-
-    /// Generates an instruction(`iconst`/`fconst`/etc...) to introduce a constant value
-    fn generate_const(&mut self, builder: &mut FunctionBuilder, ty: Type) -> Result<Value> {
-        Ok(match ty {
-            I128 => {
-                // See: https://github.com/bytecodealliance/wasmtime/issues/2906
-                let hi = builder.ins().iconst(I64, self.u.arbitrary::<i64>()?);
-                let lo = builder.ins().iconst(I64, self.u.arbitrary::<i64>()?);
-                builder.ins().iconcat(lo, hi)
-            }
-            ty if ty.is_int() => {
-                let imm64 = match ty {
-                    I8 => self.u.arbitrary::<i8>()? as i64,
-                    I16 => self.u.arbitrary::<i16>()? as i64,
-                    I32 => self.u.arbitrary::<i32>()? as i64,
-                    I64 => self.u.arbitrary::<i64>()?,
-                    _ => unreachable!(),
-                };
-                builder.ins().iconst(ty, imm64)
-            }
-            ty if ty.is_bool() => builder.ins().bconst(ty, bool::arbitrary(self.u)?),
-            // f{32,64}::arbitrary does not generate a bunch of important values
-            // such as Signaling NaN's / NaN's with payload, so generate floats from integers.
-            F32 => builder
-                .ins()
-                .f32const(f32::from_bits(u32::arbitrary(self.u)?)),
-            F64 => builder
-                .ins()
-                .f64const(f64::from_bits(u64::arbitrary(self.u)?)),
-            _ => unimplemented!(),
-        })
+        Ok(*self.u.choose(self.resources.get_variables_of_type(ty))?)
     }
 
     /// Chooses a random block which can be targeted by a jump / branch.
@@ -1207,7 +1430,7 @@ where
         // Create a pool of vars that are going to be used in this function
         for _ in 0..self.param(&self.config.vars_per_function)? {
             let ty = self.generate_type()?;
-            let value = self.generate_const(builder, ty)?;
+            let value = generate_const(&mut self.u, builder, ty)?;
             vars.push((ty, value));
         }
 
