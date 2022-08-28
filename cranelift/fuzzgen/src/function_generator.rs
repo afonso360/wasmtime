@@ -413,6 +413,12 @@ const OPCODE_SIGNATURES: &'static [(
     // Fneg
     (Opcode::Fneg, &[F32], &[F32], insert_opcode),
     (Opcode::Fneg, &[F64], &[F64], insert_opcode),
+    // Fpromote
+    (Opcode::Fpromote, &[F32], &[F32], insert_opcode),
+    (Opcode::Fpromote, &[F32], &[F64], insert_opcode),
+    // Fdemote
+    (Opcode::Fdemote, &[F64], &[F32], insert_opcode),
+    (Opcode::Fdemote, &[F64], &[F64], insert_opcode),
     // Sqrt
     (Opcode::Sqrt, &[F32], &[F32], insert_opcode),
     (Opcode::Sqrt, &[F64], &[F64], insert_opcode),
