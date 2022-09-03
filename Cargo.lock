@@ -3578,6 +3578,7 @@ dependencies = [
  "cranelift-interpreter",
  "cranelift-reader",
  "cranelift-wasm",
+ "lazy_static",
  "libfuzzer-sys",
  "proc-macro2",
  "quote",
