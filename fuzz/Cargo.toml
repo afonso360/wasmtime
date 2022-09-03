@@ -10,6 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 anyhow = { version = "1.0.19" }
+lazy_static = "1.4.0"
 cranelift-codegen = { path = "../cranelift/codegen", features = ["incremental-cache"] }
 cranelift-reader = { path = "../cranelift/reader" }
 cranelift-wasm = { path = "../cranelift/wasm" }
