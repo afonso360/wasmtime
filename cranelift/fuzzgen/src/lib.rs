@@ -137,11 +137,18 @@ where
         })
     }
 
-    fn generate_test_inputs(&mut self, signature: &Signature) -> Result<Vec<TestCaseInput>> {
-        let num_tests = self.u.int_in_range(self.config.test_case_inputs.clone())?;
-        let mut inputs = Vec::with_capacity(num_tests);
+    fn generate_test_inputs(mut self, signature: &Signature) -> Result<Vec<TestCaseInput>> {
+        let mut last_len = usize::MAX;
+        let mut inputs = Vec::new();
 
-        for _ in 0..num_tests {
+        // Continue generating input as long as we just consumed some of self.u. Otherwise we'll
+        // generate the same test input again on the next iteration, and there's no point testing
+        // it twice. Note that once self.u becomes empty we naturally don't consume any more of it,
+        // so this check covers that case as well as the case of testing a no-argument function.
+        // This lets us consume all remaining fuzz data.
+        while self.u.len() < last_len {
+            last_len = self.u.len();
+
             let test_args = signature
                 .params
                 .iter()
