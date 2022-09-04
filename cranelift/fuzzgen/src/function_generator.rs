@@ -371,7 +371,20 @@ fn generate_instruction_templates(resources: &Resources) -> Vec<InstTemplate> {
                 result.push(Box::new(move |u, b| {
                     let x = b.use_var(*u.choose(vars)?);
                     let y = b.use_var(*u.choose(vars)?);
-                    let val = b.ins().fcmp(*u.choose(FloatCC::all())?, x, y);
+                    let val = b.ins().fcmp(
+                        *u.choose(&[
+                            FloatCC::Ordered,
+                            FloatCC::Unordered,
+                            FloatCC::Equal,
+                            FloatCC::NotEqual,
+                            FloatCC::LessThan,
+                            FloatCC::LessThanOrEqual,
+                            FloatCC::GreaterThan,
+                            FloatCC::GreaterThanOrEqual,
+                        ])?,
+                        x,
+                        y,
+                    );
                     b.def_var(*u.choose(bools)?, val);
                     Ok(())
                 }));
