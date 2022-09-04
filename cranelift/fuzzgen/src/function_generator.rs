@@ -433,7 +433,7 @@ fn generate_instruction_templates(resources: &Resources) -> Vec<InstTemplate> {
 fn generate_terminator_templates(resources: &Resources) -> Vec<InstTemplate> {
     let mut result: Vec<InstTemplate> = Vec::new();
 
-    let ret_vars: Vec<_> = 
+    let ret_vars: Vec<_> =
     result.push(Box::new(move |u, b| {
     }));
 
@@ -791,6 +791,40 @@ impl Resources {
     fn get_variables_of_type(&self, ty: Type) -> &[Variable] {
         self.vars.get(&ty).map_or(&[][..], Vec::as_slice)
     }
+
+    fn is_first_block(&self, block: Block) -> bool {
+        self.blocks.first().map_or(false, |(b, _)| *b == block)
+    }
+
+    fn is_last_block(&self, block: Block) -> bool {
+        self.blocks.last().map_or(false, |(b, _)| *b == block)
+    }
+
+    /// Generates a slice of blocks ahead of `block`
+    fn forward_blocks(&self, block: Block) -> &[(Block, BlockSignature)] {
+        let partition_point = self
+            .blocks
+            .iter()
+            .enumerate()
+            .find(|(i, (b, _))| *b > block)
+            .map_or(self.blocks.len(), |(i, _)| i);
+
+        let (_, forward_blocks) = self.blocks.split_at(partition_point);
+        forward_blocks
+    }
+
+    /// Generates a slice of `blocks_without_params` ahead of `block`
+    fn forward_blocks_without_params(&self, block: Block) -> &[Block] {
+        let partition_point = self
+            .blocks_without_params
+            .iter()
+            .enumerate()
+            .find(|(i, b)| **b > block)
+            .map_or(self.blocks_without_params.len(), |(i, _)| i);
+
+        let (_, forward_blocks) = self.blocks_without_params.split_at(partition_point);
+        forward_blocks
+    }
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -884,8 +918,15 @@ where
     fn generate_target_block(
         &mut self,
         builder: &mut FunctionBuilder,
+        source_block: Block,
     ) -> Result<(Block, Vec<Value>)> {
-        let block_targets = &self.resources.blocks[1..];
+        // We try to mostly generate forward branches to avoid generating an excessive amount of
+        // infinite loops. But they are still important, so give them a 1% chance of existing.
+        let block_targets = if self.u.ratio(1, 100)? {
+            &self.resources.blocks[..]
+        } else {
+            self.resources.forward_blocks(source_block)
+        };
         let (block, signature) = self.u.choose(block_targets)?.clone();
         let args = self.generate_values_for_signature(builder, signature.into_iter())?;
         Ok((block, args))
@@ -905,7 +946,11 @@ where
             .collect()
     }
 
-    fn generate_return(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+    fn generate_return(
+        &mut self,
+        builder: &mut FunctionBuilder,
+        _source_block: Block,
+    ) -> Result<()> {
         let types: Vec<Type> = {
             let rets = &builder.func.signature.returns;
             rets.iter().map(|p| p.value_type).collect()
@@ -916,27 +961,33 @@ where
         Ok(())
     }
 
-    fn generate_jump(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let (block, args) = self.generate_target_block(builder)?;
+    fn generate_jump(&mut self, builder: &mut FunctionBuilder, source_block: Block) -> Result<()> {
+        let (block, args) = self.generate_target_block(builder, source_block)?;
         builder.ins().jump(block, &args[..]);
         Ok(())
     }
 
     /// Generates a br_table into a random block
-    fn generate_br_table(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+    fn generate_br_table(
+        &mut self,
+        builder: &mut FunctionBuilder,
+        source_block: Block,
+    ) -> Result<()> {
         let var = self.get_variable_of_type(I32)?; // br_table only supports I32
         let val = builder.use_var(var);
 
-        let default_block = *self.u.choose(&self.resources.blocks_without_params)?;
+        let target_blocks = self.resources.forward_blocks_without_params(source_block);
+        let default_block = *self.u.choose(target_blocks)?;
 
+        // We can still select a backwards branching jump table here!
         let jt = *self.u.choose(&self.resources.jump_tables)?;
         builder.ins().br_table(val, default_block, jt);
         Ok(())
     }
 
     /// Generates a brz/brnz into a random block
-    fn generate_br(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let (block, args) = self.generate_target_block(builder)?;
+    fn generate_br(&mut self, builder: &mut FunctionBuilder, source_block: Block) -> Result<()> {
+        let (block, args) = self.generate_target_block(builder, source_block)?;
 
         let condbr_types = [I8, I16, I32, I64, I128, B1];
         let _type = *self.u.choose(&condbr_types[..])?;
@@ -950,12 +1001,16 @@ where
         }
 
         // After brz/brnz we must generate a jump
-        self.generate_jump(builder)?;
+        self.generate_jump(builder, source_block)?;
         Ok(())
     }
 
-    fn generate_bricmp(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let (block, args) = self.generate_target_block(builder)?;
+    fn generate_bricmp(
+        &mut self,
+        builder: &mut FunctionBuilder,
+        source_block: Block,
+    ) -> Result<()> {
+        let (block, args) = self.generate_target_block(builder, source_block)?;
         let cond = *self.u.choose(IntCC::all())?;
 
         let bricmp_types = [
@@ -976,16 +1031,23 @@ where
             .br_icmp(cond, lhs_val, rhs_val, block, &args[..]);
 
         // After bricmp's we must generate a jump
-        self.generate_jump(builder)?;
+        self.generate_jump(builder, source_block)?;
         Ok(())
     }
 
-    fn generate_switch(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+    fn generate_switch(
+        &mut self,
+        builder: &mut FunctionBuilder,
+        source_block: Block,
+    ) -> Result<()> {
         let _type = *self.u.choose(&[I8, I16, I32, I64, I128][..])?;
         let switch_var = self.get_variable_of_type(_type)?;
         let switch_val = builder.use_var(switch_var);
 
-        let default_block = *self.u.choose(&self.resources.blocks_without_params)?;
+        let default_block = {
+            let target_blocks = self.resources.forward_blocks_without_params(source_block);
+            *self.u.choose(target_blocks)?
+        };
 
         // Build this into a HashMap since we cannot have duplicate entries.
         let mut entries = HashMap::new();
@@ -1006,7 +1068,11 @@ where
             // Build the switch entries
             for i in 0..range_size {
                 let index = range_start.wrapping_add(i) % ty_max;
-                let block = *self.u.choose(&self.resources.blocks_without_params)?;
+                let block = {
+                    let target_blocks = self.resources.forward_blocks_without_params(source_block);
+                    *self.u.choose(target_blocks)?
+                };
+
                 entries.insert(index, block);
             }
         }
@@ -1022,19 +1088,27 @@ where
 
     /// We always need to exit safely out of a block.
     /// This either means a jump into another block or a return.
-    fn finalize_block(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let gen = self.u.choose(
-            &[
-                Self::generate_bricmp,
-                Self::generate_br,
-                Self::generate_br_table,
-                Self::generate_jump,
-                Self::generate_return,
-                Self::generate_switch,
-            ][..],
-        )?;
+    fn finalize_block(&mut self, builder: &mut FunctionBuilder, source_block: Block) -> Result<()> {
+        // We do mostly forward branching, the last block has no further blocks to jump to
+        // so generate a return.
+        if self.resources.is_last_block(source_block) {
+            self.generate_return(builder, source_block)?;
+        } else {
+            let gen = self.u.choose(
+                &[
+                    Self::generate_bricmp,
+                    Self::generate_br,
+                    Self::generate_br_table,
+                    Self::generate_jump,
+                    Self::generate_return,
+                    Self::generate_switch,
+                ][..],
+            )?;
 
-        gen(self, builder)
+            gen(self, builder, source_block)?;
+        }
+
+        Ok(())
     }
 
     /// Fills the current block with random instructions
@@ -1153,6 +1227,7 @@ where
         // the entry block.
         let block_count = 1 + extra_block_count;
 
+        // Blocks need to be sorted in ascending order
         (0..block_count)
             .map(|i| {
                 let is_entry = i == 0;
@@ -1283,7 +1358,7 @@ where
             // Generate block instructions
             self.generate_instructions(&mut builder)?;
 
-            self.finalize_block(&mut builder)?;
+            self.finalize_block(&mut builder, *block)?;
         }
 
         builder.seal_all_blocks();
