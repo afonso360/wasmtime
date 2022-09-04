@@ -217,7 +217,7 @@ fn generate_instruction_templates(resources: &Resources) -> Vec<InstTemplate> {
 
     use cranelift::frontend::FuncInstBuilder;
 
-    for ty in [I8, I16, I32, I64, I128] {
+    for ty in [I8, I16, I32, I64] {
         if let Some(vars) = resources.vars.get(&ty) {
             let ops = [
                 |i: FuncInstBuilder, x, y| i.iadd(x, y),
