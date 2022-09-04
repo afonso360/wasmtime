@@ -10,7 +10,6 @@ cargo-fuzz = true
 
 [dependencies]
 anyhow = { version = "1.0.19" }
-lazy_static = "1.4.0"
 cranelift-codegen = { path = "../cranelift/codegen", features = ["incremental-cache"] }
 cranelift-reader = { path = "../cranelift/reader" }
 cranelift-wasm = { path = "../cranelift/wasm" }
@@ -20,6 +19,7 @@ cranelift-fuzzgen = { path = "../cranelift/fuzzgen" }
 libfuzzer-sys = { version = "0.4.0", features = ["arbitrary-derive"] }
 target-lexicon = "0.12"
 smallvec = "1.6.1"
+once_cell = "1.12.0"
 wasmtime = { path = "../crates/wasmtime" }
 wasmtime-fuzzing = { path = "../crates/fuzzing" }
 component-test-util = { path = "../crates/misc/component-test-util" }
