@@ -1114,8 +1114,13 @@ where
     /// Fills the current block with random instructions
     fn generate_instructions(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
         for _ in 0..self.param(&self.config.instructions_per_block)? {
-            let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
-            inserter(self, builder, op, args, rets)?;
+            // I know this is terrible, don't judge me
+            let inst_templates = generate_instruction_templates(&self.resources);
+
+            let template = self.u.choose(&inst_templates[..])?;
+            template(self.u, builder)?;
+            // let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
+            // inserter(self, builder, op, args, rets)?;
         }
 
         Ok(())
