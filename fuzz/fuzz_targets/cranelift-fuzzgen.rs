@@ -47,7 +47,7 @@ struct Statistics {
 impl Statistics {
     pub fn print(&self) {
         let total_inputs = self.total_inputs.load(Ordering::SeqCst);
-        if total_inputs != 50000 {
+        if total_inputs != 150000 {
             return;
         }
 
