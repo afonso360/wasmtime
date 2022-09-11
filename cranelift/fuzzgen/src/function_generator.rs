@@ -18,6 +18,31 @@ use cranelift::prelude::{
 use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
+macro_rules! choose {
+    ($e:expr) => {
+        match $e {
+            Ok(e) => Ok(e),
+            Err(arbitrary::Error::NotEnoughData) => Err(arbitrary::Error::NotEnoughData),
+            Err(e) => {
+                let bt = std::backtrace::Backtrace::force_capture();
+                let cwd = std::env::current_dir().unwrap();
+                let target_dir = cwd.join("stack");
+
+                let file = target_dir.join({
+                    use std::time::{SystemTime, UNIX_EPOCH};
+                    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                    format!("{}.stack", now.as_nanos())
+                });
+
+                let bt = format!("{}", bt);
+                std::fs::write(file, bt.as_bytes()).unwrap();
+
+                Err(e)
+            }
+        }
+    };
+}
+
 type BlockSignature = Vec<Type>;
 
 fn insert_opcode(
@@ -72,7 +97,7 @@ fn insert_call(
     _rets: &'static [Type],
 ) -> Result<()> {
     assert_eq!(opcode, Opcode::Call, "only call handled at the moment");
-    let (sig, func_ref) = fgen.u.choose(&fgen.resources.func_refs)?.clone();
+    let (sig, func_ref) = choose!(fgen.u.choose(&fgen.resources.func_refs))?.clone();
 
     let actuals = fgen.generate_values_for_signature(
         builder,
@@ -135,10 +160,10 @@ fn insert_cmp(
     let rhs = builder.use_var(rhs);
 
     let res = if opcode == Opcode::Fcmp {
-        let cc = *fgen.u.choose(FloatCC::all())?;
+        let cc = *choose!(fgen.u.choose(FloatCC::all()))?;
         builder.ins().fcmp(cc, lhs, rhs)
     } else {
-        let cc = *fgen.u.choose(IntCC::all())?;
+        let cc = *choose!(fgen.u.choose(IntCC::all()))?;
         builder.ins().icmp(cc, lhs, rhs)
     };
 
@@ -583,10 +608,10 @@ fn insert_br_table(
     let val = builder.use_var(var);
 
     let target_blocks = fgen.resources.forward_blocks_without_params(source_block);
-    let default_block = *fgen.u.choose(target_blocks)?;
+    let default_block = *choose!(fgen.u.choose(target_blocks))?;
 
     // We can still select a backwards branching jump table here!
-    let jt = *fgen.u.choose(&fgen.resources.jump_tables)?;
+    let jt = *choose!(fgen.u.choose(&fgen.resources.jump_tables))?;
     builder.ins().br_table(val, default_block, jt);
     Ok(())
 }
@@ -600,7 +625,7 @@ fn insert_br(
     let (block, args) = fgen.generate_target_block(builder, source_block)?;
 
     let condbr_types = [I8, I16, I32, I64, I128, B1];
-    let _type = *fgen.u.choose(&condbr_types[..])?;
+    let _type = *choose!(fgen.u.choose(&condbr_types[..]))?;
     let var = fgen.get_variable_of_type(_type)?;
     let val = builder.use_var(var);
 
@@ -621,14 +646,14 @@ fn insert_bricmp(
     source_block: Block,
 ) -> Result<()> {
     let (block, args) = fgen.generate_target_block(builder, source_block)?;
-    let cond = *fgen.u.choose(IntCC::all())?;
+    let cond = *choose!(fgen.u.choose(IntCC::all()))?;
 
     let bricmp_types = [
         I8, I16, I32,
         I64,
         // I128 - TODO: https://github.com/bytecodealliance/wasmtime/issues/4406
     ];
-    let _type = *fgen.u.choose(&bricmp_types[..])?;
+    let _type = *choose!(fgen.u.choose(&bricmp_types[..]))?;
 
     let lhs_var = fgen.get_variable_of_type(_type)?;
     let lhs_val = builder.use_var(lhs_var);
@@ -650,13 +675,13 @@ fn insert_switch(
     builder: &mut FunctionBuilder,
     source_block: Block,
 ) -> Result<()> {
-    let _type = *fgen.u.choose(&[I8, I16, I32, I64, I128][..])?;
+    let _type = *choose!(fgen.u.choose(&[I8, I16, I32, I64, I128][..]))?;
     let switch_var = fgen.get_variable_of_type(_type)?;
     let switch_val = builder.use_var(switch_var);
 
     let default_block = {
         let target_blocks = fgen.resources.forward_blocks_without_params(source_block);
-        *fgen.u.choose(target_blocks)?
+        *choose!(fgen.u.choose(target_blocks))?
     };
 
     // Build this into a HashMap since we cannot have duplicate entries.
@@ -680,7 +705,7 @@ fn insert_switch(
             let index = range_start.wrapping_add(i) % ty_max;
             let block = {
                 let target_blocks = fgen.resources.forward_blocks_without_params(source_block);
-                *fgen.u.choose(target_blocks)?
+                *choose!(fgen.u.choose(target_blocks))?
             };
 
             entries.insert(index, block);
@@ -800,7 +825,7 @@ where
         ];
         // TODO: vector types
 
-        let ty = self.u.choose(&scalars[..])?;
+        let ty = choose!(self.u.choose(&scalars[..]))?;
         Ok(*ty)
     }
 
@@ -842,7 +867,9 @@ where
             .resources
             .stack_slots
             .partition_point(|&(_slot, size)| size < n);
-        Ok(*self.u.choose(&self.resources.stack_slots[first..])?)
+        Ok(*choose!(self
+            .u
+            .choose(&self.resources.stack_slots[first..]))?)
     }
 
     /// Generates an address that should allow for a store or a load.
@@ -884,7 +911,7 @@ where
     /// Get a variable of type `ty` from the current function
     fn get_variable_of_type(&mut self, ty: Type) -> Result<Variable> {
         let opts = self.resources.vars.get(&ty).map_or(&[][..], Vec::as_slice);
-        let var = self.u.choose(opts)?;
+        let var = choose!(self.u.choose(opts))?;
         Ok(*var)
     }
 
@@ -940,7 +967,7 @@ where
         };
         assert!(!block_targets.is_empty());
 
-        let (block, signature) = self.u.choose(block_targets)?.clone();
+        let (block, signature) = choose!(self.u.choose(block_targets))?.clone();
         let args = self.generate_values_for_signature(builder, signature.into_iter())?;
         Ok((block, args))
     }
@@ -1003,7 +1030,7 @@ where
             terminators.push(insert_br_table);
         }
 
-        let inserter = self.u.choose(&terminators[..])?;
+        let inserter = choose!(self.u.choose(&terminators[..]))?;
         inserter(self, builder, source_block)?;
 
         Ok(())
@@ -1012,7 +1039,7 @@ where
     /// Fills the current block with random instructions
     fn generate_instructions(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
         for _ in 0..self.param(&self.config.instructions_per_block)? {
-            let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
+            let (op, args, rets, inserter) = *choose!(self.u.choose(OPCODE_SIGNATURES))?;
             inserter(self, builder, op, args, rets)?;
         }
 
@@ -1024,7 +1051,7 @@ where
             let mut jt_data = JumpTableData::new();
 
             for _ in 0..self.param(&self.config.jump_table_entries)? {
-                let block = *self.u.choose(&self.resources.blocks_without_params)?;
+                let block = *choose!(self.u.choose(&self.resources.blocks_without_params))?;
                 jt_data.push_entry(block);
             }
 
@@ -1049,7 +1076,7 @@ where
                 let signature = self.generate_signature()?;
                 (name, signature)
             } else {
-                let libcall = *self.u.choose(ALLOWED_LIBCALLS)?;
+                let libcall = *choose!(self.u.choose(ALLOWED_LIBCALLS))?;
                 // TODO: Use [CallConv::for_libcall] once we generate flags.
                 let callconv = self.system_callconv();
                 let signature = libcall.signature(callconv);
