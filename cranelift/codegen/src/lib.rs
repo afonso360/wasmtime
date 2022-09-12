@@ -72,6 +72,7 @@ pub use gimli;
 mod machinst;
 
 pub mod binemit;
+pub mod bitset;
 pub mod cfg_printer;
 pub mod cursor;
 pub mod data_value;
@@ -92,7 +93,6 @@ pub use crate::machinst::buffer::{MachCallSite, MachReloc, MachSrcLoc, MachStack
 pub use crate::machinst::{CompiledCode, TextSectionBuilder};
 
 mod alias_analysis;
-mod bitset;
 mod constant_hash;
 mod context;
 mod dce;
