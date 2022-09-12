@@ -528,6 +528,22 @@ fn gen_bool_accessor<T: Fn(&Instruction) -> bool>(
     fmt.empty_line();
 }
 
+fn gen_opcode_list(all_inst: &AllInstructions, fmt: &mut Formatter) {
+    fmt.doc_comment("Returns a list of all available opcodes");
+    fmtln!(fmt, "pub const fn all() -> &'static [Opcode] {");
+    fmt.indent(|fmt| {
+        fmtln!(fmt, "&[");
+        fmt.indent(|fmt| {
+            for inst in all_inst.iter() {
+                fmtln!(fmt, "Self::{},", inst.camel_name);
+            }
+        });
+        fmtln!(fmt, "]");
+    });
+    fmtln!(fmt, "}");
+    fmt.empty_line();
+}
+
 fn gen_opcodes(all_inst: &AllInstructions, fmt: &mut Formatter) {
     fmt.doc_comment(
         r#"
@@ -643,6 +659,7 @@ fn gen_opcodes(all_inst: &AllInstructions, fmt: &mut Formatter) {
             "Does this instruction write to CPU flags?",
             fmt,
         );
+        gen_opcode_list(all_inst, fmt);
     });
     fmt.line("}");
     fmt.empty_line();
