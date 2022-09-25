@@ -1117,8 +1117,9 @@ where
         Ok(sig)
     }
 
-    /// Finds a stack slot with size of at least n bytes
-    fn stack_slot_with_size(&mut self, n: StackSize) -> Result<(StackSlot, StackSize)> {
+    /// Finds a random stack slot with size of at least n bytes.
+    /// For convenience returns both the [StackSlot] and the [StackSize].
+    fn stack_slot_with_size(&mut self, n: u32) -> Result<(StackSlot, StackSize)> {
         Ok(*self.u.choose(self.resources.stack_slots_with_size(n))?)
     }
 
@@ -1250,10 +1251,16 @@ where
     }
 
     /// Fills the current block with random instructions
-    fn generate_instructions(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+    fn insert_instructions(
+        &mut self,
+        builder: &mut FunctionBuilder,
+        templates: &Vec<InstTemplate>,
+    ) -> Result<()> {
         for _ in 0..self.param(&self.config.instructions_per_block)? {
-            let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
-            inserter(self, builder, op, args, rets)?;
+            let template = self.u.choose(templates)?;
+            // let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
+            // inserter(self, builder, op, args, rets)?;
+            template(self.u, builder)?
         }
 
         Ok(())
@@ -1414,30 +1421,26 @@ where
         Ok(params)
     }
 
-    fn build_variable_pool(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let block = builder.current_block().unwrap();
-
-        // Define variables for the function signature
-        let mut vars: Vec<_> = builder
-            .func
-            .signature
+    /// Generates the variables available for use in this function.
+    ///
+    /// We guarantee at least one variable for each argument/return into this function, and additionally
+    /// a random amount of variables based on the current config.
+    fn generate_variable_pool(&mut self, sig: &Signature) -> Result<()> {
+        let sig_types = sig
             .params
             .iter()
+            .chain(&sig.returns)
             .map(|param| param.value_type)
-            .zip(builder.block_params(block).iter().copied())
-            .collect();
+            .collect::<Vec<_>>();
 
-        // Create a pool of vars that are going to be used in this function
-        for _ in 0..self.param(&self.config.vars_per_function)? {
-            let ty = self.generate_type()?;
-            let value = generate_const(&mut self.u, builder, ty)?;
-            vars.push((ty, value));
-        }
+        let var_types = (0..self.param(&self.config.vars_per_function)?)
+            .map(|_| self.generate_type())
+            .collect::<Result<Vec<_>>>()?;
 
-        for (id, (ty, value)) in vars.into_iter().enumerate() {
+        // Registers the variables with unique id each. We can't initialize these variables yet
+        // because we need to be in the first block to do so.
+        for (id, ty) in sig_types.into_iter().chain(var_types).enumerate() {
             let var = Variable::new(id);
-            builder.declare_var(var, ty);
-            builder.def_var(var, value);
             self.resources
                 .vars
                 .entry(ty)
@@ -1447,6 +1450,80 @@ where
 
         Ok(())
     }
+
+    fn initialize_variable_pool(
+        &self,
+        builder: &mut FunctionBuilder,
+        sig: &Signature,
+    ) -> Result<()> {
+        let block = builder.current_block().unwrap();
+
+        // Choose the variables that represents the arguments of this function.
+        // These should not be overwritten with a random constant value.
+        let arg_vars = sig
+            .params
+            .iter()
+            .map(|p| Ok((p.value_type, self.get_variable_of_type(p.value_type)?)))
+            .collect::<Result<Vec<_>>>()?;
+
+        // Bind the signature variables to the block params
+        for (i, (ty, var)) in arg_vars.iter().enumerate() {
+            let block_param = builder.block_params(block)[i];
+            builder.declare_var(*var, *ty);
+            builder.def_var(*var, block_param);
+        }
+
+        // We need to initialize the rest of the variables with a constant value. So get all
+        // variables and subtract the arg variables.
+        let pool_vars = self
+            .resources
+            .vars
+            .iter()
+            .flat_map(|(ty, vars)| vars.iter().map(|v| (*ty, *v)))
+            .filter(|(ty, var)| arg_vars.contains(&(*ty, *var)));
+
+        for (ty, var) in pool_vars.into_iter() {
+            let value = generate_const(&mut self.u, builder, ty)?;
+            builder.declare_var(var, ty);
+            builder.def_var(var, value);
+        }
+
+        Ok(())
+    }
+
+    // fn build_variable_pool(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+    //     let block = builder.current_block().unwrap();
+    //
+    //     // Define variables for the function signature
+    //     let mut vars: Vec<_> = builder
+    //         .func
+    //         .signature
+    //         .params
+    //         .iter()
+    //         .map(|param| param.value_type)
+    //         .zip(builder.block_params(block).iter().copied())
+    //         .collect();
+    //
+    //     // Create a pool of vars that are going to be used in this function
+    //     for _ in 0..self.param(&self.config.vars_per_function)? {
+    //         let ty = self.generate_type()?;
+    //         let value = generate_const(&mut self.u, builder, ty)?;
+    //         vars.push((ty, value));
+    //     }
+    //
+    //     for (id, (ty, value)) in vars.into_iter().enumerate() {
+    //         let var = Variable::new(id);
+    //         builder.declare_var(var, ty);
+    //         builder.def_var(var, value);
+    //         self.resources
+    //             .vars
+    //             .entry(ty)
+    //             .or_insert_with(Vec::new)
+    //             .push(var);
+    //     }
+    //
+    //     Ok(())
+    // }
 
     /// We generate a function in multiple stages:
     ///
@@ -1466,11 +1543,15 @@ where
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
         self.generate_blocks(&mut builder, &sig)?;
+        self.generate_variable_pool(&sig)?;
 
         // Function preamble
         self.generate_jumptables(&mut builder)?;
         self.generate_funcrefs(&mut builder)?;
         self.generate_stack_slots(&mut builder)?;
+
+        // Generate instruction templates.
+        let instructions = generate_instruction_templates(&self.resources);
 
         // Main instruction generation loop
         for (block, block_sig) in self.resources.blocks.clone().into_iter() {
@@ -1478,10 +1559,10 @@ where
             builder.switch_to_block(block);
 
             if is_block0 {
-                // The first block is special because we must create variables both for the
+                // The first block is special because we must declare variables both for the
                 // block signature and for the variable pool. Additionally, we must also define
                 // initial values for all variables that are not the function signature.
-                self.build_variable_pool(&mut builder)?;
+                self.initialize_variable_pool(&mut builder, &sig)?;
 
                 // Stack slots have random bytes at the beginning of the function
                 // initialize them to a constant value so that execution stays predictable.
@@ -1496,7 +1577,7 @@ where
             }
 
             // Generate block instructions
-            self.generate_instructions(&mut builder)?;
+            self.insert_instructions(&mut builder, &instructions)?;
 
             self.finalize_block(&mut builder, block)?;
         }
