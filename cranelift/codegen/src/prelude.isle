@@ -259,13 +259,6 @@
 
 ;;;; `cranelift_codegen::ir::Type` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(extern const $B1 Type)
-(extern const $B8 Type)
-(extern const $B16 Type)
-(extern const $B32 Type)
-(extern const $B64 Type)
-(extern const $B128 Type)
-
 (extern const $I8 Type)
 (extern const $I16 Type)
 (extern const $I32 Type)
@@ -277,11 +270,6 @@
 
 (extern const $F32 Type)
 (extern const $F64 Type)
-
-(extern const $B8X16 Type)
-(extern const $B16X8 Type)
-(extern const $B32X4 Type)
-(extern const $B64X2 Type)
 
 (extern const $I8X8 Type)
 (extern const $I8X16 Type)
@@ -369,15 +357,15 @@
 (decl int_bool_fits_in_32 (Type) Type)
 (extern extractor int_bool_fits_in_32 int_bool_fits_in_32)
 
-;; An extractor that matches I64 or B64.
+;; An extractor that matches I64.
 (decl ty_int_bool_64 (Type) Type)
 (extern extractor ty_int_bool_64 ty_int_bool_64)
 
-;; An extractor that matches I64 or B64 or R64.
+;; An extractor that matches I64 or R64.
 (decl ty_int_bool_ref_64 (Type) Type)
 (extern extractor ty_int_bool_ref_64 ty_int_bool_ref_64)
 
-;; An extractor that matches I128 or B128.
+;; An extractor that matches I128.
 (decl ty_int_bool_128 (Type) Type)
 (extern extractor ty_int_bool_128 ty_int_bool_128)
 

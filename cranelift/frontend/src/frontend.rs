@@ -1029,7 +1029,7 @@ impl<'a> FunctionBuilder<'a> {
         };
 
         if size == 0 {
-            return self.ins().bconst(types::B1, empty_imm);
+            return self.ins().bconst(types::I8, empty_imm);
         }
 
         // Future work could consider expanding this to handle more-complex scenarios.

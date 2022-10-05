@@ -1568,10 +1568,10 @@
 
 
 ;; If the target has the same or a smaller size than the source, it's a no-op.
-(rule (cast_bool $B8 $I8 x) x)
-(rule (cast_bool $B16 (fits_in_16 _out) x) x)
-(rule (cast_bool $B32 (fits_in_32 _out) x) x)
-(rule (cast_bool $B64 (fits_in_64 _out) x) x)
+(rule (cast_bool $I8 $I8 x) x)
+(rule (cast_bool $I16 (fits_in_16 _out) x) x)
+(rule (cast_bool $I32 (fits_in_32 _out) x) x)
+(rule (cast_bool $I64 (fits_in_64 _out) x) x)
 
 ;; Casting between 128 bits is a noop
 (rule -1 (cast_bool (ty_int_bool_128 _in) (ty_int_bool_128 _out) x)

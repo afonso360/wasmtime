@@ -510,7 +510,7 @@ impl<'a> State<'a, DataValue> for InterpreterState<'a> {
 
         // We start with a sentinel value that will fail if we try to load / add to it
         // without resolving the base GV First.
-        let mut current_val = DataValue::B(false);
+        let mut current_val = DataValue::I8(0);
         let mut action_stack = vec![ResolveAction::Resolve(gv)];
 
         loop {

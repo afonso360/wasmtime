@@ -270,12 +270,12 @@ impl Value for DataValue {
 
     fn bool(b: bool, ty: Type) -> ValueResult<Self> {
         assert!(ty.is_bool());
-        Ok(DataValue::B(b))
+        Ok(DataValue::I8(if b { 1 } else { 0 }))
     }
 
     fn into_bool(self) -> ValueResult<bool> {
         match self {
-            DataValue::B(b) => Ok(b),
+            DataValue::I8(b) => Ok(b != 0),
             _ => Err(ValueError::InvalidType(ValueTypeClass::Boolean, self.ty())),
         }
     }
@@ -316,16 +316,6 @@ impl Value for DataValue {
                 (DataValue::F32(n), types::I32) => DataValue::I32(n.bits() as i32),
                 (DataValue::F64(n), types::I64) => DataValue::I64(n.bits() as i64),
                 (DataValue::F32(n), types::F64) => DataValue::F64((n.as_f32() as f64).into()),
-                (DataValue::B(b), t) if t.is_bool() => DataValue::B(b),
-                (DataValue::B(b), t) if t.is_int() => {
-                    // Bools are represented in memory as all 1's
-                    let val = match (b, t) {
-                        (true, types::I128) => -1,
-                        (true, t) => (1i128 << t.bits()) - 1,
-                        _ => 0,
-                    };
-                    DataValue::int(val, t)?
-                }
                 (dv, t) if (t.is_int() || t.is_float()) && dv.ty() == t => dv,
                 (dv, _) => unimplemented!("conversion: {} -> {:?}", dv.ty(), kind),
             },
@@ -432,8 +422,7 @@ impl Value for DataValue {
                 (s, _) => unimplemented!("conversion: {} -> {:?}", s.ty(), kind),
             },
             ValueConversionKind::ToBoolean => match self.ty() {
-                ty if ty.is_bool() => DataValue::B(self.into_bool()?),
-                ty if ty.is_int() => DataValue::B(self.into_int()? != 0),
+                ty if ty.is_int() => DataValue::I8(if self.into_int()? != 0 { 1 } else { 0 }),
                 ty => unimplemented!("conversion: {} -> {:?}", ty, kind),
             },
         })
@@ -662,11 +651,11 @@ impl Value for DataValue {
     }
 
     fn and(self, other: Self) -> ValueResult<Self> {
-        binary_match!(&(self, other); [B, I8, I16, I32, I64, F32, F64])
+        binary_match!(&(self, other); [I8, I16, I32, I64, F32, F64])
     }
 
     fn or(self, other: Self) -> ValueResult<Self> {
-        binary_match!(|(self, other); [B, I8, I16, I32, I64, F32, F64])
+        binary_match!(|(self, other); [I8, I16, I32, I64, F32, F64])
     }
 
     fn xor(self, other: Self) -> ValueResult<Self> {
@@ -674,7 +663,7 @@ impl Value for DataValue {
     }
 
     fn not(self) -> ValueResult<Self> {
-        unary_match!(!(self); [B, I8, I16, I32, I64, F32, F64])
+        unary_match!(!(self); [I8, I16, I32, I64, F32, F64])
     }
 
     fn count_ones(self) -> ValueResult<Self> {

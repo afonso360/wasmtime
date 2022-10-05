@@ -2571,7 +2571,7 @@ impl<'a> Parser<'a> {
                     // invocation, we create an invocation from a function like `() -> b*` and
                     // compare it to `true`.
                     let invocation = Invocation::new("default", vec![]);
-                    let expected = vec![DataValue::B(true)];
+                    let expected = vec![DataValue::I8(1)];
                     let comparison = Comparison::Equals;
                     Ok(RunCommand::Run(invocation, comparison, expected))
                 } else {
@@ -2714,7 +2714,7 @@ impl<'a> Parser<'a> {
                 }
             }
             _ if ty.is_bool() && !ty.is_vector() => {
-                DataValue::from(self.match_bool("expected a boolean")?)
+                DataValue::from(if self.match_bool("expected a boolean")? { 1 } else { 0 })
             }
             _ => return Err(self.error(&format!("don't know how to parse data values of: {}", ty))),
         };

@@ -114,7 +114,6 @@ where
                     length => panic!("unexpected Shuffle mask length {}", length),
                 }
             }
-            InstructionData::UnaryBool { imm, .. } => DataValue::from(imm),
             // 8-bit.
             InstructionData::BinaryImm8 { imm, .. } | InstructionData::TernaryImm8 { imm, .. } => {
                 DataValue::from(imm as i8) // Note the switch from unsigned to signed.
@@ -754,7 +753,7 @@ where
         Opcode::IaddCout => {
             let sum = Value::add(arg(0)?, arg(1)?)?;
             let carry = Value::lt(&sum, &arg(0)?)? && Value::lt(&sum, &arg(1)?)?;
-            assign_multiple(&[sum, Value::bool(carry, types::B1)?])
+            assign_multiple(&[sum, Value::bool(carry, types::I8)?])
         }
         Opcode::IaddIfcout => unimplemented!("IaddIfcout"),
         Opcode::IaddCarry => {
@@ -763,7 +762,7 @@ where
                 sum = Value::add(sum, Value::int(1, ctrl_ty)?)?
             }
             let carry = Value::lt(&sum, &arg(0)?)? && Value::lt(&sum, &arg(1)?)?;
-            assign_multiple(&[sum, Value::bool(carry, types::B1)?])
+            assign_multiple(&[sum, Value::bool(carry, types::I8)?])
         }
         Opcode::IaddIfcarry => unimplemented!("IaddIfcarry"),
         Opcode::IsubBin => choose(
@@ -775,7 +774,7 @@ where
         Opcode::IsubBout => {
             let sum = Value::sub(arg(0)?, arg(1)?)?;
             let borrow = Value::lt(&arg(0)?, &arg(1)?)?;
-            assign_multiple(&[sum, Value::bool(borrow, types::B1)?])
+            assign_multiple(&[sum, Value::bool(borrow, types::I8)?])
         }
         Opcode::IsubIfbout => unimplemented!("IsubIfbout"),
         Opcode::IsubBorrow => {
@@ -786,7 +785,7 @@ where
             };
             let borrow = Value::lt(&arg(0)?, &rhs)?;
             let sum = Value::sub(arg(0)?, rhs)?;
-            assign_multiple(&[sum, Value::bool(borrow, types::B1)?])
+            assign_multiple(&[sum, Value::bool(borrow, types::I8)?])
         }
         Opcode::IsubIfborrow => unimplemented!("IsubIfborrow"),
         Opcode::Band => binary(Value::and, arg(0)?, arg(1)?)?,
@@ -946,13 +945,13 @@ where
         // return a 1-bit boolean value.
         Opcode::Trueif => choose(
             state.has_iflag(inst.cond_code().unwrap()),
-            Value::bool(true, types::B1)?,
-            Value::bool(false, types::B1)?,
+            Value::bool(true, types::I8)?,
+            Value::bool(false, types::I8)?,
         ),
         Opcode::Trueff => choose(
             state.has_fflag(inst.fp_cond_code().unwrap()),
-            Value::bool(true, types::B1)?,
-            Value::bool(false, types::B1)?,
+            Value::bool(true, types::I8)?,
+            Value::bool(false, types::I8)?,
         ),
         Opcode::Bitcast
         | Opcode::RawBitcast
@@ -1095,13 +1094,13 @@ where
         Opcode::VanyTrue => assign(fold_vector(
             arg(0)?,
             ctrl_ty,
-            V::bool(false, types::B1)?,
+            V::bool(false, types::I8)?,
             |acc, lane| acc.or(lane),
         )?),
         Opcode::VallTrue => assign(fold_vector(
             arg(0)?,
             ctrl_ty,
-            V::bool(true, types::B1)?,
+            V::bool(true, types::I8)?,
             |acc, lane| acc.and(lane),
         )?),
         Opcode::SwidenLow | Opcode::SwidenHigh | Opcode::UwidenLow | Opcode::UwidenHigh => {
@@ -1489,10 +1488,10 @@ where
     }
 
     let iterations = match lane_type {
-        types::I8 | types::B1 | types::B8 => 1,
-        types::I16 | types::B16 => 2,
-        types::I32 | types::B32 | types::F32 => 4,
-        types::I64 | types::B64 | types::F64 => 8,
+        types::I8 => 1,
+        types::I16 => 2,
+        types::I32 | types::F32 => 4,
+        types::I64 | types::F64 => 8,
         _ => unimplemented!("vectors with lanes wider than 64-bits are currently unsupported."),
     };
 
@@ -1528,10 +1527,10 @@ where
 
     let lane_type = vector_type.lane_type();
     let iterations = match lane_type {
-        types::I8 | types::B1 | types::B8 => 1,
-        types::I16 | types::B16 => 2,
-        types::I32 | types::B32 | types::F32 => 4,
-        types::I64 | types::B64 | types::F64 => 8,
+        types::I8 => 1,
+        types::I16 => 2,
+        types::I32 | types::F32 => 4,
+        types::I64 | types::F64 => 8,
         _ => unimplemented!("vectors with lanes wider than 64-bits are currently unsupported."),
     };
     let mut result: [u8; 16] = [0; 16];

@@ -1184,36 +1184,28 @@
       (cast_bool ty x))
 
 ;; If the target has the same or a smaller size than the source, it's a no-op.
-(rule 8 (cast_bool $B1 x @ (value_type $B1)) x)
-(rule 8 (cast_bool $B1 x @ (value_type $B8)) x)
-(rule 8 (cast_bool $B8 x @ (value_type $B8)) x)
-(rule 8 (cast_bool $I8 x @ (value_type $B8)) x)
-(rule 7 (cast_bool (fits_in_16 _ty) x @ (value_type $B16)) x)
-(rule 6 (cast_bool (fits_in_32 _ty) x @ (value_type $B32)) x)
-(rule 5 (cast_bool (fits_in_64 _ty) x @ (value_type $B64)) x)
-(rule 4 (cast_bool (vr128_ty _ty) x @ (value_type $B128)) x)
-(rule 5 (cast_bool (fits_in_64 _ty) x @ (value_type $B128))
+(rule 7 (cast_bool (fits_in_16 _ty) x @ (value_type $I16)) x)
+(rule 6 (cast_bool (fits_in_32 _ty) x @ (value_type $I32)) x)
+(rule 5 (cast_bool (fits_in_64 _ty) x @ (value_type $I64)) x)
+(rule 4 (cast_bool (vr128_ty _ty) x @ (value_type $I128)) x)
+(rule 5 (cast_bool (fits_in_64 _ty) x @ (value_type $I128))
       (vec_extract_lane $I64X2 x 1 (zero_reg)))
 
 ;; Single-bit values are sign-extended via a pair of shifts.
-(rule 0 (cast_bool (gpr32_ty ty) x @ (value_type $B1))
+(rule 0 (cast_bool (gpr32_ty ty) x @ (value_type $I8))
       (ashr_imm $I32 (lshl_imm $I32 x 31) 31))
-(rule 1 (cast_bool (gpr64_ty ty) x @ (value_type $B1))
+(rule 1 (cast_bool (gpr64_ty ty) x @ (value_type $I8))
       (ashr_imm $I64 (lshl_imm $I64 x 63) 63))
-(rule 4 (cast_bool (vr128_ty ty) x @ (value_type $B1))
+(rule 4 (cast_bool (vr128_ty ty) x @ (value_type $I8))
       (let ((gpr Reg (ashr_imm $I64 (lshl_imm $I64 x 63) 63)))
         (mov_to_vec128 ty gpr gpr)))
 
 ;; Other values are just sign-extended normally.
-(rule 0 (cast_bool (gpr32_ty _ty) x @ (value_type $B8))
-      (sext32_reg $I8 x))
-(rule 0 (cast_bool (gpr32_ty _ty) x @ (value_type $B16))
+(rule 0 (cast_bool (gpr32_ty _ty) x @ (value_type $I16))
       (sext32_reg $I16 x))
-(rule 1(cast_bool (gpr64_ty _ty) x @ (value_type $B8))
-      (sext64_reg $I8 x))
-(rule 1(cast_bool (gpr64_ty _ty) x @ (value_type $B16))
+(rule 1(cast_bool (gpr64_ty _ty) x @ (value_type $I16))
       (sext64_reg $I16 x))
-(rule 1(cast_bool (gpr64_ty _ty) x @ (value_type $B32))
+(rule 1(cast_bool (gpr64_ty _ty) x @ (value_type $I32))
       (sext64_reg $I32 x))
 (rule 3 (cast_bool (vr128_ty ty) x @ (value_type (gpr32_ty src_ty)))
       (let ((x_ext Reg (sext64_reg src_ty x)))
@@ -3783,14 +3775,14 @@
 ;;;; Rules for `is_null` and `is_invalid`  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Null references are represented by the constant value 0.
-(rule (lower (has_type $B1 (is_null x @ (value_type $R64))))
-      (lower_bool $B1 (bool (icmps_simm16 $I64 x 0)
+(rule (lower (has_type $I8 (is_null x @ (value_type $R64))))
+      (lower_bool $I8 (bool (icmps_simm16 $I64 x 0)
                             (intcc_as_cond (IntCC.Equal)))))
 
 
 ;; Invalid references are represented by the constant value -1.
-(rule (lower (has_type $B1 (is_invalid x @ (value_type $R64))))
-      (lower_bool $B1 (bool (icmps_simm16 $I64 x -1)
+(rule (lower (has_type $I8 (is_invalid x @ (value_type $R64))))
+      (lower_bool $I8 (bool (icmps_simm16 $I64 x -1)
                             (intcc_as_cond (IntCC.Equal)))))
 
 
