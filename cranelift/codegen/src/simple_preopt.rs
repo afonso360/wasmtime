@@ -614,7 +614,7 @@ mod simplify {
         dfg::ValueDef,
         immediates,
         instructions::{Opcode, ValueList},
-        types::{B8, I16, I32, I8},
+        types::{I16, I32, I8},
     };
     use std::marker::PhantomData;
 
@@ -916,13 +916,13 @@ mod simplify {
                             constant_handle,
                         } => {
                             // If each byte of controlling mask is 0x00 or 0xFF then
-                            // we will always bitcast our way to vselect(B8x16, I8x16, I8x16).
+                            // we will always bitcast our way to vselect(I8x16, I8x16).
                             // Bitselect operates at bit level, so the lane types don't matter.
                             let const_data = pos.func.dfg.constants.get(constant_handle);
                             if !const_data.iter().all(|&b| b == 0 || b == 0xFF) {
                                 return;
                             }
-                            let new_type = B8.by(old_cond_type.bytes()).unwrap();
+                            let new_type = I8.by(old_cond_type.bytes()).unwrap();
                             (pos.ins().raw_bitcast(new_type, args[0]), new_type)
                         }
                         _ => return,

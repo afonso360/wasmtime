@@ -42,7 +42,6 @@ fn define_control_flow(
         "A scalar boolean or integer type",
         TypeSetBuilder::new()
             .ints(Interval::All)
-            .bools(Interval::All)
             .build(),
     );
 
@@ -412,7 +411,6 @@ fn define_simd_lane_access(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .simd_lanes(Interval::All)
             .dynamic_simd_lanes(Interval::All)
             .includes_scalars(false)
@@ -685,7 +683,7 @@ pub(crate) fn define(
     let iflags: &TypeVar = &ValueType::Special(types::Flag::IFlags.into()).into();
     let fflags: &TypeVar = &ValueType::Special(types::Flag::FFlags.into()).into();
 
-    let b1: &TypeVar = &ValueType::from(LaneType::from(types::Bool::B1)).into();
+    let b1: &TypeVar = &ValueType::from(LaneType::from(types::Int::I8)).into();
     let f32_: &TypeVar = &ValueType::from(LaneType::from(types::Float::F32)).into();
     let f64_: &TypeVar = &ValueType::from(LaneType::from(types::Float::F64)).into();
 
@@ -704,7 +702,7 @@ pub(crate) fn define(
         "Bool",
         "A scalar or vector boolean type",
         TypeSetBuilder::new()
-            .bools(Interval::All)
+            .ints(Interval::All)
             .simd_lanes(Interval::All)
             .build(),
     );
@@ -712,7 +710,7 @@ pub(crate) fn define(
     let ScalarBool = &TypeVar::new(
         "ScalarBool",
         "A scalar boolean type",
-        TypeSetBuilder::new().bools(Interval::All).build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     let iB = &TypeVar::new(
@@ -738,7 +736,6 @@ pub(crate) fn define(
         "A scalar boolean or integer type",
         TypeSetBuilder::new()
             .ints(Interval::All)
-            .bools(Interval::All)
             .build(),
     );
 
@@ -748,7 +745,6 @@ pub(crate) fn define(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .simd_lanes(Interval::All)
             .includes_scalars(false)
             .build(),
@@ -759,7 +755,6 @@ pub(crate) fn define(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .refs(Interval::All)
             .simd_lanes(Interval::All)
             .includes_scalars(true)
@@ -1463,7 +1458,6 @@ pub(crate) fn define(
          lane counts and widths",
         TypeSetBuilder::new()
             .ints(8..8)
-            .bools(8..8)
             .simd_lanes(16..16)
             .includes_scalars(false)
             .build(),
@@ -1640,7 +1634,6 @@ pub(crate) fn define(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .simd_lanes(1..128)
             .includes_scalars(true)
             .build(),
@@ -2434,7 +2427,6 @@ pub(crate) fn define(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .simd_lanes(Interval::All)
             .includes_scalars(true)
             .build(),
@@ -3332,13 +3324,13 @@ pub(crate) fn define(
     let Bool = &TypeVar::new(
         "Bool",
         "A scalar boolean type",
-        TypeSetBuilder::new().bools(Interval::All).build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     let BoolTo = &TypeVar::new(
         "BoolTo",
         "A smaller boolean type",
-        TypeSetBuilder::new().bools(Interval::All).build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     let x = &Operand::new("x", Bool);
@@ -3359,7 +3351,7 @@ pub(crate) fn define(
     let BoolTo = &TypeVar::new(
         "BoolTo",
         "A larger boolean type",
-        TypeSetBuilder::new().bools(Interval::All).build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
     let x = &Operand::new("x", Bool);
     let a = &Operand::new("a", BoolTo);
@@ -3402,7 +3394,6 @@ pub(crate) fn define(
         "Bool",
         "A scalar or vector boolean type",
         TypeSetBuilder::new()
-            .bools(Interval::All)
             .simd_lanes(Interval::All)
             .build(),
     );
@@ -4136,7 +4127,6 @@ pub(crate) fn define(
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
-            .bools(Interval::All)
             .dynamic_simd_lanes(Interval::All)
             .build(),
     );
