@@ -269,7 +269,7 @@ impl Value for DataValue {
     }
 
     fn bool(b: bool, ty: Type) -> ValueResult<Self> {
-        assert!(ty.is_bool());
+        assert!(ty.is_int());
         Ok(DataValue::I8(if b { 1 } else { 0 }))
     }
 

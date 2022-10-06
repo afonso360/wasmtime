@@ -551,7 +551,6 @@ where
         Opcode::Iconst => assign(Value::int(imm().into_int()?, ctrl_ty)?),
         Opcode::F32const => assign(imm()),
         Opcode::F64const => assign(imm()),
-        Opcode::Bconst => assign(imm()),
         Opcode::Vconst => assign(imm()),
         Opcode::Null => unimplemented!("Null"),
         Opcode::Nop => ControlFlow::Continue,
