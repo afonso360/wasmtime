@@ -1090,18 +1090,18 @@ where
         Opcode::Vsplit => unimplemented!("Vsplit"),
         Opcode::Vconcat => unimplemented!("Vconcat"),
         Opcode::Vselect => assign(vselect(&arg(0)?, &arg(1)?, &arg(2)?, ctrl_ty)?),
-        Opcode::VanyTrue => assign(fold_vector(
-            arg(0)?,
-            ctrl_ty,
-            V::bool(false, true, types::I8)?,
-            |acc, lane| acc.or(lane),
-        )?),
-        Opcode::VallTrue => assign(fold_vector(
-            arg(0)?,
-            ctrl_ty,
-            V::bool(true, true, types::I8)?,
-            |acc, lane| acc.and(lane),
-        )?),
+        Opcode::VanyTrue => {
+            let lane_ty = ctrl_ty.lane_type();
+            let init = V::bool(false, true, lane_ty)?;
+            let any = fold_vector(arg(0)?, ctrl_ty, init.clone(), |acc, lane| acc.or(lane))?;
+            assign(V::bool(!V::eq(&any, &init)?, false, types::I8)?)
+        }
+        Opcode::VallTrue => {
+            let lane_ty = ctrl_ty.lane_type();
+            let init = V::bool(true, true, lane_ty)?;
+            let all = fold_vector(arg(0)?, ctrl_ty, init.clone(), |acc, lane| acc.and(lane))?;
+            assign(V::bool(V::eq(&all, &init)?, false, types::I8)?)
+        }
         Opcode::SwidenLow | Opcode::SwidenHigh | Opcode::UwidenLow | Opcode::UwidenHigh => {
             let new_type = ctrl_ty.merge_lanes().unwrap();
             let conv_type = match inst.opcode() {
