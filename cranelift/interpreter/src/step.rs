@@ -29,7 +29,6 @@ fn validate_signature_params(sig: &[AbiParam], args: &[impl Value]) -> bool {
             // but we don't have enough information there either.
             //
             // Ideally the user has run the verifier and caught this properly...
-            (a, b) if a.is_bool() && b.is_bool() => true,
             (a, b) if a.is_vector() && b.is_vector() => true,
             (a, b) => a == b,
         })
@@ -1501,9 +1500,7 @@ where
             lane += (x[((i * iterations) + j) as usize] as i128) << (8 * j);
         }
 
-        let lane_val: V = if lane_type.is_bool() {
-            Value::bool(lane != 0, lane_type)?
-        } else if lane_type.is_float() {
+        let lane_val: V = if lane_type.is_float() {
             Value::float(lane as u64, lane_type)?
         } else {
             Value::int(lane, lane_type)?

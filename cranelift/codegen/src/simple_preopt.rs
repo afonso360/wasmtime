@@ -906,7 +906,7 @@ mod simplify {
                             // we know each lane is either all zeroes or ones,
                             // so we can use vselect instruction instead.
                             let arg_type = pos.func.dfg.value_type(arg);
-                            if !arg_type.is_vector() || !arg_type.lane_type().is_bool() {
+                            if !arg_type.is_vector() {
                                 return;
                             }
                             (arg, arg_type)

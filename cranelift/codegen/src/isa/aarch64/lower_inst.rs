@@ -39,7 +39,7 @@ pub(crate) fn lower_insn_to_regs(
     };
 
     match op {
-        Opcode::Iconst | Opcode::Bconst | Opcode::Null => implemented_in_isle(ctx),
+        Opcode::Iconst | Opcode::Null => implemented_in_isle(ctx),
 
         Opcode::F32const | Opcode::F64const => unreachable!(
             "Should never see constant ops at top level lowering entry

@@ -374,7 +374,7 @@ macro_rules! isle_prelude_methods {
 
         #[inline]
         fn ty_int_bool(&mut self, ty: Type) -> Option<Type> {
-            if ty.is_int() || ty.is_bool() {
+            if ty.is_int() {
                 Some(ty)
             } else {
                 None

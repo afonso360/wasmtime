@@ -150,7 +150,7 @@ fn emit_zero(ty: Type, mut cur: FuncCursor) -> Value {
         cur.ins().null(ty)
     } else if ty.is_vector() {
         let scalar_ty = ty.lane_type();
-        if scalar_ty.is_int() || scalar_ty.is_bool() {
+        if scalar_ty.is_int() {
             let zero = cur.func.dfg.constants.insert(
                 core::iter::repeat(0)
                     .take(ty.bytes().try_into().unwrap())

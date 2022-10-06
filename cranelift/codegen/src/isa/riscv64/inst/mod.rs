@@ -691,14 +691,11 @@ impl MachInst for Inst {
 
     fn gen_constant<F: FnMut(Type) -> Writable<Reg>>(
         to_regs: ValueRegs<Writable<Reg>>,
-        mut value: u128,
+        value: u128,
         ty: Type,
         mut alloc_tmp: F,
     ) -> SmallVec<[Inst; 4]> {
-        if ty.is_bool() && value != 0 {
-            value = !0;
-        }
-        if (ty.bits() <= 64 && (ty.is_bool() || ty.is_int())) || ty == R32 || ty == R64 {
+        if (ty.bits() <= 64 && ty.is_int()) || ty == R32 || ty == R64 {
             return Inst::load_constant_u64(to_regs.only_reg().unwrap(), value as u64);
         };
         match ty {

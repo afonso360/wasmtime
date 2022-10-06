@@ -154,13 +154,7 @@ impl DataValue {
 
     /// Write a [DataValue] to a memory location.
     pub unsafe fn write_value_to(&self, p: *mut u128) {
-        // Since `DataValue` does not have type info for bools we always
-        // write out a full 16 byte slot.
-        let size = match self.ty() {
-            ty if ty.is_bool() => 16,
-            ty => ty.bytes() as usize,
-        };
-
+        let size = self.ty().bytes() as usize;
         self.write_to_slice(std::slice::from_raw_parts_mut(p as *mut u8, size));
     }
 

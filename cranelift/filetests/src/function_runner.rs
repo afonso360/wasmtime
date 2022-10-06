@@ -3,8 +3,7 @@ use anyhow::{anyhow, Result};
 use core::mem;
 use cranelift_codegen::data_value::DataValue;
 use cranelift_codegen::ir::{
-    condcodes::IntCC, ExternalName, Function, InstBuilder, Signature, UserExternalName,
-    UserFuncName,
+    ExternalName, Function, InstBuilder, Signature, UserExternalName, UserFuncName,
 };
 use cranelift_codegen::isa::TargetIsa;
 use cranelift_codegen::{ir, settings, CodegenError, Context};
@@ -425,9 +424,6 @@ fn make_trampoline(name: UserFuncName, signature: &ir::Signature, isa: &dyn Targ
         .iter()
         .enumerate()
         .map(|(i, param)| {
-            // Calculate the type to load from memory, using integers for booleans (no encodings).
-            let ty = param.value_type.coerce_bools_to_ints();
-
             // We always store vector types in little-endian byte order as DataValue.
             let mut flags = ir::MemFlags::trusted();
             if param.value_type.is_vector() {
@@ -435,32 +431,12 @@ fn make_trampoline(name: UserFuncName, signature: &ir::Signature, isa: &dyn Targ
             }
 
             // Load the value.
-            let loaded = builder.ins().load(
-                ty,
+            builder.ins().load(
+                param.value_type,
                 flags,
                 values_vec_ptr_val,
                 (i * UnboxedValues::SLOT_SIZE) as i32,
-            );
-
-            // For booleans, we want to type-convert the loaded integer into a boolean and ensure
-            // that we are using the architecture's canonical boolean representation (presumably
-            // comparison will emit this).
-            if param.value_type.is_bool() {
-                let b = builder.ins().icmp_imm(IntCC::NotEqual, loaded, 0);
-
-                // icmp_imm always produces a `b1`, `bextend` it if we need a larger bool
-                if param.value_type.bits() > 1 {
-                    builder.ins().bextend(param.value_type, b)
-                } else {
-                    b
-                }
-            } else if param.value_type.is_bool_vector() {
-                let zero_constant = builder.func.dfg.constants.insert(vec![0; 16].into());
-                let zero_vec = builder.ins().vconst(ty, zero_constant);
-                builder.ins().icmp(IntCC::NotEqual, loaded, zero_vec)
-            } else {
-                loaded
-            }
+            )
         })
         .collect::<Vec<_>>();
 
@@ -473,13 +449,6 @@ fn make_trampoline(name: UserFuncName, signature: &ir::Signature, isa: &dyn Targ
     // Store the return values into `values_vec`.
     let results = builder.func.dfg.inst_results(call).to_vec();
     for ((i, value), param) in results.iter().enumerate().zip(&signature.returns) {
-        // Before storing return values, we convert booleans to their integer representation.
-        let value = if param.value_type.lane_type().is_bool() {
-            let ty = param.value_type.lane_type().as_int();
-            builder.ins().bint(ty, *value)
-        } else {
-            *value
-        };
         // We always store vector types in little-endian byte order as DataValue.
         let mut flags = ir::MemFlags::trusted();
         if param.value_type.is_vector() {
@@ -488,7 +457,7 @@ fn make_trampoline(name: UserFuncName, signature: &ir::Signature, isa: &dyn Targ
         // Store the value.
         builder.ins().store(
             flags,
-            value,
+            *value,
             values_vec_ptr_val,
             (i * UnboxedValues::SLOT_SIZE) as i32,
         );

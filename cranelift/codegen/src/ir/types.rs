@@ -17,7 +17,7 @@ use target_lexicon::{PointerWidth, Triple};
 ///
 /// Basic floating point types: `F32` and `F64`. IEEE single and double precision.
 ///
-/// SIMD vector types have power-of-two lanes, up to 256. Lanes can be any int/float/bool type.
+/// SIMD vector types have power-of-two lanes, up to 256. Lanes can be any int/float type.
 ///
 /// Note that this is encoded in a `u16` currently for extensibility,
 /// but allows only 14 bits to be used due to some bitpacking tricks
@@ -228,16 +228,6 @@ impl Type {
         self.0 >= constants::DYNAMIC_VECTOR_BASE
     }
 
-    /// Is this a scalar boolean type?
-    pub fn is_bool(self) -> bool {
-        false
-    }
-
-    /// Is this a vector boolean type?
-    pub fn is_bool_vector(self) -> bool {
-        self.is_vector() && self.lane_type().is_bool()
-    }
-
     /// Is this a scalar integer type?
     pub fn is_int(self) -> bool {
         match self {
@@ -437,18 +427,6 @@ impl Type {
         }
     }
 
-    /// Coerces boolean types (scalar and vectors) into their integer counterparts.
-    pub fn coerce_bools_to_ints(self) -> Self {
-        let is_scalar_bool = self.is_bool();
-        let is_vector_bool = self.is_vector() && self.lane_type().is_bool();
-
-        if is_scalar_bool || is_vector_bool {
-            self.as_int()
-        } else {
-            self
-        }
-    }
-
     /// Gets a bit-level representation of the type. Used only
     /// internally for efficiently storing types.
     pub(crate) fn repr(self) -> u16 {
@@ -464,9 +442,7 @@ impl Type {
 
 impl Display for Type {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        if self.is_bool() {
-            write!(f, "b{}", self.lane_bits())
-        } else if self.is_int() {
+        if self.is_int() {
             write!(f, "i{}", self.lane_bits())
         } else if self.is_float() {
             write!(f, "f{}", self.lane_bits())
@@ -489,9 +465,7 @@ impl Display for Type {
 
 impl Debug for Type {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        if self.is_bool() {
-            write!(f, "types::B{}", self.lane_bits())
-        } else if self.is_int() {
+        if self.is_int() {
             write!(f, "types::I{}", self.lane_bits())
         } else if self.is_float() {
             write!(f, "types::F{}", self.lane_bits())

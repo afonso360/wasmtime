@@ -207,7 +207,7 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, Flags, IsaFlags, 6> 
         }
     }
 
-    fn imm(&mut self, ty: Type, mut val: u64) -> Reg {
+    fn imm(&mut self, ty: Type, val: u64) -> Reg {
         let tmp = self.temp_writable_reg(ty);
         self.emit_list(&MInst::load_constant_u64(tmp, val));
         tmp.to_reg()
