@@ -20,7 +20,7 @@ pub trait Value: Clone + From<DataValue> {
     fn into_float(self) -> ValueResult<f64>;
     fn is_float(&self) -> bool;
     fn is_nan(&self) -> ValueResult<bool>;
-    fn bool(b: bool, ty: Type) -> ValueResult<Self>;
+    fn bool(b: bool, vec_elem: bool, ty: Type) -> ValueResult<Self>;
     fn into_bool(self) -> ValueResult<bool>;
     fn vector(v: [u8; 16], ty: Type) -> ValueResult<Self>;
     fn into_array(&self) -> ValueResult<[u8; 16]>;
@@ -268,9 +268,30 @@ impl Value for DataValue {
         }
     }
 
-    fn bool(b: bool, ty: Type) -> ValueResult<Self> {
+    fn bool(b: bool, vec_elem: bool, ty: Type) -> ValueResult<Self> {
         assert!(ty.is_int());
-        Ok(DataValue::I8(if b { 1 } else { 0 }))
+        macro_rules! make_bool {
+            ($ty:ident) => {
+                Ok(DataValue::$ty(if b {
+                    if vec_elem {
+                        -1
+                    } else {
+                        1
+                    }
+                } else {
+                    0
+                }))
+            };
+        }
+
+        match ty {
+            types::I8 => make_bool!(I8),
+            types::I16 => make_bool!(I16),
+            types::I32 => make_bool!(I32),
+            types::I64 => make_bool!(I64),
+            types::I128 => make_bool!(I128),
+            _ => Err(ValueError::InvalidType(ValueTypeClass::Integer, ty)),
+        }
     }
 
     fn into_bool(self) -> ValueResult<bool> {
