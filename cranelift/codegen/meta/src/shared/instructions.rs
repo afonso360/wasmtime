@@ -698,15 +698,6 @@ pub(crate) fn define(
             .build(),
     );
 
-    let Bool = &TypeVar::new(
-        "Bool",
-        "A scalar or vector boolean type",
-        TypeSetBuilder::new()
-            .ints(Interval::All)
-            .simd_lanes(Interval::All)
-            .build(),
-    );
-
     let ScalarBool = &TypeVar::new(
         "ScalarBool",
         "A scalar boolean type",
@@ -1409,24 +1400,6 @@ pub(crate) fn define(
         Create a `f64` SSA value with an immediate constant value.
         "#,
             &formats.unary_ieee64,
-        )
-        .operands_in(vec![N])
-        .operands_out(vec![a]),
-    );
-
-    let N = &Operand::new("N", &imm.boolean);
-    let a = &Operand::new("a", Bool).with_doc("A constant boolean scalar or vector value");
-
-    ig.push(
-        Inst::new(
-            "bconst",
-            r#"
-        Boolean constant.
-
-        Create a scalar boolean SSA value with an immediate constant value, or
-        a boolean vector where all the lanes have the same value.
-        "#,
-            &formats.unary_bool,
         )
         .operands_in(vec![N])
         .operands_out(vec![a]),

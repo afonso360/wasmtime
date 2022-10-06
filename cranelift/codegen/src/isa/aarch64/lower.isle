@@ -19,14 +19,6 @@
 (rule (lower (has_type ty (iconst (u64_from_imm64 n))))
       (imm ty (ImmExtend.Zero) n))
 
-;;;; Rules for `bconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rule (lower (has_type ty (bconst $false)))
-      (imm ty (ImmExtend.Zero) 0))
-
-(rule (lower (has_type ty (bconst $true)))
-      (imm ty (ImmExtend.Zero) 1))
-
 ;;;; Rules for `null` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (has_type ty (null)))
@@ -1870,12 +1862,6 @@
 
 (rule -2 (lower (has_type ty (splat x @ (value_type (ty_scalar_float _)))))
       (vec_dup_from_fpu x (vector_size ty)))
-
-(rule (lower (has_type ty (splat (bconst (u64_from_bool n)))))
-      (splat_const n (vector_size ty)))
-
-(rule (lower (has_type ty (splat (breduce (bconst (u64_from_bool n))))))
-      (splat_const n (vector_size ty)))
 
 (rule (lower (has_type ty (splat (f32const (u64_from_ieee32 n)))))
       (splat_const n (vector_size ty)))

@@ -327,7 +327,6 @@ fn lower_insn_to_regs(
     let op = ctx.data(insn).opcode();
     match op {
         Opcode::Iconst
-        | Opcode::Bconst
         | Opcode::F32const
         | Opcode::F64const
         | Opcode::Null

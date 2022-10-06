@@ -9,15 +9,6 @@
 (rule (lower (has_type ty (iconst (u64_from_imm64 n))))
   (imm ty n))
 
-;;;; Rules for `bconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rule (lower (has_type ty (bconst $false)))
-  (imm ty 0))
-
-(rule (lower (has_type ty (bconst $true)))
-  (imm ty 1))
-
-
 ;;;; Rules for `null` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (has_type ty (null)))

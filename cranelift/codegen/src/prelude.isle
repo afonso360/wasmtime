@@ -12,7 +12,7 @@
 (decl unit () Unit)
 (extern constructor unit unit)
 
-;; `bool` is declared in `clif.isle`.
+(type bool (primitive bool))
 (extern const $true bool)
 (extern const $false bool)
 

@@ -768,7 +768,6 @@ impl<'a> Verifier<'a> {
             | UnaryImm { .. }
             | UnaryIeee32 { .. }
             | UnaryIeee64 { .. }
-            | UnaryBool { .. }
             | Binary { .. }
             | BinaryImm8 { .. }
             | BinaryImm64 { .. }

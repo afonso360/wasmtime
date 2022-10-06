@@ -22,30 +22,6 @@
       (value_regs (imm $I64 x)
                   (imm $I64 0)))
 
-;;;; Rules for `bconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; `b64` and smaller.
-
-(rule (lower (has_type (fits_in_64 ty)
-                       (bconst $false)))
-      (imm ty 0))
-
-(rule (lower (has_type (fits_in_64 ty)
-                       (bconst $true)))
-      (imm ty 1))
-
-;; `b128`
-
-(rule 1 (lower (has_type $I128
-                       (bconst $false)))
-      (value_regs (imm $I64 0)
-                  (imm $I64 0)))
-
-(rule 1 (lower (has_type $I128
-                       (bconst $true)))
-      (value_regs (imm $I64 1)
-                  (imm $I64 0)))
-
 ;;;; Rules for `f32const` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (f32const (u64_from_ieee32 x)))
