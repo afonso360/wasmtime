@@ -297,6 +297,10 @@ impl Value for DataValue {
     fn into_bool(self) -> ValueResult<bool> {
         match self {
             DataValue::I8(b) => Ok(b != 0),
+            DataValue::I16(b) => Ok(b != 0),
+            DataValue::I32(b) => Ok(b != 0),
+            DataValue::I64(b) => Ok(b != 0),
+            DataValue::I128(b) => Ok(b != 0),
             _ => Err(ValueError::InvalidType(ValueTypeClass::Boolean, self.ty())),
         }
     }
