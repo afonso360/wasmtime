@@ -684,7 +684,7 @@ impl Value for DataValue {
     }
 
     fn not(self) -> ValueResult<Self> {
-        unary_match!(!(self); [I8, I16, I32, I64, F32, F64])
+        unary_match!(!(self); [I8, I16, I32, I64, I128, F32, F64])
     }
 
     fn count_ones(self) -> ValueResult<Self> {
