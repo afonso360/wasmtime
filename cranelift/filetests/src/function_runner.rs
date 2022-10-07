@@ -483,10 +483,10 @@ mod test {
         let code = String::from(
             "
             test run
-            function %test() -> b8 {
+            function %test() -> i8 {
             block0:
                 nop
-                v1 = bconst.b8 true
+                v1 = iconst.i8 -1
                 return v1
             }",
         );
@@ -504,17 +504,17 @@ mod test {
         let compiled = compiler.compile().unwrap();
         let trampoline = compiled.get_trampoline(&function).unwrap();
         let returned = trampoline.call(&[]);
-        assert_eq!(returned, vec![DataValue::B(true)])
+        assert_eq!(returned, vec![DataValue::I8(-1)])
     }
 
     #[test]
     fn trampolines() {
         let function = parse(
             "
-            function %test(f32, i8, i64x2, b1) -> f32x4, b64 {
-            block0(v0: f32, v1: i8, v2: i64x2, v3: b1):
+            function %test(f32, i8, i64x2, i8) -> f32x4, i64 {
+            block0(v0: f32, v1: i8, v2: i64x2, v3: i8):
                 v4 = vconst.f32x4 [0x0.1 0x0.2 0x0.3 0x0.4]
-                v5 = bconst.b64 true
+                v5 = iconst.i64 -1
                 return v4, v5
             }",
         );
@@ -525,19 +525,18 @@ mod test {
             &function.signature,
             compiler.module.isa(),
         );
+        println!("{}", trampoline);
         assert!(format!("{}", trampoline).ends_with(
-            "sig0 = (f32, i8, i64x2, b1) -> f32x4, b64 fast
+            "sig0 = (f32, i8, i64x2, i8) -> f32x4, i64 fast
 
 block0(v0: i64, v1: i64):
     v2 = load.f32 notrap aligned v1
     v3 = load.i8 notrap aligned v1+16
     v4 = load.i64x2 notrap aligned little v1+32
     v5 = load.i8 notrap aligned v1+48
-    v6 = icmp_imm ne v5, 0
-    v7, v8 = call_indirect sig0, v0(v2, v3, v4, v6)
-    store notrap aligned little v7, v1
-    v9 = bint.i64 v8
-    store notrap aligned v9, v1+16
+    v6, v7 = call_indirect sig0, v0(v2, v3, v4, v5)
+    store notrap aligned little v6, v1
+    store notrap aligned v7, v1+16
     return
 }
 "
