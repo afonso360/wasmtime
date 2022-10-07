@@ -3367,6 +3367,7 @@ pub(crate) fn define(
         "Bool",
         "A scalar or vector boolean type",
         TypeSetBuilder::new()
+            .ints(Interval::All)
             .simd_lanes(Interval::All)
             .build(),
     );
