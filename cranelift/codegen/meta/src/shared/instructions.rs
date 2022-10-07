@@ -40,9 +40,7 @@ fn define_control_flow(
     let Testable = &TypeVar::new(
         "Testable",
         "A scalar boolean or integer type",
-        TypeSetBuilder::new()
-            .ints(Interval::All)
-            .build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     {
@@ -725,9 +723,7 @@ pub(crate) fn define(
     let Testable = &TypeVar::new(
         "Testable",
         "A scalar boolean or integer type",
-        TypeSetBuilder::new()
-            .ints(Interval::All)
-            .build(),
+        TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     let TxN = &TypeVar::new(

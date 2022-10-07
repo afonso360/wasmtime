@@ -1,9 +1,7 @@
 //! This module defines aarch64-specific machine instruction types.
 
 use crate::binemit::{Addend, CodeOffset, Reloc};
-use crate::ir::types::{
-    F32, F64, FFLAGS, I128, I16, I32, I64, I8, I8X16, IFLAGS, R32, R64,
-};
+use crate::ir::types::{F32, F64, FFLAGS, I128, I16, I32, I64, I8, I8X16, IFLAGS, R32, R64};
 use crate::ir::{types, ExternalName, MemFlags, Opcode, Type};
 use crate::isa::CallConv;
 use crate::machinst::*;
@@ -1209,9 +1207,7 @@ impl MachInst for Inst {
         match ty {
             F64 => Inst::load_fp_constant64(to_reg.unwrap(), value as u64, alloc_tmp),
             F32 => Inst::load_fp_constant32(to_reg.unwrap(), value as u32, alloc_tmp),
-            I8 | I16 | I32 | I64 | R32 | R64 => {
-                Inst::load_constant(to_reg.unwrap(), value as u64)
-            }
+            I8 | I16 | I32 | I64 | R32 | R64 => Inst::load_constant(to_reg.unwrap(), value as u64),
             I128 => Inst::load_constant128(to_regs, value),
             _ => panic!("Cannot generate constant for type: {}", ty),
         }

@@ -1113,9 +1113,7 @@ impl MachInst for Inst {
                 ret
             }
             types::I64 | types::R64 => Inst::load_constant64(to_reg, value as u64),
-            types::I8
-            | types::I16
-            | types::I32 => Inst::load_constant32(to_reg, value as u32),
+            types::I8 | types::I16 | types::I32 => Inst::load_constant32(to_reg, value as u32),
             _ => unreachable!(),
         }
     }

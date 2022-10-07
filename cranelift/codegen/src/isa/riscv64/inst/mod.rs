@@ -6,9 +6,7 @@
 
 use crate::binemit::{Addend, CodeOffset, Reloc};
 pub use crate::ir::condcodes::IntCC;
-use crate::ir::types::{
-    F32, F64, FFLAGS, I128, I16, I32, I64, I8, IFLAGS, R32, R64,
-};
+use crate::ir::types::{F32, F64, FFLAGS, I128, I16, I32, I64, I8, IFLAGS, R32, R64};
 
 pub use crate::ir::{ExternalName, MemFlags, Opcode, SourceLoc, Type, ValueLabel};
 use crate::isa::CallConv;

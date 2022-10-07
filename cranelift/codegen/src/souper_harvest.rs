@@ -484,7 +484,7 @@ fn harvest_candidate_lhs(
                     // instructions until we process them as operands for some
                     // other instruction. See the `arg` closure above for
                     // details.
-                    (ir::Opcode::Iconst, _)  => return,
+                    (ir::Opcode::Iconst, _) => return,
                     _ => ast::AssignmentRhs::Var,
                 }
             }

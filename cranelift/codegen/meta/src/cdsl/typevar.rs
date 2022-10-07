@@ -409,10 +409,8 @@ impl TypeSet {
 
     /// Return the number of concrete types represented by this typeset.
     pub fn size(&self) -> usize {
-        self.lanes.len()
-            * (self.ints.len() + self.floats.len() + self.refs.len())
-            + self.dynamic_lanes.len()
-                * (self.ints.len() + self.floats.len() + self.refs.len())
+        self.lanes.len() * (self.ints.len() + self.floats.len() + self.refs.len())
+            + self.dynamic_lanes.len() * (self.ints.len() + self.floats.len() + self.refs.len())
             + self.specials.len()
     }
 
