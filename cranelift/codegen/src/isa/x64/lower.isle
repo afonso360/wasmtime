@@ -2108,7 +2108,7 @@
                  (bextend src @ (value_type src_ty))))
       (generic_sextend src src_ty dst_ty))
 
-;; Rules for `ireduce` / `breduce` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rules for `ireduce` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; T -> T is always a no-op, even I128 -> I128.
 (rule (lower (has_type ty (ireduce src @ (value_type ty))))
@@ -2118,14 +2118,6 @@
 ;; are always stored with high bits undefined, so we can just leave
 ;; them be.
 (rule 1 (lower (has_type (fits_in_64 ty) (ireduce src)))
-      (value_regs_get_gpr src 0))
-
-;; Likewise for breduce.
-
-(rule (lower (has_type ty (breduce src @ (value_type ty))))
-      src)
-
-(rule 1 (lower (has_type (fits_in_64 ty) (breduce src)))
       (value_regs_get_gpr src 0))
 
 ;; Rules for `bint` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

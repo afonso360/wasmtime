@@ -1535,7 +1535,7 @@ impl<'a> Verifier<'a> {
                             ));
                         }
                     }
-                    Opcode::Breduce | Opcode::Ireduce | Opcode::Fdemote => {
+                    Opcode::Ireduce | Opcode::Fdemote => {
                         if arg_type.lane_count() != ctrl_type.lane_count() {
                             return errors.nonfatal((
                                 inst,

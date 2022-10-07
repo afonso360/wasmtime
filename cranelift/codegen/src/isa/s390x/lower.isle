@@ -1155,17 +1155,6 @@
       (vec_select ty y z x))
 
 
-;;;; Rules for `breduce` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Up to 64-bit source type: Always a no-op.
-(rule 1 (lower (breduce x @ (value_type (fits_in_64 _ty))))
-      x)
-
-;; 128-bit source type: Extract the low half.
-(rule (lower (breduce x @ (value_type (vr128_ty _ty))))
-      (vec_extract_lane $I64X2 x 1 (zero_reg)))
-
-
 ;;;; Rules for `bextend` and `bmask` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Use a common helper to type cast bools to either bool or integer types.

@@ -539,11 +539,6 @@
 (rule (lower (has_type ty (copy x)))
   (gen_move2 x ty ty))
 
-;;;;;  Rules for `breduce`;;;;;;;;;;;;;;;;;
-(rule
-  (lower (has_type ty (breduce x)))
-  (gen_move2 (value_regs_get x 0) ty ty))
-
 ;;;;;  Rules for `ireduce`;;;;;;;;;;;;;;;;;
 (rule
   (lower (has_type ty (ireduce x)))

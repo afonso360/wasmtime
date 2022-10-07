@@ -3298,27 +3298,6 @@ pub(crate) fn define(
 
     let BoolTo = &TypeVar::new(
         "BoolTo",
-        "A smaller boolean type",
-        TypeSetBuilder::new().ints(Interval::All).build(),
-    );
-
-    let x = &Operand::new("x", Bool);
-    let a = &Operand::new("a", BoolTo);
-
-    ig.push(
-        Inst::new(
-            "breduce",
-            r#"
-        Convert `x` to a smaller boolean type by discarding the most significant bits.
-        "#,
-            &formats.unary,
-        )
-        .operands_in(vec![x])
-        .operands_out(vec![a]),
-    );
-
-    let BoolTo = &TypeVar::new(
-        "BoolTo",
         "A larger boolean type",
         TypeSetBuilder::new().ints(Interval::All).build(),
     );
