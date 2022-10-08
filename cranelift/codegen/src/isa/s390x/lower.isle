@@ -1155,12 +1155,10 @@
       (vec_select ty y z x))
 
 
-;;;; Rules for `bextend` and `bmask` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Rules for `bmask` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Use a common helper to type cast bools to either bool or integer types.
 (decl cast_bool (Type Value) Reg)
-(rule (lower (has_type ty (bextend x)))
-      (cast_bool ty x))
 (rule (lower (has_type ty (bmask x)))
       (cast_bool ty x))
 

@@ -367,7 +367,6 @@ fn lower_insn_to_regs(
         | Opcode::IsInvalid
         | Opcode::Uextend
         | Opcode::Sextend
-        | Opcode::Bextend
         | Opcode::Ireduce
         | Opcode::Bint
         | Opcode::Debugtrap

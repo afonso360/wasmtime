@@ -1543,18 +1543,13 @@
 (rule (lower (bint x))
       (and_imm $I32 x (u64_into_imm_logic $I32 1)))
 
-;;;; Rules for `bmask`/`bextend` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Rules for `bmask` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Bextend and Bmask both simply sign-extend. This works for:
-;; - Bextend, because booleans are stored as 0 / -1, so we
-;;   sign-extend the -1 to a -1 in the wider width.
-;; - Bmask, because the resulting integer mask value must be
-;;   all-ones (-1) if the argument is true.
+;; Bmask simply sign-extends. This works because the resulting integer mask
+;; value must be all-ones (-1) if the argument is true.
 
 ;; Use a common helper to type cast bools to either bool or integer types.
 (decl cast_bool (Type Type Value) InstOutput)
-(rule (lower (has_type out_ty (bextend x @ (value_type in_ty))))
-      (cast_bool in_ty out_ty x))
 (rule (lower (has_type out_ty (bmask x @ (value_type in_ty))))
       (cast_bool in_ty out_ty x))
 

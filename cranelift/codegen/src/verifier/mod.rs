@@ -1513,7 +1513,7 @@ impl<'a> Verifier<'a> {
             ir::InstructionData::Unary { opcode, arg } => {
                 let arg_type = self.func.dfg.value_type(arg);
                 match opcode {
-                    Opcode::Bextend | Opcode::Uextend | Opcode::Sextend | Opcode::Fpromote => {
+                    Opcode::Uextend | Opcode::Sextend | Opcode::Fpromote => {
                         if arg_type.lane_count() != ctrl_type.lane_count() {
                             return errors.nonfatal((
                                 inst,

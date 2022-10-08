@@ -1729,12 +1729,6 @@
       (_ Unit (emit (MInst.FcvtToInt is_sat result tmp rs is_signed in_type out_type))))
     result))
 
-;;;; in_type out_type
-;;;; out_type is returned.
-(decl pure valid_bextend_ty (Type Type) Type)
-(extern constructor valid_bextend_ty valid_bextend_ty)
-
-
 ;;; some float binary operation 
 ;;; 1. need move into x reister.
 ;;; 2. do the operation.

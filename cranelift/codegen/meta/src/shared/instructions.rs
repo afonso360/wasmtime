@@ -3290,32 +3290,6 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let Bool = &TypeVar::new(
-        "Bool",
-        "A scalar boolean type",
-        TypeSetBuilder::new().ints(Interval::All).build(),
-    );
-
-    let BoolTo = &TypeVar::new(
-        "BoolTo",
-        "A larger boolean type",
-        TypeSetBuilder::new().ints(Interval::All).build(),
-    );
-    let x = &Operand::new("x", Bool);
-    let a = &Operand::new("a", BoolTo);
-
-    ig.push(
-        Inst::new(
-            "bextend",
-            r#"
-        Convert `x` to a larger boolean type
-        "#,
-            &formats.unary,
-        )
-        .operands_in(vec![x])
-        .operands_out(vec![a]),
-    );
-
     let IntTo = &TypeVar::new(
         "IntTo",
         "A scalar integer type",

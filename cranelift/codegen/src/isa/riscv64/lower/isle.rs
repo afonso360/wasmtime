@@ -75,13 +75,6 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, Flags, IsaFlags, 6> 
         }
     }
 
-    fn valid_bextend_ty(&mut self, from: Type, to: Type) -> Option<Type> {
-        if from.bits() < to.bits() {
-            Some(to)
-        } else {
-            None
-        }
-    }
     fn lower_br_fcmp(
         &mut self,
         cc: &FloatCC,

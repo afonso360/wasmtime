@@ -2065,7 +2065,7 @@
                        (uextend src @ (has_type $I32 (uload32 _ _ _)))))
       src)
 
-;; Rules for `sextend` / `bextend` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rules for `sextend` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (decl generic_sextend (Value Type Type) InstOutput)
 
@@ -2100,12 +2100,6 @@
 (rule (lower
        (has_type dst_ty
                  (sextend src @ (value_type src_ty))))
-      (generic_sextend src src_ty dst_ty))
-
-;; Bools are stored as 0/-1 so extends must sign-extend as well.
-(rule (lower
-       (has_type dst_ty
-                 (bextend src @ (value_type src_ty))))
       (generic_sextend src src_ty dst_ty))
 
 ;; Rules for `ireduce` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

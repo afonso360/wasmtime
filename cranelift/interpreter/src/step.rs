@@ -952,7 +952,7 @@ where
             Value::bool(true, false, types::I8)?,
             Value::bool(false, false, types::I8)?,
         ),
-        Opcode::Bitcast | Opcode::RawBitcast | Opcode::ScalarToVector | Opcode::Bextend => {
+        Opcode::Bitcast | Opcode::RawBitcast | Opcode::ScalarToVector => {
             let input_ty = inst_context.type_of(inst_context.args()[0]).unwrap();
             let arg0 = extractlanes(&arg(0)?, input_ty)?;
 
