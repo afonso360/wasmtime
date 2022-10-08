@@ -37,14 +37,14 @@ fn define_control_flow(
         .is_branch(true),
     );
 
-    let Testable = &TypeVar::new(
-        "Testable",
-        "A scalar boolean or integer type",
+    let ScalarTruthy = &TypeVar::new(
+        "ScalarTruthy",
+        "A scalar truthy type",
         TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
     {
-        let c = &Operand::new("c", Testable).with_doc("Controlling value to test");
+        let c = &Operand::new("c", ScalarTruthy).with_doc("Controlling value to test");
 
         ig.push(
             Inst::new(
@@ -223,7 +223,7 @@ fn define_control_flow(
             .is_terminator(true),
         );
 
-        let c = &Operand::new("c", Testable).with_doc("Controlling value to test");
+        let c = &Operand::new("c", ScalarTruthy).with_doc("Controlling value to test");
         ig.push(
             Inst::new(
                 "trapz",
@@ -252,7 +252,7 @@ fn define_control_flow(
             .can_trap(true),
         );
 
-        let c = &Operand::new("c", Testable).with_doc("Controlling value to test");
+        let c = &Operand::new("c", ScalarTruthy).with_doc("Controlling value to test");
         ig.push(
             Inst::new(
                 "trapnz",
@@ -681,7 +681,7 @@ pub(crate) fn define(
     let iflags: &TypeVar = &ValueType::Special(types::Flag::IFlags.into()).into();
     let fflags: &TypeVar = &ValueType::Special(types::Flag::FFlags.into()).into();
 
-    let b1: &TypeVar = &ValueType::from(LaneType::from(types::Int::I8)).into();
+    let i8: &TypeVar = &ValueType::from(LaneType::from(types::Int::I8)).into();
     let f32_: &TypeVar = &ValueType::from(LaneType::from(types::Float::F32)).into();
     let f64_: &TypeVar = &ValueType::from(LaneType::from(types::Float::F64)).into();
 
@@ -696,9 +696,9 @@ pub(crate) fn define(
             .build(),
     );
 
-    let ScalarBool = &TypeVar::new(
-        "ScalarBool",
-        "A scalar boolean type",
+    let ScalarTruthy = &TypeVar::new(
+        "ScalarTruthy",
+        "A scalar truthy type",
         TypeSetBuilder::new().ints(Interval::All).build(),
     );
 
@@ -720,12 +720,6 @@ pub(crate) fn define(
         TypeSetBuilder::new().refs(Interval::All).build(),
     );
 
-    let Testable = &TypeVar::new(
-        "Testable",
-        "A scalar boolean or integer type",
-        TypeSetBuilder::new().ints(Interval::All).build(),
-    );
-
     let TxN = &TypeVar::new(
         "TxN",
         "A SIMD vector type",
@@ -738,7 +732,7 @@ pub(crate) fn define(
     );
     let Any = &TypeVar::new(
         "Any",
-        "Any integer, float, boolean, or reference scalar or vector type",
+        "Any integer, float, or reference scalar or vector type",
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
@@ -1476,7 +1470,7 @@ pub(crate) fn define(
         &formats.nullary,
     ));
 
-    let c = &Operand::new("c", Testable).with_doc("Controlling value to test");
+    let c = &Operand::new("c", ScalarTruthy).with_doc("Controlling value to test");
     let x = &Operand::new("x", Any).with_doc("Value to use when `c` is true");
     let y = &Operand::new("y", Any).with_doc("Value to use when `c` is false");
     let a = &Operand::new("a", Any);
@@ -1642,7 +1636,7 @@ pub(crate) fn define(
             r#"
         Vector lane select.
 
-        Select lanes from ``x`` or ``y`` controlled by the lanes of the boolean
+        Select lanes from ``x`` or ``y`` controlled by the lanes of the truthy
         vector ``c``.
         "#,
             &formats.ternary,
@@ -1651,7 +1645,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let s = &Operand::new("s", b1);
+    let s = &Operand::new("s", i8);
 
     ig.push(
         Inst::new(
@@ -1722,8 +1716,8 @@ pub(crate) fn define(
         | sgt    | ugt      | Greater than          |
         | sle    | ule      | Less than or equal    |
 
-        When this instruction compares integer vectors, it returns a boolean
-        vector of lane-wise comparisons.
+        When this instruction compares integer vectors, it returns a vector of
+        lane-wise comparisons.
         "#,
             &formats.int_compare,
         )
@@ -1731,7 +1725,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let a = &Operand::new("a", b1);
+    let a = &Operand::new("a", i8);
     let x = &Operand::new("x", iB);
     let Y = &Operand::new("Y", &imm.imm64);
 
@@ -2120,10 +2114,10 @@ pub(crate) fn define(
     let x = &Operand::new("x", iB);
     let y = &Operand::new("y", iB);
 
-    let c_in = &Operand::new("c_in", b1).with_doc("Input carry flag");
-    let c_out = &Operand::new("c_out", b1).with_doc("Output carry flag");
-    let b_in = &Operand::new("b_in", b1).with_doc("Input borrow flag");
-    let b_out = &Operand::new("b_out", b1).with_doc("Output borrow flag");
+    let c_in = &Operand::new("c_in", i8).with_doc("Input carry flag");
+    let c_out = &Operand::new("c_out", i8).with_doc("Output carry flag");
+    let b_in = &Operand::new("b_in", i8).with_doc("Input borrow flag");
+    let b_out = &Operand::new("b_out", i8).with_doc("Output borrow flag");
 
     let c_if_in = &Operand::new("c_in", iflags);
     let c_if_out = &Operand::new("c_out", iflags);
@@ -2392,7 +2386,7 @@ pub(crate) fn define(
 
     let bits = &TypeVar::new(
         "bits",
-        "Any integer, float, or boolean scalar or vector type",
+        "Any integer, float, or vector type",
         TypeSetBuilder::new()
             .ints(Interval::All)
             .floats(Interval::All)
@@ -2877,7 +2871,7 @@ pub(crate) fn define(
         floating point comparisons of the same name.
 
         When this instruction compares floating point vectors, it returns a
-        boolean vector with the results of lane-wise comparisons.
+        vector with the results of lane-wise comparisons.
         "#,
             &formats.float_compare,
         )
@@ -3156,7 +3150,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let a = &Operand::new("a", b1);
+    let a = &Operand::new("a", i8);
     let x = &Operand::new("x", Ref);
 
     ig.push(
@@ -3174,7 +3168,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let a = &Operand::new("a", b1);
+    let a = &Operand::new("a", i8);
     let x = &Operand::new("x", Ref);
 
     ig.push(
@@ -3194,7 +3188,7 @@ pub(crate) fn define(
 
     let Cond = &Operand::new("Cond", &imm.intcc);
     let f = &Operand::new("f", iflags);
-    let a = &Operand::new("a", b1);
+    let a = &Operand::new("a", i8);
 
     ig.push(
         Inst::new(
@@ -3295,7 +3289,7 @@ pub(crate) fn define(
         "A scalar integer type",
         TypeSetBuilder::new().ints(Interval::All).build(),
     );
-    let x = &Operand::new("x", ScalarBool);
+    let x = &Operand::new("x", ScalarTruthy);
     let a = &Operand::new("a", IntTo);
 
     ig.push(
@@ -3312,9 +3306,9 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let Bool = &TypeVar::new(
-        "Bool",
-        "A scalar or vector boolean type",
+    let Truthy = &TypeVar::new(
+        "Truthy",
+        "A scalar or vector whose values are truthy",
         TypeSetBuilder::new()
             .ints(Interval::All)
             .simd_lanes(Interval::All)
@@ -3328,7 +3322,7 @@ pub(crate) fn define(
             .simd_lanes(Interval::All)
             .build(),
     );
-    let x = &Operand::new("x", Bool);
+    let x = &Operand::new("x", Truthy);
     let a = &Operand::new("a", IntTo);
 
     ig.push(
