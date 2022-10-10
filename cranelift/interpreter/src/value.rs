@@ -152,6 +152,8 @@ pub enum ValueConversionKind {
     /// Converts an integer into a boolean, zero integers are converted into a
     /// `false`, while other integers are converted into `true`. Booleans are passed through.
     ToBoolean,
+    /// Converts an integer into either -1 or zero.
+    Mask(Type),
 }
 
 /// Helper for creating match expressions over [DataValue].
@@ -450,6 +452,10 @@ impl Value for DataValue {
                 ty if ty.is_int() => DataValue::I8(if self.into_int()? != 0 { 1 } else { 0 }),
                 ty => unimplemented!("conversion: {} -> {:?}", ty, kind),
             },
+            ValueConversionKind::Mask(ty) => {
+                let b = self.into_bool()?;
+                Self::bool(b, true, ty).unwrap()
+            }
         })
     }
 

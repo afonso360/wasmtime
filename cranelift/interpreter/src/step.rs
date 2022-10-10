@@ -1003,7 +1003,7 @@ where
             let bool_ty = ctrl_ty.as_bool_pedantic();
             let lanes = extractlanes(&bool, bool_ty)?
                 .into_iter()
-                .map(|lane| lane.convert(ValueConversionKind::Exact(ctrl_ty.lane_type())))
+                .map(|lane| lane.convert(ValueConversionKind::Mask(ctrl_ty.lane_type())))
                 .collect::<ValueResult<SimdVec<V>>>()?;
             vectorizelanes(&lanes, ctrl_ty)?
         }),
