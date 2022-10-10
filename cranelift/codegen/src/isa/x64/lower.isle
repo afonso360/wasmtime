@@ -2114,20 +2114,6 @@
 (rule 1 (lower (has_type (fits_in_64 ty) (ireduce src)))
       (value_regs_get_gpr src 0))
 
-;; Rules for `bint` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Booleans are stored as all-zeroes (0) or all-ones (-1). We AND out
-;; the LSB to give a 0 / 1-valued integer result.
-
-(rule (lower (has_type (fits_in_64 ty)
-                       (bint src)))
-      (x64_and ty src (RegMemImm.Imm 1)))
-(rule 1 (lower (has_type $I128
-                       (bint src)))
-      (value_regs
-       (x64_and $I64 src (RegMemImm.Imm 1))
-       (imm $I64 0)))
-
 ;; Rules for `debugtrap` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (debugtrap))

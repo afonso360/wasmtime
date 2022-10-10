@@ -368,7 +368,6 @@ fn lower_insn_to_regs(
         | Opcode::Uextend
         | Opcode::Sextend
         | Opcode::Ireduce
-        | Opcode::Bint
         | Opcode::Debugtrap
         | Opcode::WideningPairwiseDotProductS
         | Opcode::Fadd

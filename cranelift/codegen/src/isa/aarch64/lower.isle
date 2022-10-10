@@ -1528,21 +1528,6 @@
 (rule -1 (lower (has_type ty (cls x)))
       (a64_cls ty x))
 
-;;;; Rules for `bint` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Booleans are stored as all-zeroes (0) or all-ones (-1). We AND
-;; out the LSB to give a 0 / 1-valued integer result.
-
-(rule 1 (lower (has_type $I128 (bint x)))
-      (let ((val ValueRegs x)
-            (in_lo Reg (value_regs_get val 0))
-            (dst_lo Reg (and_imm $I32 in_lo (u64_into_imm_logic $I32 1)))
-            (dst_hi Reg (imm $I64 (ImmExtend.Zero) 0)))
-        (value_regs dst_lo dst_hi)))
-
-(rule (lower (bint x))
-      (and_imm $I32 x (u64_into_imm_logic $I32 1)))
-
 ;;;; Rules for `bmask` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Bmask simply sign-extends. This works because the resulting integer mask
@@ -1778,21 +1763,7 @@
         cond ty rn rm)))
 
 (rule (lower (has_type ty
-       (select _flags @ (bint (icmp cc x @ (value_type in_ty) y)) rn rm)))
-      (let ((cond Cond (cond_code cc)))
-       (lower_select
-        (lower_icmp_into_flags cc x y in_ty)
-        cond ty rn rm)))
-
-(rule (lower (has_type ty
        (select _flags @ (fcmp cc x @ (value_type in_ty) y) rn rm)))
-      (let ((cond Cond (fp_cond_code cc)))
-       (lower_select
-        (fpu_cmp (scalar_size in_ty) x y)
-        cond ty rn rm)))
-
-(rule (lower (has_type ty
-       (select _flags @ (bint (fcmp cc x @ (value_type in_ty) y)) rn rm)))
       (let ((cond Cond (fp_cond_code cc)))
        (lower_select
         (fpu_cmp (scalar_size in_ty) x y)
@@ -2481,7 +2452,7 @@
 
 ;;; Rules for `brz`/`brnz`/`brif`/`brff`/`bricmp` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; `brz` following `icmp`, possibly converted via `bint`.
+;; `brz` following `icmp`
 (rule (lower_branch (brz (icmp cc x @ (value_type ty) y) _ _) targets)
       (let ((cond Cond (cond_code cc))
             (cond Cond (invert_cond cond)) ;; negate for `brz`
@@ -2491,16 +2462,7 @@
         (with_flags_side_effect (lower_icmp_into_flags cc x y ty)
                                 (cond_br taken not_taken
                                  (cond_br_cond cond))))))
-(rule (lower_branch (brz (bint (icmp cc x @ (value_type ty) y)) _ _) targets)
-      (let ((cond Cond (cond_code cc))
-            (cond Cond (invert_cond cond)) ;; negate for `brz`
-            (taken BranchTarget (branch_target targets 0))
-            (not_taken BranchTarget (branch_target targets 1)))
-       (side_effect
-        (with_flags_side_effect (lower_icmp_into_flags cc x y ty)
-                                (cond_br taken not_taken
-                                 (cond_br_cond cond))))))
-;; `brnz` following `icmp`, possibly converted via `bint`.
+;; `brnz` following `icmp`
 (rule (lower_branch (brnz (icmp cc x @ (value_type ty) y) _ _) targets)
       (let ((cond Cond (cond_code cc))
             (taken BranchTarget (branch_target targets 0))
@@ -2509,15 +2471,7 @@
         (with_flags_side_effect (lower_icmp_into_flags cc x y ty)
                                 (cond_br taken not_taken
                                  (cond_br_cond cond))))))
-(rule (lower_branch (brnz (bint (icmp cc x @ (value_type ty) y)) _ _) targets)
-      (let ((cond Cond (cond_code cc))
-            (taken BranchTarget (branch_target targets 0))
-            (not_taken BranchTarget (branch_target targets 1)))
-       (side_effect
-        (with_flags_side_effect (lower_icmp_into_flags cc x y ty)
-                                (cond_br taken not_taken
-                                 (cond_br_cond cond))))))
-;; `brz` following `fcmp`, possibly converted via `bint`.
+;; `brz` following `fcmp`
 (rule (lower_branch (brz (fcmp cc x @ (value_type (ty_scalar_float ty)) y) _ _) targets)
       (let ((cond Cond (fp_cond_code cc))
             (cond Cond (invert_cond cond)) ;; negate for `brz`
@@ -2527,25 +2481,8 @@
         (with_flags_side_effect (fpu_cmp (scalar_size ty) x y)
                                 (cond_br taken not_taken
                                  (cond_br_cond cond))))))
-(rule (lower_branch (brz (bint (fcmp cc x @ (value_type (ty_scalar_float ty)) y)) _ _) targets)
-      (let ((cond Cond (fp_cond_code cc))
-            (cond Cond (invert_cond cond)) ;; negate for `brz`
-            (taken BranchTarget (branch_target targets 0))
-            (not_taken BranchTarget (branch_target targets 1)))
-       (side_effect
-        (with_flags_side_effect (fpu_cmp (scalar_size ty) x y)
-                                (cond_br taken not_taken
-                                 (cond_br_cond cond))))))
-;; `brnz` following `fcmp`, possibly converted via `bint`.
+;; `brnz` following `fcmp`
 (rule (lower_branch (brnz (fcmp cc x @ (value_type (ty_scalar_float ty)) y) _ _) targets)
-      (let ((cond Cond (fp_cond_code cc))
-            (taken BranchTarget (branch_target targets 0))
-            (not_taken BranchTarget (branch_target targets 1)))
-       (side_effect
-        (with_flags_side_effect (fpu_cmp (scalar_size ty) x y)
-                                (cond_br taken not_taken
-                                 (cond_br_cond cond))))))
-(rule (lower_branch (brnz (bint (fcmp cc x @ (value_type (ty_scalar_float ty)) y)) _ _) targets)
       (let ((cond Cond (fp_cond_code cc))
             (taken BranchTarget (branch_target targets 0))
             (not_taken BranchTarget (branch_target targets 1)))

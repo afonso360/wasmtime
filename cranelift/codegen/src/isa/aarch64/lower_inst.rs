@@ -152,8 +152,6 @@ pub(crate) fn lower_insn_to_regs(
 
         Opcode::Bmask => implemented_in_isle(ctx),
 
-        Opcode::Bint => implemented_in_isle(ctx),
-
         Opcode::Bitcast => implemented_in_isle(ctx),
 
         Opcode::Return => implemented_in_isle(ctx),

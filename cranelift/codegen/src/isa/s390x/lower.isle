@@ -1193,35 +1193,6 @@
       (mov_to_vec128 ty x x))
 
 
-;;;; Rules for `bint` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Mask with 1 to get a 0/1 result (8- or 16-bit result types).
-(rule 5 (lower (has_type (fits_in_16 ty) (bint x @ (value_type (fits_in_64 _)))))
-      (and_uimm16shifted ty x (uimm16shifted 1 0)))
-
-;; Mask with 1 to get a 0/1 result (32-bit result types).
-(rule 4 (lower (has_type (fits_in_32 ty) (bint x @ (value_type (fits_in_64 _)))))
-      (and_uimm32shifted ty x (uimm32shifted 1 0)))
-
-;; Mask with 1 to get a 0/1 result (64-bit result types).
-(rule 3 (lower (has_type (fits_in_64 ty) (bint x @ (value_type (fits_in_64 _)))))
-      (and_reg ty x (imm ty 1)))
-
-;; Mask with 1 to get a 0/1 result (128-bit result types).
-(rule 1 (lower (has_type (vr128_ty ty) (bint x @ (value_type (fits_in_64 _)))))
-      (let ((x_ext Reg (and_uimm16shifted $I8 x (uimm16shifted 1 0))))
-        (vec_insert_lane $I8X16 (vec_imm ty 0) x_ext 15 (zero_reg))))
-
-;; Mask with 1 to get a 0/1 result (128-bit source types).
-(rule 2 (lower (has_type (fits_in_64 ty) (bint x @ (value_type (vr128_ty _)))))
-      (let ((x_gpr Reg (vec_extract_lane $I8X16 x 15 (zero_reg))))
-        (and_uimm16shifted ty x_gpr (uimm16shifted 1 0))))
-
-;; Mask with 1 to get a 0/1 result (128-bit source and result types).
-(rule 0 (lower (has_type (vr128_ty ty) (bint x @ (value_type (vr128_ty _)))))
-      (vec_and ty x (vec_imm ty 1)))
-
-
 ;;;; Rules for `bitrev` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (has_type ty (bitrev x)))
@@ -3769,10 +3740,9 @@
 
 ;; Return a `ProducesBool` to capture the fact that the input value is nonzero.
 ;; In the common case where that input is the result of an `icmp` or `fcmp`
-;; instruction (possibly via an intermediate `bint`), directly use that compare.
-;; Note that it is not safe to sink memory loads here, see the `icmp` comment.
+;; instruction, directly use that compare. Note that it is not safe to sink
+;; memory loads here, see the `icmp` comment.
 (decl value_nonzero (Value) ProducesBool)
-(rule (value_nonzero (bint val)) (value_nonzero val))
 (rule (value_nonzero (icmp int_cc x y)) (icmp_val $false int_cc x y))
 (rule (value_nonzero (fcmp float_cc x y)) (fcmp_val float_cc x y))
 (rule -1 (value_nonzero val @ (value_type (gpr32_ty ty)))

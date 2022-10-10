@@ -3284,28 +3284,6 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    let IntTo = &TypeVar::new(
-        "IntTo",
-        "A scalar integer type",
-        TypeSetBuilder::new().ints(Interval::All).build(),
-    );
-    let x = &Operand::new("x", ScalarTruthy);
-    let a = &Operand::new("a", IntTo);
-
-    ig.push(
-        Inst::new(
-            "bint",
-            r#"
-        Convert `x` to an integer.
-
-        True maps to 1 and false maps to 0.
-        "#,
-            &formats.unary,
-        )
-        .operands_in(vec![x])
-        .operands_out(vec![a]),
-    );
-
     let Truthy = &TypeVar::new(
         "Truthy",
         "A scalar or vector whose values are truthy",

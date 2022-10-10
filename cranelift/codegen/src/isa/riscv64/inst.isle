@@ -1659,11 +1659,6 @@
       (result Reg (alu_rrr (AluOPRRR.Or) tmp_x tmp_y)))
     result))
 
-(decl gen_bint (Reg) Reg)
-(rule 
-  (gen_bint r)
-  (alu_rr_imm12 (AluOPRRI.Andi) r (imm12_const 1)))
-
 (decl gen_int_select (Type IntSelectOP ValueRegs ValueRegs) ValueRegs)
 (rule
   (gen_int_select ty op x y)

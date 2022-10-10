@@ -861,29 +861,6 @@ mod simplify {
                 }
             }
 
-            InstructionData::CondTrap { .. }
-            | InstructionData::Branch { .. }
-            | InstructionData::Ternary {
-                opcode: Opcode::Select,
-                ..
-            } => {
-                // Fold away a redundant `bint`.
-                let condition_def = {
-                    let args = pos.func.dfg.inst_args(inst);
-                    pos.func.dfg.value_def(args[0])
-                };
-                if let ValueDef::Result(def_inst, _) = condition_def {
-                    if let InstructionData::Unary {
-                        opcode: Opcode::Bint,
-                        arg: bool_val,
-                    } = pos.func.dfg[def_inst]
-                    {
-                        let args = pos.func.dfg.inst_args_mut(inst);
-                        args[0] = bool_val;
-                    }
-                }
-            }
-
             InstructionData::Ternary {
                 opcode: Opcode::Bitselect,
                 args,

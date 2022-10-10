@@ -611,15 +611,6 @@
   (lower (has_type ty (bitselect c x y)))
   (gen_bitselect ty c x y))
 
-;;;;;  Rules for `bint`;;;;;;;;;
-(rule
-  (lower (has_type (fits_in_64 ty) (bint (valueregs_2_reg x))))
-  (gen_bint x))
-(rule 1
-  (lower (has_type $I128 (bint (valueregs_2_reg x))))
-  (let ((tmp Reg (gen_bint x)))
-   (value_regs tmp (load_u64_constant 0))))
-
 ;;;;;  Rules for `isplit`;;;;;;;;;
 (rule 
   (lower (isplit x))
