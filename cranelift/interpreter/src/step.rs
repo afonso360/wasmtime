@@ -107,10 +107,10 @@ where
                     .get(imm)
                     .unwrap()
                     .as_slice();
-                match ctrl_ty.bytes() {
+                match mask.len() {
                     16 => DataValue::V128(mask.try_into().expect("a 16-byte vector mask")),
                     8 => DataValue::V64(mask.try_into().expect("an 8-byte vector mask")),
-                    length => panic!("unexpected Shuffle mask length {}", length),
+                    length => panic!("unexpected Shuffle mask length {}", mask.len()),
                 }
             }
             // 8-bit.
@@ -1035,7 +1035,7 @@ where
                     new[i] = b[mask[i] as usize - a.len()];
                 } // else leave as 0.
             }
-            assign(Value::vector(new, ctrl_ty)?)
+            assign(Value::vector(new, types::I8X16)?)
         }
         Opcode::Swizzle => {
             let x = Value::into_array(&arg(0)?)?;
