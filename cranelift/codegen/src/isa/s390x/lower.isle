@@ -1806,7 +1806,7 @@
 (rule 1 (lower (insertlane x @ (value_type ty)
                          y @ (value_type in_ty)
                          (u8_from_uimm8 idx)))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (vec_insert_lane ty x y (be_lane_idx ty idx) (zero_reg)))
 
 ;; Insert vector lane from floating-point register.
@@ -1922,7 +1922,7 @@
 ;; Extract vector lane to general-purpose register.
 (rule 1 (lower (has_type out_ty
                        (extractlane x @ (value_type ty) (u8_from_uimm8 idx))))
-      (if (ty_int_bool_ref_scalar_64 out_ty))
+      (if (ty_int_ref_scalar_64 out_ty))
       (vec_extract_lane ty x (be_lane_idx ty idx) (zero_reg)))
 
 ;; Extract vector lane to floating-point register.
@@ -1979,7 +1979,7 @@
 
 ;; Load replicated value from general-purpose register.
 (rule 1 (lower (has_type ty (splat x @ (value_type in_ty))))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (vec_replicate_lane ty (vec_insert_lane_undef ty x 0 (zero_reg)) 0))
 
 ;; Load replicated value from floating-point register.
@@ -2039,7 +2039,7 @@
 ;; Load scalar value from general-purpose register.
 (rule 1 (lower (has_type ty (scalar_to_vector
                              x @ (value_type in_ty))))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (vec_insert_lane ty (vec_imm ty 0) x (be_lane_idx ty 0) (zero_reg)))
 
 ;; Load scalar value from floating-point register.

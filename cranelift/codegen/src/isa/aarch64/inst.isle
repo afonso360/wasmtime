@@ -3375,7 +3375,7 @@
 
 ;; Integers <= 64-bits.
 (rule -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm in_ty)
@@ -3392,10 +3392,10 @@
       (let ((rn Reg (put_in_reg_zext32 rn)))
       (cmp_extend (operand_size ty) rn rm (lower_icmp_extend ty $false))))
 (rule -3 (lower_icmp cond rn (imm12_from_value rm) ty)
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (cmp_imm (operand_size ty) rn rm))
 (rule -4 (lower_icmp cond rn rm ty)
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (cmp (operand_size ty) rn rm))
 
 ;; 128-bit integers.
@@ -3542,7 +3542,7 @@
          (MInst.CSel dst_hi cond rn_hi rm_hi)
          (value_regs dst_lo dst_hi)))))
 (rule 1 (lower_select flags cond ty rn rm)
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (with_flags flags (csel cond rn rm)))
 
 ;; Helper for emitting `MInst.Jump` instructions.

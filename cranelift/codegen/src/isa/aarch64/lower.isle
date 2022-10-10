@@ -134,10 +134,10 @@
 (rule (lower (has_type $F64X2 (scalar_to_vector x)))
       (fpu_extend x (ScalarSize.Size64)))
 
-(rule -1 (lower (scalar_to_vector x @ (value_type (ty_int_bool_64 _))))
+(rule -1 (lower (scalar_to_vector x @ (value_type $I64)))
       (mov_to_fpu x (ScalarSize.Size64)))
 
-(rule -2 (lower (scalar_to_vector x @ (value_type (int_bool_fits_in_32 _))))
+(rule -2 (lower (scalar_to_vector x @ (value_type (int_fits_in_32 _))))
       (mov_to_fpu (put_in_reg_zext32 x) (ScalarSize.Size32)))
 
 ;;;; Rules for `vall_true` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1546,16 +1546,16 @@
 (rule (cast_bool $I64 (fits_in_64 _out) x) x)
 
 ;; Casting between 128 bits is a noop
-(rule -1 (cast_bool (ty_int_bool_128 _in) (ty_int_bool_128 _out) x)
+(rule -1 (cast_bool $I128 $I128 x)
     x)
 
 ;; Converting from 128 bits to anything below we just ignore the top register
-(rule -2 (cast_bool (ty_int_bool_128 _in) (fits_in_64 _out) x)
+(rule -2 (cast_bool $I128 (fits_in_64 _out) x)
     (value_regs_get x 0))
 
 ;; Extend to 64 bits first, then this will be all 0s or all 1s and we can
 ;; duplicate to both halves of 128 bits
-(rule -3 (cast_bool in (ty_int_bool_128 _out) x)
+(rule -3 (cast_bool in $I128 x)
       (let ((tmp Reg (extend x $true (ty_bits in) 64)))
         (value_regs tmp tmp)))
 
@@ -1620,7 +1620,7 @@
 ;;;; Rules for `bitselect` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule (lower (has_type ty (bitselect c x y)))
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (let ((tmp1 Reg (and_reg ty x c))
             (tmp2 Reg (bic ty y c)))
         (orr ty tmp1 tmp2)))
@@ -1639,7 +1639,7 @@
 ;; are always stored with high bits undefined, so we can just leave
 ;; them be.
 (rule (lower (has_type ty (ireduce src)))
-    (if (ty_int_bool_ref_scalar_64 ty))
+    (if (ty_int_ref_scalar_64 ty))
     (value_regs_get src 0))
 
 ;;;; Rules for `fcmp` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1816,7 +1816,7 @@
 ;;;; Rules for `splat` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule -1 (lower (has_type ty (splat x @ (value_type in_ty))))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (vec_dup x (vector_size ty)))
 
 (rule -2 (lower (has_type ty (splat x @ (value_type (ty_scalar_float _)))))
@@ -2270,18 +2270,18 @@
 
 ; GPR => SIMD&FP
 (rule 4 (lower (has_type (ty_float_or_vec _) (bitcast x @ (value_type in_ty))))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       (mov_to_fpu x (scalar_size in_ty)))
 
 ; SIMD&FP => GPR
 (rule 3 (lower (has_type out_ty (bitcast x @ (value_type (fits_in_64 (ty_float_or_vec _))))))
-      (if (ty_int_bool_ref_scalar_64 out_ty))
+      (if (ty_int_ref_scalar_64 out_ty))
       (mov_from_vec x 0 (scalar_size out_ty)))
 
 ; GPR <=> GPR
 (rule 2 (lower (has_type out_ty (bitcast x @ (value_type in_ty))))
-      (if (ty_int_bool_ref_scalar_64 out_ty))
-      (if (ty_int_bool_ref_scalar_64 in_ty))
+      (if (ty_int_ref_scalar_64 out_ty))
+      (if (ty_int_ref_scalar_64 in_ty))
       x)
 (rule 1 (lower (has_type $I128 (bitcast x @ (value_type $I128)))) x)
 
@@ -2297,7 +2297,7 @@
 (rule 2 (lower (has_type (ty_scalar_float _) (extractlane val (u8_from_uimm8 0))))
       val)
 
-(rule 0 (lower (has_type (ty_int_bool ty)
+(rule 0 (lower (has_type (ty_int ty)
                        (extractlane val
                                     (u8_from_uimm8 lane))))
       (mov_from_vec val lane (scalar_size ty)))
@@ -2310,7 +2310,7 @@
 ;;; Rules for `insertlane` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rule 1 (lower (insertlane vec @ (value_type vty)
-                         val @ (value_type (ty_int_bool _))
+                         val @ (value_type (ty_int _))
                          (u8_from_uimm8 lane)))
       (mov_to_vec vec val lane (vector_size vty)))
 
@@ -2503,7 +2503,7 @@
         (with_flags_side_effect flags
          (cond_br taken not_taken (cond_br_zero rt))))))
 (rule -2 (lower_branch (brz c @ (value_type ty) _ _) targets)
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (let ((flags ProducesFlags (flags_to_producesflags c))
             (rt Reg (put_in_reg_zext64 c))
             (taken BranchTarget (branch_target targets 0))
@@ -2524,7 +2524,7 @@
         (with_flags_side_effect flags
          (cond_br taken not_taken (cond_br_not_zero rt))))))
 (rule -2 (lower_branch (brnz c @ (value_type ty) _ _) targets)
-      (if (ty_int_bool_ref_scalar_64 ty))
+      (if (ty_int_ref_scalar_64 ty))
       (let ((flags ProducesFlags (flags_to_producesflags c))
             (rt Reg (put_in_reg_zext64 c))
             (taken BranchTarget (branch_target targets 0))

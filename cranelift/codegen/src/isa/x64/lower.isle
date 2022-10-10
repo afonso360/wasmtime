@@ -2080,17 +2080,17 @@
       (x64_sar $I64 src (Imm8Reg.Imm8 63)))
 
 ;; I64 -> I128.
-(rule 3 (generic_sextend src (ty_int_bool_64 _) (ty_int_bool_128 _))
+(rule 3 (generic_sextend src $I64 $I128)
       (value_regs src (spread_sign_bit src)))
 
 ;; I{8,16,32} -> I128.
-(rule 2 (generic_sextend src (fits_in_32 src_ty) (ty_int_bool_128 _))
+(rule 2 (generic_sextend src (fits_in_32 src_ty) $I128)
       (let ((lo Gpr (extend_to_gpr src $I64 (ExtendKind.Sign)))
             (hi Gpr (spread_sign_bit lo)))
       (value_regs lo hi)))
 
 ;; I{8,16,32} -> I64.
-(rule 1 (generic_sextend src (fits_in_32 src_ty) (ty_int_bool_64 _))
+(rule 1 (generic_sextend src (fits_in_32 src_ty) $I64)
       (extend_to_gpr src $I64 (ExtendKind.Sign)))
 
 ;; I8 -> I{16,32}, I16 -> I32.
@@ -2417,7 +2417,7 @@
       (x64_movzx (ext_mode (ty_bits_u16 ty) 64) (to_amode flags address offset)))
 ;; But if we know that both the `from` and `to` are 64 bits, we simply load with
 ;; no extension.
-(rule -1 (lower (has_type (ty_int_bool_ref_64 ty) (load flags address offset)))
+(rule -1 (lower (has_type (ty_int_ref_64 ty) (load flags address offset)))
       (x64_mov (to_amode flags address offset)))
 ;; Also, certain scalar loads have a specific `from` width and extension kind
 ;; (signed -> `sx`, zeroed -> `zx`). We overwrite the high bits of the 64-bit
@@ -2450,8 +2450,8 @@
 (rule -2 (lower (has_type (ty_vec128 ty) (load flags address offset)))
       (x64_movdqu (to_amode flags address offset)))
 
-;; We can load an I128/B128 by doing two 64-bit loads.
-(rule -3 (lower (has_type (ty_int_bool_128 _)
+;; We can load an I128 by doing two 64-bit loads.
+(rule -3 (lower (has_type $I128
                        (load flags address offset)))
       (let ((addr_lo Amode (to_amode flags address offset))
             (addr_hi Amode (amode_offset addr_lo 8))
@@ -2535,9 +2535,9 @@
       (side_effect
        (x64_xmm_movrm (SseOpcode.Movdqu) (to_amode flags address offset) value)))
 
-;; Stores of I128/B128 values: store the two 64-bit halves separately.
+;; Stores of I128 values: store the two 64-bit halves separately.
 (rule 0 (lower (store flags
-                    value @ (value_type (ty_int_bool_128 _))
+                    value @ (value_type $I128)
                     address
                     offset))
       (let ((value_reg ValueRegs value)

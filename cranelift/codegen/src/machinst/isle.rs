@@ -291,7 +291,7 @@ macro_rules! isle_prelude_methods {
         }
 
         #[inline]
-        fn ty_int_bool_ref_scalar_64(&mut self, ty: Type) -> Option<Type> {
+        fn ty_int_ref_scalar_64(&mut self, ty: Type) -> Option<Type> {
             if ty.bits() <= 64 && !ty.is_float() && !ty.is_vector() {
                 Some(ty)
             } else {
@@ -336,7 +336,7 @@ macro_rules! isle_prelude_methods {
         }
 
         #[inline]
-        fn int_bool_fits_in_32(&mut self, ty: Type) -> Option<Type> {
+        fn int_fits_in_32(&mut self, ty: Type) -> Option<Type> {
             match ty {
                 I8 | I16 | I32 => Some(ty),
                 _ => None,
@@ -344,15 +344,7 @@ macro_rules! isle_prelude_methods {
         }
 
         #[inline]
-        fn ty_int_bool_64(&mut self, ty: Type) -> Option<Type> {
-            match ty {
-                I64 => Some(ty),
-                _ => None,
-            }
-        }
-
-        #[inline]
-        fn ty_int_bool_ref_64(&mut self, ty: Type) -> Option<Type> {
+        fn ty_int_ref_64(&mut self, ty: Type) -> Option<Type> {
             match ty {
                 I64 | R64 => Some(ty),
                 _ => None,
@@ -360,25 +352,8 @@ macro_rules! isle_prelude_methods {
         }
 
         #[inline]
-        fn ty_int_bool_128(&mut self, ty: Type) -> Option<Type> {
-            match ty {
-                I128 => Some(ty),
-                _ => None,
-            }
-        }
-
-        #[inline]
         fn ty_int(&mut self, ty: Type) -> Option<Type> {
             ty.is_int().then(|| ty)
-        }
-
-        #[inline]
-        fn ty_int_bool(&mut self, ty: Type) -> Option<Type> {
-            if ty.is_int() {
-                Some(ty)
-            } else {
-                None
-            }
         }
 
         #[inline]
