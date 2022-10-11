@@ -875,13 +875,11 @@ mod simplify {
                 // while vselect can be encoded using single BLEND instruction.
                 if let ValueDef::Result(def_inst, _) = pos.func.dfg.value_def(args[0]) {
                     let (cond_val, cond_type) = match pos.func.dfg[def_inst] {
-                        InstructionData::Unary {
-                            opcode: Opcode::RawBitcast,
-                            arg,
-                        } => {
-                            // If controlling mask is raw-bitcasted boolean vector then
-                            // we know each lane is either all zeroes or ones,
-                            // so we can use vselect instruction instead.
+                        InstructionData::IntCompare { .. }
+                        | InstructionData::FloatCompare { .. } => {
+                            // If the controlled mask is from a comparison, the value will be all
+                            // zeros or ones in each output lane.
+                            let arg = args[0];
                             let arg_type = pos.func.dfg.value_type(arg);
                             if !arg_type.is_vector() {
                                 return;
