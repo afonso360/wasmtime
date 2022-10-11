@@ -2232,19 +2232,12 @@
       (produces_flags_append inst_input (MInst.CCmp size rn rm nzcv cond)))
 
 ;; Helper for generating `MInst.CCmpImm` instructions.
-(decl ccmp_imm (OperandSize u8 Reg UImm5 NZCV Cond) ConsumesFlags)
-(rule 1 (ccmp_imm size 1 rn imm nzcv cond)
+(decl ccmp_imm (OperandSize Reg UImm5 NZCV Cond) ConsumesFlags)
+(rule 1 (ccmp_imm size rn imm nzcv cond)
       (let ((dst WritableReg (temp_writable_reg $I64)))
         (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
          (MInst.CCmpImm size rn imm nzcv cond)
          (MInst.CSet dst cond)
-         (value_reg dst))))
-
-(rule (ccmp_imm size _ty_bits rn imm nzcv cond)
-      (let ((dst WritableReg (temp_writable_reg $I64)))
-        (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
-         (MInst.CCmpImm size rn imm nzcv cond)
-         (MInst.CSetm dst cond)
          (value_reg dst))))
 
 ;; Helpers for generating `add` instructions.
@@ -3393,12 +3386,12 @@
       (cmp (operand_size ty) rn rm))
 
 ;; 128-bit integers.
-(rule (lower_icmp_into_reg cond @ (IntCC.Equal) rn rm $I128 out_ty)
+(rule (lower_icmp_into_reg cond @ (IntCC.Equal) rn rm $I128 $I8)
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm $I128)
         (materialize_bool_result cc))))
-(rule (lower_icmp_into_reg cond @ (IntCC.NotEqual) rn rm $I128 out_ty)
+(rule (lower_icmp_into_reg cond @ (IntCC.NotEqual) rn rm $I128 $I8)
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm $I128)
@@ -3428,7 +3421,7 @@
 ;; cmp      lhs_hi, rhs_hi
 ;; cset     tmp2, cond
 ;; csel     dst, tmp1, tmp2, eq
-(rule -1 (lower_icmp_into_reg cond lhs rhs $I128 out_ty)
+(rule -1 (lower_icmp_into_reg cond lhs rhs $I128 $I8)
       (let ((unsigned_cond Cond (cond_code (intcc_unsigned cond)))
             (cond Cond (cond_code cond))
             (lhs ValueRegs (put_in_regs lhs))
@@ -3437,36 +3430,17 @@
             (lhs_hi Reg (value_regs_get lhs 1))
             (rhs_lo Reg (value_regs_get rhs 0))
             (rhs_hi Reg (value_regs_get rhs 1))
-            (tmp1 ValueRegs
-             (with_flags (cmp (OperandSize.Size64) lhs_lo rhs_lo)
-                         (materialize_bool_result unsigned_cond)))
-            (tmp1 Reg (value_regs_get tmp1 0))
-            (dst ValueRegs
-                  (with_flags (cmp (OperandSize.Size64) lhs_hi rhs_hi)
-                   (lower_icmp_i128_consumer cond (ty_bits out_ty)
-                    tmp1 lhs_hi rhs_hi))))
-       dst))
+            (tmp1 Reg (with_flags_reg (cmp (OperandSize.Size64) lhs_lo rhs_lo)
+                                      (materialize_bool_result unsigned_cond))))
+        (with_flags (cmp (OperandSize.Size64) lhs_hi rhs_hi)
+                    (lower_icmp_i128_consumer cond tmp1))))
 
-(decl lower_icmp_i128_consumer (Cond u8 Reg Reg Reg) ConsumesFlags)
-(rule (lower_icmp_i128_consumer cond 1 tmp1 lhs_hi rhs_hi)
+(decl lower_icmp_i128_consumer (Cond Reg) ConsumesFlags)
+(rule (lower_icmp_i128_consumer cond tmp1)
       (let ((tmp2 WritableReg (temp_writable_reg $I64))
             (dst WritableReg (temp_writable_reg $I64)))
        (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
         (MInst.CSet tmp2 cond)
-        (MInst.CSel dst (Cond.Eq) tmp1 tmp2)
-        (value_reg dst))))
-(rule (lower_icmp_i128_consumer cond 128 tmp1 lhs_hi rhs_hi)
-      (let ((tmp2 WritableReg (temp_writable_reg $I64))
-            (dst WritableReg (temp_writable_reg $I64)))
-       (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
-        (MInst.CSetm tmp2 cond)
-        (MInst.CSel dst (Cond.Eq) tmp1 tmp2)
-        (value_regs dst dst))))
-(rule -1 (lower_icmp_i128_consumer cond _out_ty_bits tmp1 lhs_hi rhs_hi)
-      (let ((tmp2 WritableReg (temp_writable_reg $I64))
-            (dst WritableReg (temp_writable_reg $I64)))
-       (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
-        (MInst.CSetm tmp2 cond)
         (MInst.CSel dst (Cond.Eq) tmp1 tmp2)
         (value_reg dst))))
 

@@ -157,12 +157,11 @@
        (with_flags (fpu_cmp (ScalarSize.Size64) x2 x2)
                    (materialize_bool_result (Cond.Eq)))))
 
-(rule (lower (has_type out_ty (vall_true x @ (value_type (multi_lane 32 2)))))
+(rule (lower (vall_true x @ (value_type (multi_lane 32 2))))
       (let ((x1 Reg (mov_from_vec x 0 (ScalarSize.Size64))))
        (with_flags (cmp_rr_shift (OperandSize.Size64) (zero_reg) x1 32)
                    (ccmp_imm
                     (OperandSize.Size32)
-                    (ty_bits out_ty)
                     x1
                     (u8_into_uimm5 0)
                     (nzcv $false $true $false $false)
@@ -1703,8 +1702,8 @@
             (vec_size VectorSize (vector_size ty)))
           (value_reg (int_cmp_zero_swap cond rn vec_size))))
 
-(rule -1 (lower (has_type out_ty (icmp cond x @ (value_type in_ty) y)))
-      (lower_icmp_into_reg cond x y in_ty out_ty))
+(rule -1 (lower (icmp cond x @ (value_type in_ty) y))
+      (lower_icmp_into_reg cond x y in_ty $I8))
 
 ;;;; Rules for `trap` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
