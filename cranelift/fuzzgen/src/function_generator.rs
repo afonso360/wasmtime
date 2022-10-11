@@ -27,6 +27,33 @@ fn arbitrary_vec<T: Clone>(
     (0..len).map(|_| u.choose(options).cloned()).collect()
 }
 
+/// Generates an instruction(`iconst`/`fconst`/etc...) to introduce a constant value
+fn generate_const(u: &mut Unstructured, builder: &mut FunctionBuilder, ty: Type) -> Result<Value> {
+    Ok(match ty {
+        I128 => {
+            // See: https://github.com/bytecodealliance/wasmtime/issues/2906
+            let hi = builder.ins().iconst(I64, u.arbitrary::<i64>()?);
+            let lo = builder.ins().iconst(I64, u.arbitrary::<i64>()?);
+            builder.ins().iconcat(lo, hi)
+        }
+        ty if ty.is_int() => {
+            let imm64 = match ty {
+                I8 => u.arbitrary::<i8>()? as i64,
+                I16 => u.arbitrary::<i16>()? as i64,
+                I32 => u.arbitrary::<i32>()? as i64,
+                I64 => u.arbitrary::<i64>()?,
+                _ => unreachable!(),
+            };
+            builder.ins().iconst(ty, imm64)
+        }
+        // f{32,64}::arbitrary does not generate a bunch of important values
+        // such as Signaling NaN's / NaN's with payload, so generate floats from integers.
+        F32 => builder.ins().f32const(f32::from_bits(u32::arbitrary(u)?)),
+        F64 => builder.ins().f64const(f64::from_bits(u64::arbitrary(u)?)),
+        _ => unimplemented!(),
+    })
+}
+
 type BlockSignature = Vec<Type>;
 
 fn insert_opcode(
@@ -183,7 +210,7 @@ fn insert_const(
 ) -> Result<()> {
     let typevar = rets[0];
     let var = fgen.get_variable_of_type(typevar)?;
-    let val = fgen.generate_const(builder, typevar)?;
+    let val = generate_const(&mut fgen.u, builder, typevar)?;
     builder.def_var(var, val);
     Ok(())
 }
@@ -231,13 +258,15 @@ type OpcodeInserter = fn(
     &'static [Type],
 ) -> Result<()>;
 
-// TODO: Derive this from the `cranelift-meta` generator.
-const OPCODE_SIGNATURES: &'static [(
+type OpcodeSignature = (
     Opcode,
     &'static [Type], // Args
     &'static [Type], // Rets
     OpcodeInserter,
-)] = &[
+);
+
+// TODO: Derive this from the `cranelift-meta` generator.
+const OPCODE_SIGNATURES: &'static [OpcodeSignature] = &[
     (Opcode::Nop, &[], &[], insert_opcode),
     // Iadd
     (Opcode::Iadd, &[I8, I8], &[I8], insert_opcode),
@@ -836,6 +865,7 @@ struct Resources {
     block_terminators: Vec<BlockTerminator>,
     func_refs: Vec<(Signature, FuncRef)>,
     stack_slots: Vec<(StackSlot, StackSize)>,
+    opcodes: Vec<OpcodeSignature>,
 }
 
 impl Resources {
@@ -863,6 +893,21 @@ impl Resources {
     fn forward_blocks_without_params(&self, block: Block) -> &[Block] {
         let partition_point = self.blocks_without_params.partition_point(|b| *b <= block);
         &self.blocks_without_params[partition_point..]
+    }
+
+    /// Returns an iterator over all variables
+    fn vars_iter(&self) -> impl Iterator<Item = (Type, Variable)> + '_ {
+        self.vars
+            .iter()
+            .flat_map(|(ty, vars)| vars.iter().map(|v| (*ty, *v)))
+    }
+
+    /// Returns variables that belong to the function signature
+    fn signature_vars(&self, signature: &Signature) -> Vec<(Type, Variable)> {
+        // We always reserve the first n vars for signature params, so just look for those
+        self.vars_iter()
+            .filter(|&(_, var)| var.as_u32() < signature.params.len() as u32)
+            .collect()
     }
 }
 
@@ -991,37 +1036,6 @@ where
         Ok(*var)
     }
 
-    /// Generates an instruction(`iconst`/`fconst`/etc...) to introduce a constant value
-    fn generate_const(&mut self, builder: &mut FunctionBuilder, ty: Type) -> Result<Value> {
-        Ok(match ty {
-            I128 => {
-                // See: https://github.com/bytecodealliance/wasmtime/issues/2906
-                let hi = builder.ins().iconst(I64, self.u.arbitrary::<i64>()?);
-                let lo = builder.ins().iconst(I64, self.u.arbitrary::<i64>()?);
-                builder.ins().iconcat(lo, hi)
-            }
-            ty if ty.is_int() => {
-                let imm64 = match ty {
-                    I8 => self.u.arbitrary::<i8>()? as i64,
-                    I16 => self.u.arbitrary::<i16>()? as i64,
-                    I32 => self.u.arbitrary::<i32>()? as i64,
-                    I64 => self.u.arbitrary::<i64>()?,
-                    _ => unreachable!(),
-                };
-                builder.ins().iconst(ty, imm64)
-            }
-            // f{32,64}::arbitrary does not generate a bunch of important values
-            // such as Signaling NaN's / NaN's with payload, so generate floats from integers.
-            F32 => builder
-                .ins()
-                .f32const(f32::from_bits(u32::arbitrary(self.u)?)),
-            F64 => builder
-                .ins()
-                .f64const(f64::from_bits(u64::arbitrary(self.u)?)),
-            _ => unimplemented!(),
-        })
-    }
-
     /// Chooses a random block which can be targeted by a jump / branch.
     /// This means any block that is not the first block.
     fn generate_target_block(&mut self, source_block: Block) -> Result<Block> {
@@ -1142,7 +1156,8 @@ where
     /// Fills the current block with random instructions
     fn generate_instructions(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
         for _ in 0..self.param(&self.config.instructions_per_block)? {
-            let (op, args, rets, inserter) = *self.u.choose(OPCODE_SIGNATURES)?;
+            let opcodes = &self.resources.opcodes[..];
+            let (op, args, rets, inserter) = *self.u.choose(opcodes)?;
             inserter(self, builder, op, args, rets)?;
         }
 
@@ -1395,38 +1410,71 @@ where
         Ok(params)
     }
 
-    fn build_variable_pool(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
-        let block = builder.current_block().unwrap();
-
+    fn build_variable_pool(&mut self, signature: &Signature) -> Result<()> {
         // Define variables for the function signature
-        let mut vars: Vec<_> = builder
-            .func
-            .signature
+        let mut vars: Vec<_> = signature
             .params
             .iter()
             .map(|param| param.value_type)
-            .zip(builder.block_params(block).iter().copied())
             .collect();
 
         // Create a pool of vars that are going to be used in this function
         for _ in 0..self.param(&self.config.vars_per_function)? {
-            let ty = self.generate_type()?;
-            let value = self.generate_const(builder, ty)?;
-            vars.push((ty, value));
+            vars.push(self.generate_type()?);
         }
 
-        for (id, (ty, value)) in vars.into_iter().enumerate() {
-            let var = Variable::new(id);
-            builder.declare_var(var, ty);
-            builder.def_var(var, value);
+        for (id, ty) in vars.into_iter().enumerate() {
             self.resources
                 .vars
                 .entry(ty)
                 .or_insert_with(Vec::new)
-                .push(var);
+                .push(Variable::new(id));
         }
 
         Ok(())
+    }
+
+    fn init_variables(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
+        // We want to initialize all variables except the ones from the signature
+        let sig_vars = self.resources.signature_vars(&builder.func.signature);
+
+        for (ty, var) in self.resources.vars_iter() {
+            builder.declare_var(var, ty);
+
+            let is_sig_var = sig_vars.iter().any(|sv| sv.1 == var);
+            let value = if is_sig_var {
+                // On signature vars we get the value from the block args
+                // Indexing into sig params works because the first n variables
+                // are always equivalent to the first n signature params.
+                let sig_params = builder.block_params(Block::new(0));
+                sig_params[var.as_u32() as usize]
+            } else {
+                // On other vars, just generate a random value
+                generate_const(&mut self.u, builder, ty)?
+            };
+
+            builder.def_var(var, value);
+        }
+
+        Ok(())
+    }
+
+    fn generate_opcodes(&mut self) {
+        self.resources.opcodes = OPCODE_SIGNATURES
+            .into_iter()
+            .filter(|&&(_, args, rets, _)| {
+                args.iter().chain(rets).all(|ty| {
+                    self.resources
+                        .vars
+                        .get(ty)
+                        .map(|vars| !vars.is_empty())
+                        .unwrap_or(false)
+                })
+            })
+            // TODO: filter CALLS
+            // TODO: filter stack accesses
+            .copied()
+            .collect();
     }
 
     /// We generate a function in multiple stages:
@@ -1446,6 +1494,8 @@ where
 
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
+        self.build_variable_pool(&sig)?;
+        self.generate_opcodes();
         self.generate_blocks(&mut builder, &sig)?;
 
         // Function preamble
@@ -1458,10 +1508,9 @@ where
             builder.switch_to_block(block);
 
             if is_block0 {
-                // The first block is special because we must create variables both for the
-                // block signature and for the variable pool. Additionally, we must also define
-                // initial values for all variables that are not the function signature.
-                self.build_variable_pool(&mut builder)?;
+                // The first block is special because we must define initial values for
+                // all variables.
+                self.init_variables(&mut builder)?;
 
                 // Stack slots have random bytes at the beginning of the function
                 // initialize them to a constant value so that execution stays predictable.
