@@ -2212,6 +2212,18 @@
          (MInst.CSel dst cond if_true if_false)
          dst)))
 
+;; Helper for constructing `cset` instructions.
+(decl cset (Cond) ConsumesFlags)
+(rule (cset cond)
+      (let ((dst WritableReg (temp_writable_reg $I64)))
+        (ConsumesFlags.ConsumesFlagsReturnsReg (MInst.CSet dst cond) dst)))
+
+;; Helper for constructing `csetm` instructions.
+(decl csetm (Cond) ConsumesFlags)
+(rule (csetm cond)
+      (let ((dst WritableReg (temp_writable_reg $I64)))
+        (ConsumesFlags.ConsumesFlagsReturnsReg (MInst.CSetm dst cond) dst)))
+
 ;; Helper for generating a `CSNeg` instruction.
 ;;
 ;; Note that this doesn't actually emit anything, instead it produces a
@@ -3443,6 +3455,63 @@
         (MInst.CSet tmp2 cond)
         (MInst.CSel dst (Cond.Eq) tmp1 tmp2)
         (value_reg dst))))
+
+(decl lower_bmask (Type Type ValueRegs) ValueRegs)
+
+;; For conversions that fit in a regsiter, we can use csetm.
+;;
+;; cmp   val, #0
+;; csetm res, ne
+(rule 0
+      (lower_bmask (fits_in_64 _) (fits_in_64 _) val)
+      (with_flags_reg
+        (cmp64_imm (value_regs_get val 0) (u8_into_imm12 0))
+        (csetm (Cond.Ne))))
+
+;; For conversions from i128 into a 64-bit or smaller register, we test both
+;; registers in the 128-bit value, and then use csetm accordingly. This is
+;; slightly more efficient than two recursive calls to `lower_bmask`, as we can
+;; reuse the comparison of the hi register to select between the two results,
+;; and avoid an extra comparison.
+;;
+;; cmp   lo, #0
+;; csetm tmp1, ne
+;; cmp   hi, #0
+;; csetm tmp2, ne
+;; csel  dst, tmp1, tmp2, eq
+(rule 1
+      (lower_bmask (fits_in_64 _) $I128 val)
+      (let ((lo Reg (value_regs_get val 0))
+            (hi Reg (value_regs_get val 1))
+
+            (tmp1 Reg (with_flags_reg (cmp64_imm lo (u8_into_imm12 0))
+                                      (csetm (Cond.Ne))))
+
+            (tmp2 WritableReg (temp_writable_reg $I64))
+            (dst ValueRegs
+                 (with_flags
+                   (cmp64_imm hi (u8_into_imm12 0))
+                   (consumes_flags_concat
+                     (ConsumesFlags.ConsumesFlagsReturnsReg (MInst.CSetm tmp2 (Cond.Ne)) tmp2)
+                     (csel (Cond.Eq) tmp1 tmp2)))))
+
+        (value_reg (value_regs_get dst 1))))
+
+;; For converting from a smaller type into i128, duplicate the result of
+;; converting to i64.
+(rule 2
+      (lower_bmask $I128 (fits_in_64 ty) val)
+      (let ((res ValueRegs (lower_bmask $I64 ty val))
+            (res Reg (value_regs_get res 0)))
+        (value_regs res res)))
+
+;; For conversions to a 128-bit mask, we duplicate the result of converting to
+;; an I64.
+(rule 3
+      (lower_bmask $I128 $I128 val)
+      (let ((res ValueRegs (lower_bmask $I64 $I128 val))
+            (res Reg (value_regs_get res 0)))
+        (value_regs res res)))
 
 ;; Exceptional `lower_icmp_into_flags` rules.
 ;; We need to guarantee that the flags for `cond` are correct, so we
