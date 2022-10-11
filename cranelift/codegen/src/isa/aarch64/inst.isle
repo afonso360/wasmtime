@@ -1941,17 +1941,11 @@
 
 ;; Helper for materializing a boolean value into a register from
 ;; flags.
-(decl materialize_bool_result (u8 Cond) ConsumesFlags)
-(rule (materialize_bool_result 1 cond)
+(decl materialize_bool_result (Cond) ConsumesFlags)
+(rule (materialize_bool_result cond)
       (let ((dst WritableReg (temp_writable_reg $I64)))
         (ConsumesFlags.ConsumesFlagsReturnsReg
          (MInst.CSet dst cond)
-         dst)))
-
-(rule -1 (materialize_bool_result _ty_bits cond)
-      (let ((dst WritableReg (temp_writable_reg $I64)))
-        (ConsumesFlags.ConsumesFlagsReturnsReg
-         (MInst.CSetm dst cond)
          dst)))
 
 (decl cmn_imm (OperandSize Reg Imm12) ProducesFlags)
@@ -3379,7 +3373,7 @@
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm in_ty)
-        (materialize_bool_result (ty_bits out_ty) cc))))
+        (materialize_bool_result cc))))
 
 (rule 1 (lower_icmp cond rn rm (fits_in_16 ty))
       (if (signed_cond_code cond))
@@ -3403,12 +3397,12 @@
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm $I128)
-        (materialize_bool_result (ty_bits out_ty) cc))))
+        (materialize_bool_result cc))))
 (rule (lower_icmp_into_reg cond @ (IntCC.NotEqual) rn rm $I128 out_ty)
       (let ((cc Cond (cond_code cond)))
        (with_flags
         (lower_icmp cond rn rm $I128)
-        (materialize_bool_result (ty_bits out_ty) cc))))
+        (materialize_bool_result cc))))
 
 ;; cmp lhs_lo, rhs_lo
 ;; ccmp lhs_hi, rhs_hi, #0, eq
@@ -3445,8 +3439,7 @@
             (rhs_hi Reg (value_regs_get rhs 1))
             (tmp1 ValueRegs
              (with_flags (cmp (OperandSize.Size64) lhs_lo rhs_lo)
-                         (materialize_bool_result
-                          (ty_bits out_ty) unsigned_cond)))
+                         (materialize_bool_result unsigned_cond)))
             (tmp1 Reg (value_regs_get tmp1 0))
             (dst ValueRegs
                   (with_flags (cmp (OperandSize.Size64) lhs_hi rhs_hi)

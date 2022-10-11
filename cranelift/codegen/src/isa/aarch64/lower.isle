@@ -151,11 +151,11 @@
 ;; 0 when all input elements are true, i.e. non-zero, or a NaN otherwise
 ;; (either -1 or -2 when represented as an integer); NaNs are the only
 ;; floating-point numbers that compare unequal to themselves.
-(rule (lower (has_type out_ty (vall_true x @ (value_type (multi_lane 64 2)))))
+(rule (lower (vall_true x @ (value_type (multi_lane 64 2))))
       (let ((x1 Reg (cmeq0 x (VectorSize.Size64x2)))
             (x2 Reg (addp x1 x1 (VectorSize.Size64x2))))
        (with_flags (fpu_cmp (ScalarSize.Size64) x2 x2)
-                   (materialize_bool_result (ty_bits out_ty) (Cond.Eq)))))
+                   (materialize_bool_result (Cond.Eq)))))
 
 (rule (lower (has_type out_ty (vall_true x @ (value_type (multi_lane 32 2)))))
       (let ((x1 Reg (mov_from_vec x 0 (ScalarSize.Size64))))
@@ -175,18 +175,18 @@
 ;; mov xm, vn.d[0]
 ;; cmp xm, #0
 ;; cset xm, ne
-(rule -1 (lower (has_type out_ty (vall_true x @ (value_type (lane_fits_in_32 ty)))))
+(rule -1 (lower (vall_true x @ (value_type (lane_fits_in_32 ty))))
       (if (not_vec32x2 ty))
       (let ((x1 Reg (vec_lanes (VecLanesOp.Uminv) x (vector_size ty)))
             (x2 Reg (mov_from_vec x1 0 (ScalarSize.Size64))))
        (with_flags (cmp_imm (OperandSize.Size64) x2 (u8_into_imm12 0))
-                   (materialize_bool_result (ty_bits out_ty) (Cond.Ne)))))
+                   (materialize_bool_result (Cond.Ne)))))
 
 ;;;; Rules for `vany_true` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type out_ty (vany_true x @ (value_type in_ty))))
+(rule (lower (vany_true x @ (value_type in_ty)))
       (with_flags (vanytrue x in_ty)
-                  (materialize_bool_result (ty_bits out_ty) (Cond.Ne))))
+                  (materialize_bool_result (Cond.Ne))))
 
 ;;;; Rules for `iadd_pairwise` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1671,9 +1671,7 @@
 (rule 0 (lower (has_type out_ty
               (fcmp cond x @ (value_type (ty_scalar_float in_ty)) y)))
       (with_flags (fpu_cmp (scalar_size in_ty) x y)
-                  (materialize_bool_result
-                   (ty_bits out_ty)
-                   (fp_cond_code cond))))
+                  (materialize_bool_result (fp_cond_code cond))))
 
 (rule -1 (lower (has_type out_ty (fcmp cond x @ (value_type in_ty) y)))
       (if (ty_vector_float in_ty))
@@ -1748,10 +1746,10 @@
 ;;;; Rules for `trueff` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Verification ensures the input is always a single-def ffcmp.
-(rule (lower (has_type ty (trueff cc insn @ (ffcmp x @ (value_type in_ty) y))))
+(rule (lower (trueff cc insn @ (ffcmp x @ (value_type in_ty) y)))
       (with_flags_reg
        (fpu_cmp (scalar_size in_ty) x y)
-       (materialize_bool_result (ty_bits ty) (fp_cond_code cc))))
+       (materialize_bool_result (fp_cond_code cc))))
 
 ;;;; Rules for `select` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -2034,17 +2032,15 @@
 
 ;;;; Rules for `IsNull` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type out_ty (is_null x @ (value_type ty))))
+(rule (lower (is_null x @ (value_type ty)))
       (with_flags (cmp_imm (operand_size ty) x (u8_into_imm12 0))
-                  (materialize_bool_result
-                   (ty_bits out_ty) (Cond.Eq))))
+                  (materialize_bool_result (Cond.Eq))))
 
 ;;;; Rules for `IsInvalid` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type out_ty (is_invalid x @ (value_type ty))))
+(rule (lower (is_invalid x @ (value_type ty)))
       (with_flags (cmn_imm (operand_size ty) x (u8_into_imm12 1))
-                  (materialize_bool_result
-                   (ty_bits out_ty) (Cond.Eq))))
+                  (materialize_bool_result (Cond.Eq))))
 
 ;;;; Rules for `Debugtrap` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
