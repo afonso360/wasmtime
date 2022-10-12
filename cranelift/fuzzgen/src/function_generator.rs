@@ -909,6 +909,12 @@ impl Resources {
             .filter(|&(_, var)| var.as_u32() < signature.params.len() as u32)
             .collect()
     }
+
+    /// Returns the slice of stock slots with at least n bites
+    fn stack_slots_with_size(&self, n: StackSize) -> &[(StackSlot, StackSize)] {
+        let first = self.stack_slots.partition_point(|&(_, bytes)| bytes < n);
+        &self.stack_slots[first..]
+    }
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -986,11 +992,7 @@ where
 
     /// Finds a stack slot with size of at least n bytes
     fn stack_slot_with_size(&mut self, n: u32) -> Result<(StackSlot, StackSize)> {
-        let first = self
-            .resources
-            .stack_slots
-            .partition_point(|&(_slot, size)| size < n);
-        Ok(*self.u.choose(&self.resources.stack_slots[first..])?)
+        Ok(*self.u.choose(self.resources.stack_slots_with_size(n))?)
     }
 
     /// Generates an address that should allow for a store or a load.
@@ -1462,6 +1464,7 @@ where
     fn generate_opcodes(&mut self) {
         self.resources.opcodes = OPCODE_SIGNATURES
             .into_iter()
+            // Filter opcodes based on which variables exist
             .filter(|&&(_, args, rets, _)| {
                 args.iter().chain(rets).all(|ty| {
                     self.resources
@@ -1471,8 +1474,21 @@ where
                         .unwrap_or(false)
                 })
             })
+            // Filter stack accesses based on existing stack slots
+            .filter(|&&(opcode, args, rets, _)| match opcode {
+                // TODO: Improve this for loads and stores when we support heap's
+                Opcode::StackLoad | Opcode::StackStore | Opcode::Load | Opcode::Store => {
+                    let size = if [Opcode::StackLoad, Opcode::Load].contains(&opcode) {
+                        rets[0].bytes()
+                    } else {
+                        args[0].bytes()
+                    };
+
+                    !self.resources.stack_slots_with_size(size).is_empty()
+                }
+                _ => true,
+            })
             // TODO: filter CALLS
-            // TODO: filter stack accesses
             .copied()
             .collect();
     }
@@ -1495,12 +1511,14 @@ where
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
         self.build_variable_pool(&sig)?;
-        self.generate_opcodes();
         self.generate_blocks(&mut builder, &sig)?;
 
         // Function preamble
         self.generate_funcrefs(&mut builder)?;
         self.generate_stack_slots(&mut builder)?;
+
+        // Now that we have all the resources, generate the list of opcodes we're allowed to use
+        self.generate_opcodes();
 
         // Main instruction generation loop
         for (block, block_sig) in self.resources.blocks.clone().into_iter() {
