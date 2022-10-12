@@ -915,6 +915,14 @@ impl Resources {
         let first = self.stack_slots.partition_point(|&(_, bytes)| bytes < n);
         &self.stack_slots[first..]
     }
+
+    /// Returns true if we have at least one variable of type `ty`
+    fn has_variable_of_type(&self, ty: Type) -> bool {
+        self.vars
+            .get(&ty)
+            .map(|vars| !vars.is_empty())
+            .unwrap_or(false)
+    }
 }
 
 impl<'r, 'data> FunctionGenerator<'r, 'data>
@@ -1168,34 +1176,55 @@ where
 
     fn generate_funcrefs(&mut self, builder: &mut FunctionBuilder) -> Result<()> {
         let count = self.param(&self.config.funcrefs_per_function)?;
-        for func_index in 0..count.try_into().unwrap() {
-            let (ext_name, sig) = if self.u.arbitrary::<bool>()? {
-                let user_func_ref = builder
-                    .func
-                    .declare_imported_user_function(UserExternalName {
-                        namespace: 0,
-                        index: func_index,
-                    });
-                let name = ExternalName::User(user_func_ref);
-                let signature = self.generate_signature()?;
-                (name, signature)
-            } else {
-                let libcall = *self.u.choose(ALLOWED_LIBCALLS)?;
-                // TODO: Use [CallConv::for_libcall] once we generate flags.
-                let callconv = self.system_callconv();
-                let signature = libcall.signature(callconv);
-                (ExternalName::LibCall(libcall), signature)
-            };
+        let functions = (0..count as u32)
+            .map(|func_index| {
+                let colocated = self.u.arbitrary()?;
+                let (ext_call, signature) = if self.u.arbitrary::<bool>()? {
+                    let user_func_ref =
+                        builder
+                            .func
+                            .declare_imported_user_function(UserExternalName {
+                                namespace: 0,
+                                index: func_index,
+                            });
+                    let name = ExternalName::User(user_func_ref);
+                    let signature = self.generate_signature()?;
+                    (name, signature)
+                } else {
+                    let libcall = *self.u.choose(ALLOWED_LIBCALLS)?;
+                    // TODO: Use [CallConv::for_libcall] once we generate flags.
+                    let callconv = self.system_callconv();
+                    let signature = libcall.signature(callconv);
+                    (ExternalName::LibCall(libcall), signature)
+                };
 
-            let sig_ref = builder.import_signature(sig.clone());
-            let func_ref = builder.import_function(ExtFuncData {
-                name: ext_name,
-                signature: sig_ref,
-                colocated: self.u.arbitrary()?,
-            });
+                Ok((ext_call, signature, colocated))
+            })
+            .collect::<Result<Vec<_>>>()?;
 
-            self.resources.func_refs.push((sig, func_ref));
-        }
+        self.resources.func_refs = functions
+            .into_iter()
+            // Discard all signatures that have types for which we don't have variables
+            .filter(|(_, signature, _)| {
+                signature
+                    .params
+                    .iter()
+                    .chain(&signature.returns)
+                    .map(|abi_param| abi_param.value_type)
+                    .all(|ty| self.resources.has_variable_of_type(ty))
+            })
+            // Import the remaining signatures
+            .map(|(name, sig, colocated)| {
+                let sig_ref = builder.import_signature(sig.clone());
+                let func_ref = builder.import_function(ExtFuncData {
+                    name,
+                    signature: sig_ref,
+                    colocated,
+                });
+
+                (sig, func_ref)
+            })
+            .collect();
 
         Ok(())
     }
@@ -1466,16 +1495,12 @@ where
             .into_iter()
             // Filter opcodes based on which variables exist
             .filter(|&&(_, args, rets, _)| {
-                args.iter().chain(rets).all(|ty| {
-                    self.resources
-                        .vars
-                        .get(ty)
-                        .map(|vars| !vars.is_empty())
-                        .unwrap_or(false)
-                })
+                args.iter()
+                    .chain(rets)
+                    .all(|&ty| self.resources.has_variable_of_type(ty))
             })
-            // Filter stack accesses based on existing stack slots
             .filter(|&&(opcode, args, rets, _)| match opcode {
+                // Filter stack accesses based on existing stack slots
                 // TODO: Improve this for loads and stores when we support heap's
                 Opcode::StackLoad | Opcode::StackStore | Opcode::Load | Opcode::Store => {
                     let size = if [Opcode::StackLoad, Opcode::Load].contains(&opcode) {
@@ -1486,9 +1511,11 @@ where
 
                     !self.resources.stack_slots_with_size(size).is_empty()
                 }
+                // We only need to filter calls if we don't have any function references, they have
+                // already been pre filtered based on the variables that we have, so they're all valid.
+                Opcode::Call => !self.resources.func_refs.is_empty(),
                 _ => true,
             })
-            // TODO: filter CALLS
             .copied()
             .collect();
     }
