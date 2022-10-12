@@ -8,11 +8,9 @@ block0(v0: i128):
 }
 
 ; block0:
-;   subs xzr, x0, #0
-;   csetm x6, ne
-;   subs xzr, x1, #0
-;   csetm x9, ne
-;   csel x1, x6, x9, eq
+;   orr x5, x0, x1
+;   subs xzr, x5, #0
+;   csetm x1, ne
 ;   mov x0, x1
 ;   ret
 
@@ -23,11 +21,9 @@ block0(v0: i128):
 }
 
 ; block0:
-;   subs xzr, x0, #0
-;   csetm x5, ne
-;   subs xzr, x1, #0
-;   csetm x8, ne
-;   csel x0, x5, x8, eq
+;   orr x4, x0, x1
+;   subs xzr, x4, #0
+;   csetm x0, ne
 ;   ret
 
 function %bmask_i128_i32(i128) -> i32 {
@@ -37,11 +33,9 @@ block0(v0: i128):
 }
 
 ; block0:
-;   subs xzr, x0, #0
-;   csetm x5, ne
-;   subs xzr, x1, #0
-;   csetm x8, ne
-;   csel x0, x5, x8, eq
+;   orr x4, x0, x1
+;   subs xzr, x4, #0
+;   csetm x0, ne
 ;   ret
 
 function %bmask_i128_i16(i128) -> i16 {
@@ -51,11 +45,9 @@ block0(v0: i128):
 }
 
 ; block0:
-;   subs xzr, x0, #0
-;   csetm x5, ne
-;   subs xzr, x1, #0
-;   csetm x8, ne
-;   csel x0, x5, x8, eq
+;   orr x4, x0, x1
+;   subs xzr, x4, #0
+;   csetm x0, ne
 ;   ret
 
 function %bmask_i128_i8(i128) -> i8 {
@@ -65,11 +57,9 @@ block0(v0: i128):
 }
 
 ; block0:
-;   subs xzr, x0, #0
-;   csetm x5, ne
-;   subs xzr, x1, #0
-;   csetm x8, ne
-;   csel x0, x5, x8, eq
+;   orr x4, x0, x1
+;   subs xzr, x4, #0
+;   csetm x0, ne
 ;   ret
 
 function %bmask_i64_i128(i64) -> i128 {

@@ -3468,34 +3468,23 @@
         (cmp64_imm (value_regs_get val 0) (u8_into_imm12 0))
         (csetm (Cond.Ne))))
 
-;; For conversions from i128 into a 64-bit or smaller register, we test both
+;; For conversions from i128 into a 64-bit or smaller register, we merge both
 ;; registers in the 128-bit value, and then use csetm accordingly. This is
 ;; slightly more efficient than two recursive calls to `lower_bmask`, as we can
-;; reuse the comparison of the hi register to select between the two results,
-;; and avoid an extra comparison.
+;; do a single comparison.
 ;;
-;; cmp   lo, #0
-;; csetm tmp1, ne
-;; cmp   hi, #0
-;; csetm tmp2, ne
-;; csel  dst, tmp1, tmp2, eq
+;; orr   tmp1, lo, hi
+;; cmp   tmp1, #0
+;; csetm dst, ne
 (rule 1
       (lower_bmask (fits_in_64 _) $I128 val)
       (let ((lo Reg (value_regs_get val 0))
             (hi Reg (value_regs_get val 1))
 
-            (tmp1 Reg (with_flags_reg (cmp64_imm lo (u8_into_imm12 0))
-                                      (csetm (Cond.Ne))))
-
-            (tmp2 WritableReg (temp_writable_reg $I64))
-            (dst ValueRegs
-                 (with_flags
-                   (cmp64_imm hi (u8_into_imm12 0))
-                   (consumes_flags_concat
-                     (ConsumesFlags.ConsumesFlagsReturnsReg (MInst.CSetm tmp2 (Cond.Ne)) tmp2)
-                     (csel (Cond.Eq) tmp1 tmp2)))))
-
-        (value_reg (value_regs_get dst 1))))
+            (tmp1 Reg (orr $I64 lo hi))
+            (dst Reg (with_flags_reg (cmp64_imm tmp1 (u8_into_imm12 0))
+                                      (csetm (Cond.Ne)))))
+        dst))
 
 ;; For converting from a smaller type into i128, duplicate the result of
 ;; converting to i64.
