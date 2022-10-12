@@ -2071,3 +2071,45 @@
 (decl umulh (Reg Reg) Reg)
 (rule (umulh a b)
   (alu_rrr (AluOPRRR.Mulhu) a b))
+
+;;;; Helpers for bmask ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(decl lower_bmask (Type Type Value) ValueRegs)
+
+;; Conversion of one 64-bit value to another
+(rule
+  0
+  (lower_bmask (fits_in_64 _) (fits_in_64 _) val)
+  (let ((input Reg val)
+        (zero Reg (zero_reg))
+        (ones Reg (load_imm12 -1)))
+  (value_reg (gen_select_reg (IntCC.Equal) zero input zero ones))))
+
+;; Conversion of one 128-bit value to a 64-bit value
+(rule
+  1
+  (lower_bmask (fits_in_64 _) $I128 val)
+  (let ((lo Reg (value_regs_get val 0))
+        (hi Reg (value_regs_get val 1))
+        (zero Reg (zero_reg))
+        (ones Reg (load_imm12 -1))
+        (lo Reg (gen_select_reg (IntCC.Equal) zero lo zero ones))
+        (hi Reg (gen_select_reg (IntCC.Equal) zero hi zero ones)))
+  (value_reg (alu_rrr (AluOPRRR.Or) lo hi))))
+
+;; Conversion of one 64-bit value to a 128-bit one. Duplicate the result of the
+;; bmask of the 64-bit value into both result registers of the i128.
+(rule
+  2
+  (lower_bmask $I128 (fits_in_64 _) val)
+  (let ((res ValueRegs (lower_bmask $I64 $I64 val)))
+    (value_regs (value_regs_get res 0) (value_regs_get res 0))))
+
+;; Conversion of one 64-bit value to a 128-bit one. Duplicate the result of
+;; bmasking the 128-bit value to a 64-bit value into both registers of the
+;; 128-bit result.
+(rule
+  3
+  (lower_bmask $I128 $I128 val)
+  (let ((res ValueRegs (lower_bmask $I64 $I128 val)))
+    (value_regs (value_regs_get res 0) (value_regs_get res 0))))
