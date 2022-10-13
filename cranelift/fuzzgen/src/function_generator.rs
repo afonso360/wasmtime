@@ -917,6 +917,11 @@ impl Resources {
     }
 
     /// Returns true if we have at least one variable of type `ty`
+    fn variable_types(&self) -> Vec<Type> {
+        self.vars.keys().copied().collect()
+    }
+
+    /// Returns true if we have at least one variable of type `ty`
     fn has_variable_of_type(&self, ty: Type) -> bool {
         self.vars
             .get(&ty)
@@ -1432,13 +1437,14 @@ where
     }
 
     fn generate_block_signature(&mut self) -> Result<BlockSignature> {
+        // Allow only types that we know we can select a variable for
+        let variable_types = self.resources.variable_types();
         let param_count = self.param(&self.config.block_signature_params)?;
-
-        let mut params = Vec::with_capacity(param_count);
-        for _ in 0..param_count {
-            params.push(self.generate_type()?);
-        }
-        Ok(params)
+        Ok(arbitrary_vec(
+            &mut self.u,
+            param_count,
+            &variable_types[..],
+        )?)
     }
 
     fn build_variable_pool(&mut self, signature: &Signature) -> Result<()> {
