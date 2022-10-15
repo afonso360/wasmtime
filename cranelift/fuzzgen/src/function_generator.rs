@@ -1452,6 +1452,7 @@ where
         let mut vars: Vec<_> = signature
             .params
             .iter()
+            .chain(signature.returns.iter())
             .map(|param| param.value_type)
             .collect();
 
