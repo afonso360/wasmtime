@@ -5,7 +5,7 @@ use crate::subtest::SubTest;
 use anyhow::{bail, Context as _, Result};
 use cranelift_codegen::isa::TargetIsa;
 use cranelift_codegen::print_errors::pretty_verifier_error;
-use cranelift_codegen::settings::{Flags, FlagsOrIsa};
+use cranelift_codegen::settings::{self, Flags, FlagsOrIsa};
 use cranelift_codegen::timing;
 use cranelift_codegen::verify_function;
 use cranelift_reader::{parse_test, IsaSpec, Location, ParseOptions, TestFile};
@@ -86,13 +86,35 @@ pub fn run(
     let mut file_update = FileUpdate::new(&path);
     let file_path = path.to_string_lossy();
     for (test, flags, isa) in &tuples {
+        let flags = {
+            use cranelift_codegen::settings::Configurable;
+            let mut flags_builder = settings::builder();
+
+            // Copy all flags
+            for flag in flags.iter() {
+                flags_builder.set(flag.name, &flag.value_string()).unwrap();
+            }
+
+            flags_builder.set("regalloc_checker", "true").unwrap();
+            settings::Flags::new(flags_builder)
+        };
+
         // Should we run the verifier before this test?
         if test.needs_verifier() {
-            let fisa = FlagsOrIsa { flags, isa: *isa };
+            let fisa = FlagsOrIsa {
+                flags: &flags,
+                isa: *isa,
+            };
             verify_testfile(&testfile, fisa)?;
         }
 
-        test.run_target(&testfile, &mut file_update, file_path.as_ref(), flags, *isa)?;
+        test.run_target(
+            &testfile,
+            &mut file_update,
+            file_path.as_ref(),
+            &flags,
+            *isa,
+        )?;
     }
 
     Ok(started.elapsed())
