@@ -622,6 +622,66 @@ impl ValueTypeSet {
         };
         t.by(1 << self.lanes.min().unwrap()).unwrap()
     }
+
+    /// Returns an iterator over all possible types in this typeset.
+    ///
+    /// ```
+    /// # use cranelift_codegen::bitset::BitSet;
+    /// # use cranelift_codegen::ir::instructions::ValueTypeSet;
+    /// # use cranelift_codegen::ir::types::*;
+    /// let vts = ValueTypeSet {
+    ///   lanes: BitSet::from_range(0, 2),
+    ///   ints: BitSet::from_range(5, 7),
+    ///   floats: BitSet::from_range(0, 0),
+    ///   refs: BitSet::from_range(0, 0),
+    ///   dynamic_lanes: BitSet::from_range(3, 4),
+    /// };
+    /// let types: Vec<_> = vts.types_iter().collect();
+    /// assert_eq!(types, &[I32, I64, I32X2, I64X2, I32X8XN]);
+    /// ```
+    pub fn types_iter(self) -> impl Iterator<Item = Type> {
+        use super::types::*;
+
+        let build_base_types = || {
+            let ints = self
+                .ints
+                .bit_iter()
+                .flat_map(|sz| Type::int(1 << (sz as u16)));
+
+            let floats = self.floats.bit_iter().flat_map(|sz| match sz {
+                5 => Some(F32),
+                6 => Some(F64),
+                _ => None,
+            });
+            let refs = self.refs.bit_iter().flat_map(|sz| match sz {
+                5 => Some(R32),
+                6 => Some(R64),
+                _ => None,
+            });
+
+            ints.chain(floats).chain(refs)
+        };
+
+        let build_lane_types = |lanes: BitSet<u16>| {
+            build_base_types().flat_map(move |ty| {
+                lanes
+                    .bit_iter()
+                    .map(|bit| 1 << (bit as u32))
+                    // Filter out 1 lane types
+                    // These are technically legal and produce a Tx1 however
+                    // those are also not SIMD types
+                    .filter(|lanes| *lanes != 1)
+                    .flat_map(move |lanes| ty.by(lanes))
+            })
+        };
+
+        let base_types = build_base_types();
+        let simd_types = build_lane_types(self.lanes.clone());
+        let dynamic_types =
+            build_lane_types(self.dynamic_lanes.clone()).flat_map(|ty| ty.vector_to_dynamic());
+
+        base_types.chain(simd_types).chain(dynamic_types)
+    }
 }
 
 /// Operand constraints. This describes the value type constraints on a single `Value` operand.
