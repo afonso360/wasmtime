@@ -78,6 +78,22 @@ where
 
         Self(hi_rng - lo_rng)
     }
+
+    /// Returns an iterator over the bits of this BitSet.
+    ///
+    /// ```
+    /// # use cranelift_codegen::bitset::BitSet;
+    /// let s = BitSet::<u16>::from_range(5, 11);
+    /// let values: Vec<_> = s.bit_iter().collect();
+    /// assert_eq!(values, &[5, 6, 7, 8, 9, 10])
+    /// ```
+    pub fn bit_iter(self) -> impl Iterator<Item = u8> {
+        match (self.min(), self.max()) {
+            (Some(min), Some(max)) => min..=max,
+            // If the bitset is empty, return an empty iterator
+            _ => 1..=0,
+        }
+    }
 }
 
 #[cfg(test)]
