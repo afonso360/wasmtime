@@ -582,6 +582,17 @@ pub struct ValueTypeSet {
 }
 
 impl ValueTypeSet {
+    /// Builds an empty typeset
+    pub fn empty() -> Self {
+        Self {
+            lanes: BitSet::from_range(0, 0),
+            ints: BitSet::from_range(0, 0),
+            floats: BitSet::from_range(0, 0),
+            refs: BitSet::from_range(0, 0),
+            dynamic_lanes: BitSet::from_range(0, 0),
+        }
+    }
+
     /// Is `scalar` part of the base type set?
     ///
     /// Note that the base type set does not have to be included in the type set proper.
@@ -802,6 +813,39 @@ pub enum ResolvedConstraint {
     Bound(Type),
     /// The operand type can vary freely within the given set.
     Free(ValueTypeSet),
+}
+
+impl ResolvedConstraint {
+    /// Returns an iterator over all possible types in this ResolvedConstraint.
+    ///
+    /// For [ResolvedConstraint::Bound] this iterates over a single type.
+    /// For [ResolvedConstraint::Free] this iterates over all possible types.
+    /// ```
+    /// # use cranelift_codegen::ir::instructions::ResolvedConstraint;
+    /// # use cranelift_codegen::ir::types::*;
+    /// let rc = ResolvedConstraint::Bound(I32);
+    /// let types: Vec<_> = rc.types_iter().collect();
+    /// assert_eq!(types, &[I32]);
+    /// ```
+    pub fn types_iter(self) -> impl Iterator<Item = Type> {
+        // We can't return different types for each arm.
+        // However we can unify it into a single type by chaining an
+        // iterator for each arm with a default that yields nothing.
+
+        let option = match self {
+            ResolvedConstraint::Bound(ty) => Some(ty),
+            _ => None,
+        }
+        .into_iter();
+
+        let vts = match self {
+            ResolvedConstraint::Free(vts) => vts,
+            _ => ValueTypeSet::empty(),
+        }
+        .types_iter();
+
+        option.chain(vts)
+    }
 }
 
 #[cfg(test)]
