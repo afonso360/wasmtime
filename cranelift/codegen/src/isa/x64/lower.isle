@@ -165,6 +165,19 @@
 
 ;; (No `iadd_ifcout` for `i128`.)
 
+;;;; Rules for `iadd_icout` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Add two registers and output the carry flag.
+(rule 0 (lower (has_type (fits_in_64 ty) (iadd_cout x y)))
+      (let ((regs ValueRegs
+                  (with_flags
+                        (x64_add_with_flags_paired ty x y)
+                        (x64_setcc_paired (CC.B))))
+           (val ValueRegs (value_regs_get regs 0))
+           (carry ValueRegs (value_regs_get regs 1)))
+        (output_pair val carry)))
+
+
 ;;;; Rules for `isub` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; `i64` and smaller.

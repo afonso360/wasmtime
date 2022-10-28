@@ -467,7 +467,9 @@ fn lower_insn_to_regs(
         | Opcode::TlsValue
         | Opcode::SqmulRoundSat
         | Opcode::Uunarrow
-        | Opcode::Nop => {
+        | Opcode::Nop
+        | Opcode::IaddCout
+        | Opcode::IsubBout => {
             let ty = if outputs.len() > 0 {
                 Some(ctx.output_ty(insn, 0))
             } else {
@@ -518,12 +520,10 @@ fn lower_insn_to_regs(
         | Opcode::IrsubImm
         | Opcode::IaddCin
         | Opcode::IaddIfcin
-        | Opcode::IaddCout
         | Opcode::IaddCarry
         | Opcode::IaddIfcarry
         | Opcode::IsubBin
         | Opcode::IsubIfbin
-        | Opcode::IsubBout
         | Opcode::IsubIfbout
         | Opcode::IsubBorrow
         | Opcode::IsubIfborrow

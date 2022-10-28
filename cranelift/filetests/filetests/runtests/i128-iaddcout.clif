@@ -1,9 +1,9 @@
 test interpret
-; test run
-; set enable_llvm_abi_extensions=true
+test run
+set enable_llvm_abi_extensions=true
 ; target aarch64
 ; target s390x
-; target x86_64
+target x86_64
 ; target riscv64
 
 function %iaddcout_i128_v(i128, i128) -> i128 {

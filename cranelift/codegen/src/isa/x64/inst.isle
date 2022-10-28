@@ -1740,7 +1740,7 @@
 (rule (x64_add_with_flags_paired ty src1 src2)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ProducesFlags.ProducesFlagsReturnsResultWithConsumer
-         (MInst.AluRmiR (operand_size_of_type_32_64 ty)
+         (MInst.AluRmiR (raw_operand_size_of_type ty)
                         (AluRmiROpcode.Add)
                         src1
                         src2
@@ -2112,6 +2112,13 @@
 (rule (x64_setcc cc)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ConsumesFlags.ConsumesFlagsReturnsReg
+         (MInst.Setcc cc dst)
+         dst)))
+
+(decl x64_setcc_paired (CC) ConsumesFlags)
+(rule (x64_setcc_paired cc)
+      (let ((dst WritableGpr (temp_writable_gpr)))
+        (ConsumesFlags.ConsumesFlagsReturnsResultWithProducer
          (MInst.Setcc cc dst)
          dst)))
 
