@@ -16,6 +16,7 @@ mod arbitrary_ext;
 mod config;
 mod function_generator;
 mod passes;
+mod signature_generator;
 
 pub type TestCaseInput = Vec<DataValue>;
 
