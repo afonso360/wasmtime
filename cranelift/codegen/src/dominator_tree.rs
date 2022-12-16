@@ -354,6 +354,10 @@ impl DominatorTree {
         for inst in func.layout.block_likely_branches(block) {
             match func.dfg.analyze_branch(inst) {
                 BranchInfo::SingleDest(succ, _) => self.push_if_unseen(succ),
+                BranchInfo::Conditional(block_then, _, block_else, _) => {
+                    self.push_if_unseen(block_then);
+                    self.push_if_unseen(block_else);
+                }
                 BranchInfo::Table(jt, dest) => {
                     for succ in func.jump_tables[jt].iter() {
                         self.push_if_unseen(*succ);

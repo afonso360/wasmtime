@@ -16,10 +16,11 @@ use cranelift_codegen::ir::types::INVALID;
 use cranelift_codegen::ir::types::*;
 use cranelift_codegen::ir::{self, UserExternalNameRef};
 use cranelift_codegen::ir::{
-    AbiParam, ArgumentExtension, ArgumentPurpose, Block, Constant, ConstantData, DynamicStackSlot,
-    DynamicStackSlotData, DynamicTypeData, ExtFuncData, ExternalName, FuncRef, Function,
-    GlobalValue, GlobalValueData, JumpTable, JumpTableData, MemFlags, Opcode, SigRef, Signature,
-    StackSlot, StackSlotData, StackSlotKind, Table, TableData, Type, UserFuncName, Value,
+    AbiParam, ArgumentExtension, ArgumentPurpose, Block, BlockWithArgs, Constant, ConstantData,
+    DynamicStackSlot, DynamicStackSlotData, DynamicTypeData, ExtFuncData, ExternalName, FuncRef,
+    Function, GlobalValue, GlobalValueData, JumpTable, JumpTableData, MemFlags, Opcode, SigRef,
+    Signature, StackSlot, StackSlotData, StackSlotKind, Table, TableData, Type, UserFuncName,
+    Value,
 };
 use cranelift_codegen::isa::{self, CallConv};
 use cranelift_codegen::packed_option::ReservedValue;
@@ -2586,6 +2587,29 @@ impl<'a> Parser<'a> {
                     opcode,
                     destination: block_num,
                     args: args.into_value_list(&[], &mut ctx.function.dfg.value_lists),
+                }
+            }
+            InstructionFormat::Brif => {
+                let arg = self.match_value("expected SSA value control operand")?;
+                self.match_token(Token::Comma, "expected ',' between operands")?;
+                let block_then = self.match_block("expected branch then block")?;
+                let args_then = self.parse_opt_value_list()?;
+                self.match_token(Token::Comma, "expected ',' between operands")?;
+                let block_else = self.match_block("expected branch else block")?;
+                let args_else = self.parse_opt_value_list()?;
+                InstructionData::Brif {
+                    opcode,
+                    arg,
+                    block_then: BlockWithArgs::new(
+                        block_then,
+                        &args_then,
+                        &mut ctx.function.dfg.value_lists,
+                    ),
+                    block_else: BlockWithArgs::new(
+                        block_else,
+                        &args_else,
+                        &mut ctx.function.dfg.value_lists,
+                    ),
                 }
             }
             InstructionFormat::Branch => {

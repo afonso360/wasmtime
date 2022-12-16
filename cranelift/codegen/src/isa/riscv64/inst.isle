@@ -1899,6 +1899,26 @@
 (rule (normalize_cmp_value $I64  r) r)
 (rule (normalize_cmp_value $I128 r) r)
 
+;;;;
+(rule
+  (lower_branch (brif v @ (value_type ty) _ _) targets)
+  (lower_brz_or_nz (IntCC.NotEqual) (normalize_cmp_value ty v) targets ty))
+
+;; Special case for SI128 to reify the comparison value and branch on it.
+(rule 2
+  (lower_branch (brif v @ (value_type $I128) _ _) targets)
+  (let ((zero ValueRegs (value_regs (zero_reg) (zero_reg)))
+        (cmp Reg (gen_icmp (IntCC.NotEqual) v zero $I128)))
+    (lower_brz_or_nz (IntCC.NotEqual) cmp targets $I64)))
+
+(rule 1
+  (lower_branch (brif (icmp cc a @ (value_type ty) b) _ _) targets)
+  (lower_br_icmp cc a b targets ty))
+
+(rule 1
+  (lower_branch (brif (fcmp cc a @ (value_type ty) b) _ _) targets)
+  (lower_br_fcmp cc a b targets ty))
+
 ;;;;;
 (rule
   (lower_branch (brz v @ (value_type ty) _ _) targets)

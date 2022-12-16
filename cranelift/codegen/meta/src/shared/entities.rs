@@ -12,8 +12,16 @@ fn new(format_field_name: &'static str, rust_type: &'static str, doc: &'static s
 
 pub(crate) struct EntityRefs {
     /// A reference to a basic block in the same function.
-    /// This is primarliy used in control flow instructions.
+    /// This is primarily used in control flow instructions.
     pub(crate) block: OperandKind,
+
+    /// A reference to a basic block in the same function.
+    /// This is primarily used in control flow instructions.
+    pub(crate) block_then: OperandKind,
+
+    /// A reference to a basic block in the same function.
+    /// This is primarily used in control flow instructions.
+    pub(crate) block_else: OperandKind,
 
     /// A reference to a stack slot declared in the function preamble.
     pub(crate) stack_slot: OperandKind,
@@ -48,6 +56,16 @@ impl EntityRefs {
             block: new(
                 "destination",
                 "ir::Block",
+                "a basic block in the same function.",
+            ),
+            block_then: new(
+                "block_then",
+                "ir::BlockWithArgs",
+                "a basic block in the same function.",
+            ),
+            block_else: new(
+                "block_else",
+                "ir::BlockWithArgs",
                 "a basic block in the same function.",
             ),
             stack_slot: new("stack_slot", "ir::StackSlot", "A stack slot"),

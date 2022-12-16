@@ -169,6 +169,10 @@ fn visit_branch_targets<F: FnMut(Inst, Block, bool)>(f: &Function, inst: Inst, v
         BranchInfo::SingleDest(dest, _) => {
             visit(inst, dest, false);
         }
+        BranchInfo::Conditional(block_then, _, block_else, _) => {
+            visit(inst, block_then, false);
+            visit(inst, block_else, false);
+        }
         BranchInfo::Table(table, maybe_dest) => {
             if let Some(dest) = maybe_dest {
                 // The default block is reached via a direct conditional branch,

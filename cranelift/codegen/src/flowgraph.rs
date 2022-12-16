@@ -125,6 +125,10 @@ impl ControlFlowGraph {
                 BranchInfo::SingleDest(dest, _) => {
                     self.add_edge(block, inst, dest);
                 }
+                BranchInfo::Conditional(block_then, _, block_else, _) => {
+                    self.add_edge(block, inst, block_then);
+                    self.add_edge(block, inst, block_else);
+                }
                 BranchInfo::Table(jt, dest) => {
                     if let Some(dest) = dest {
                         self.add_edge(block, inst, dest);

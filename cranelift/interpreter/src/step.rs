@@ -276,6 +276,36 @@ where
     // Interpret a Cranelift instruction.
     Ok(match inst.opcode() {
         Opcode::Jump => ControlFlow::ContinueAt(branch(), args()?),
+        Opcode::Brif => {
+            if let InstructionData::Brif {
+                arg,
+                block_then,
+                block_else,
+                ..
+            } = inst
+            {
+                let condition = state
+                    .get_value(arg)
+                    .ok_or(StepError::UnknownValue(arg))?
+                    .into_bool()?;
+                let pool = &state.get_current_function().dfg.value_lists;
+                if condition {
+                    let args = state
+                        .collect_values(block_then.args_slice(pool))
+                        .map_err(|v| StepError::UnknownValue(v))?;
+                    let block_then = block_then.block(pool);
+                    ControlFlow::ContinueAt(block_then, args)
+                } else {
+                    let args = state
+                        .collect_values(block_else.args_slice(pool))
+                        .map_err(|v| StepError::UnknownValue(v))?;
+                    let block_else = block_else.block(pool);
+                    ControlFlow::ContinueAt(block_else, args)
+                }
+            } else {
+                unreachable!()
+            }
+        }
         Opcode::Brz => branch_when(
             !arg(0)?
                 .convert(ValueConversionKind::ToBoolean)?

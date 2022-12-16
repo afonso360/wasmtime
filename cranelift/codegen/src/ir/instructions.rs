@@ -252,6 +252,19 @@ impl InstructionData {
                 ref args,
                 ..
             } => BranchInfo::SingleDest(destination, args.as_slice(pool)),
+            Self::Brif {
+                block_then,
+                block_else,
+                ..
+            } => {
+                // The first arg is the conditional
+                BranchInfo::Conditional(
+                    block_then.block(pool),
+                    block_then.args_slice(pool),
+                    block_else.block(pool),
+                    block_else.args_slice(pool),
+                )
+            }
             Self::Branch {
                 destination,
                 ref args,
@@ -441,6 +454,9 @@ pub enum BranchInfo<'a> {
 
     /// This is a branch or jump to a single destination block, possibly taking value arguments.
     SingleDest(Block, &'a [Value]),
+
+    /// This is a conditional branch
+    Conditional(Block, &'a [Value], Block, &'a [Value]),
 
     /// This is a jump table branch which can have many destination blocks and maybe one default block.
     Table(JumpTable, Option<Block>),
