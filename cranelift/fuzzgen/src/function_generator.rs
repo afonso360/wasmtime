@@ -5,7 +5,9 @@ use arbitrary::{Arbitrary, Unstructured};
 use cranelift::codegen::ir::immediates::Offset32;
 use cranelift::codegen::ir::instructions::InstructionFormat;
 use cranelift::codegen::ir::stackslot::StackSize;
-use cranelift::codegen::ir::{types::*, FuncRef, LibCall, UserExternalName, UserFuncName};
+use cranelift::codegen::ir::{
+    types::*, BlockWithArgs, FuncRef, LibCall, UserExternalName, UserFuncName,
+};
 use cranelift::codegen::ir::{
     AbiParam, Block, ExternalName, Function, Opcode, Signature, StackSlot, Type, Value,
 };
@@ -1041,15 +1043,30 @@ enum BlockTerminator {
     Return,
     Jump(Block),
     Br(Block, Block),
+    BrIf(Block, Block),
     BrTable(Block, Vec<Block>),
     Switch(Type, Block, HashMap<u128, Block>),
 }
 
-#[derive(Debug, Clone)]
+impl BlockTerminator {
+    pub fn kind(&self) -> BlockTerminatorKind {
+        match self {
+            BlockTerminator::Return => BlockTerminatorKind::Return,
+            BlockTerminator::Jump(..) => BlockTerminatorKind::Jump,
+            BlockTerminator::Br(..) => BlockTerminatorKind::Br,
+            BlockTerminator::BrIf(..) => BlockTerminatorKind::BrIf,
+            BlockTerminator::BrTable(..) => BlockTerminatorKind::BrTable,
+            BlockTerminator::Switch(..) => BlockTerminatorKind::Switch,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 enum BlockTerminatorKind {
     Return,
     Jump,
     Br,
+    BrIf,
     BrTable,
     Switch,
 }
@@ -1312,7 +1329,7 @@ where
                 let args = self.generate_values_for_block(builder, target)?;
                 builder.ins().jump(target, &args[..]);
             }
-            BlockTerminator::Br(left, right) => {
+            BlockTerminator::Br(left, right) | BlockTerminator::BrIf(left, right) => {
                 let left_args = self.generate_values_for_block(builder, left)?;
                 let right_args = self.generate_values_for_block(builder, right)?;
 
@@ -1320,12 +1337,19 @@ where
                 let _type = *self.u.choose(&condbr_types[..])?;
                 let val = builder.use_var(self.get_variable_of_type(_type)?);
 
-                if bool::arbitrary(self.u)? {
-                    builder.ins().brz(val, left, &left_args[..]);
+                if terminator.kind() == BlockTerminatorKind::Br {
+                    if bool::arbitrary(self.u)? {
+                        builder.ins().brz(val, left, &left_args[..]);
+                    } else {
+                        builder.ins().brnz(val, left, &left_args[..]);
+                    }
+                    builder.ins().jump(right, &right_args[..]);
                 } else {
-                    builder.ins().brnz(val, left, &left_args[..]);
+                    let pool = &mut builder.func.dfg.value_lists;
+                    let left = BlockWithArgs::new(left, &left_args[..], pool);
+                    let right = BlockWithArgs::new(right, &right_args[..], pool);
+                    builder.ins().brif(val, left, right);
                 }
-                builder.ins().jump(right, &right_args[..]);
             }
             BlockTerminator::BrTable(default, targets) => {
                 // Create jump tables on demand
@@ -1510,8 +1534,11 @@ where
                     // If we have more than one block we can allow terminators that target blocks.
                     // TODO: We could add some kind of BrReturn here, to explore edges where we
                     // exit in the middle of the function
-                    valid_terminators
-                        .extend_from_slice(&[BlockTerminatorKind::Jump, BlockTerminatorKind::Br]);
+                    valid_terminators.extend_from_slice(&[
+                        BlockTerminatorKind::Jump,
+                        BlockTerminatorKind::Br,
+                        BlockTerminatorKind::BrIf,
+                    ]);
                 }
 
                 // BrTable and the Switch interface only allow targeting blocks without params
@@ -1532,6 +1559,9 @@ where
                     BlockTerminatorKind::Jump => BlockTerminator::Jump(next_block),
                     BlockTerminatorKind::Br => {
                         BlockTerminator::Br(next_block, self.generate_target_block(block)?)
+                    }
+                    BlockTerminatorKind::BrIf => {
+                        BlockTerminator::BrIf(next_block, self.generate_target_block(block)?)
                     }
                     // TODO: Allow generating backwards branches here
                     BlockTerminatorKind::BrTable => {
