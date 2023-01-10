@@ -14,8 +14,8 @@ use cranelift_module::{default_libcall_names, DataContext, Linkage, Module};
 use target_lexicon::Triple;
 
 #[test]
-// Currently we only support GOT values in x86
-#[cfg_attr(not(target_arch = "x86_64"), ignore)]
+// Currently we only support GOT values in x86 and aarch64
+#[cfg_attr(not(any(target_arch = "x86_64", target_arch = "aarch64")), ignore)]
 fn read_got_value() -> Result<(), anyhow::Error> {
     let host = Triple::host();
     let isa_builder = isa::lookup(host.clone())?;

@@ -265,17 +265,23 @@ impl JITModule {
     }
 
     unsafe fn write_plt_entry_bytes(plt_ptr: *mut [u8; 16], got_ptr: NonNull<AtomicPtr<u8>>) {
-        assert!(
-            cfg!(target_arch = "x86_64"),
-            "PLT is currently only supported on x86_64"
-        );
-        // jmp *got_ptr; ud2; ud2; ud2; ud2; ud2
-        let mut plt_val = [
-            0xff, 0x25, 0, 0, 0, 0, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b,
-        ];
-        let what = got_ptr.as_ptr() as isize - 4;
-        let at = plt_ptr as isize + 2;
-        plt_val[2..6].copy_from_slice(&i32::to_ne_bytes(i32::try_from(what - at).unwrap()));
+        let plt_val = if cfg!(target_arch = "x86_64") {
+            // jmp *got_ptr; ud2; ud2; ud2; ud2; ud2
+            let mut plt_val = [
+                0xff, 0x25, 0, 0, 0, 0, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b, 0x0f, 0x0b,
+            ];
+            let what = got_ptr.as_ptr() as isize - 4;
+            let at = plt_ptr as isize + 2;
+            plt_val[2..6].copy_from_slice(&i32::to_ne_bytes(i32::try_from(what - at).unwrap()));
+            plt_val
+        } else if cfg!(target_arch = "aarch64") {
+            // Our PLT is 4 udf instructions.
+            // Currently we can never get here, since we always load the function directly from the GOT
+            [0u8; 16]
+        } else {
+            unimplemented!("PLT is not supported on this platform!")
+        };
+
         std::ptr::write(plt_ptr, plt_val);
     }
 
