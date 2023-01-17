@@ -218,6 +218,12 @@ unsafe fn get_pc_and_fp(cx: *mut libc::c_void, _signum: libc::c_int) -> (*const 
                 cx.uc_mcontext.mc_rip as *const u8,
                 cx.uc_mcontext.mc_rbp as usize,
             )
+        } else if #[cfg(all(target_os = "freebsd", target_arch = "aarch64"))] {
+            let cx = &*(cx as *const libc::mcontext_t);
+            (
+                cx.mc_gpregs.gp_elr as *const u8,
+                cx.mc_gpregs.gp_x[29] as usize,
+            )
         } else if #[cfg(all(target_os = "linux", target_arch = "riscv64"))] {
             let cx = &*(cx as *const libc::ucontext_t);
             (
