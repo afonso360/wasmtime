@@ -3695,6 +3695,7 @@ dependencies = [
 name = "wasmtime-jit-icache-coherence"
 version = "6.0.0"
 dependencies = [
+ "cc",
  "cfg-if",
  "libc",
  "windows-sys",

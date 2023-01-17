@@ -74,9 +74,12 @@ cfg_if::cfg_if! {
     if #[cfg(target_os = "windows")] {
         mod win;
         use win as imp;
-    } else {
+    } else if #[cfg(any(target_os = "linux", target_os = "macos", target_os = "android"))]{
         mod libc;
         use crate::libc as imp;
+    } else {
+        mod c;
+        use crate::c as imp;
     }
 }
 
