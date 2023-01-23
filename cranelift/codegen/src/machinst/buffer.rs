@@ -144,7 +144,8 @@ use crate::binemit::{Addend, CodeOffset, Reloc, StackMap};
 use crate::ir::{ExternalName, Opcode, RelSourceLoc, SourceLoc, TrapCode};
 use crate::isa::unwind::UnwindInst;
 use crate::machinst::{
-    BlockIndex, MachInstLabelUse, TextSectionBuilder, VCodeConstant, VCodeConstants, VCodeInst,
+    BlockIndex, MachInstLabelUse, PublicLabel, PublicLabelKind, TextSectionBuilder, VCodeConstant,
+    VCodeConstants, VCodeInst,
 };
 use crate::timing;
 use crate::trace;
@@ -278,6 +279,7 @@ impl MachBufferFinalized<Stencil> {
                 .collect(),
             stack_maps: self.stack_maps,
             unwind_info: self.unwind_info,
+            labels: self.labels,
         }
     }
 }
@@ -303,6 +305,8 @@ pub struct MachBufferFinalized<T: CompilePhase> {
     pub(crate) stack_maps: SmallVec<[MachStackMap; 8]>,
     /// Any unwind info at a given location.
     pub unwind_info: SmallVec<[(CodeOffset, UnwindInst); 8]>,
+    /// Labels used in this buffer
+    pub(crate) labels: SmallVec<[PublicLabel; 8]>,
 }
 
 const UNKNOWN_LABEL_OFFSET: CodeOffset = 0xffff_ffff;
@@ -1279,6 +1283,8 @@ impl<I: VCodeInst> MachBuffer<I> {
 
         self.finish_emission_maybe_forcing_veneers(false);
 
+        let labels = self.build_public_labels();
+
         let mut srclocs = self.srclocs;
         srclocs.sort_by_key(|entry| entry.start);
 
@@ -1290,7 +1296,32 @@ impl<I: VCodeInst> MachBuffer<I> {
             srclocs,
             stack_maps: self.stack_maps,
             unwind_info: self.unwind_info,
+            labels,
         }
+    }
+
+    fn build_public_labels(&self) -> SmallVec<[PublicLabel; 8]> {
+        assert!(self.fixup_records.is_empty());
+
+        let mut labels: SmallVec<[PublicLabel; 8]> =
+            SmallVec::with_capacity(self.label_offsets.len());
+
+        // Emit all labels as generic
+        labels.extend(self.label_offsets.iter().enumerate().map(|(id, _)| {
+            let label = MachLabel(id as u32);
+            PublicLabel {
+                label,
+                offset: self.resolve_label_offset(label),
+                kind: PublicLabelKind::Generic,
+            }
+        }));
+
+        // Update the `kind` of constant labels
+        for (_, label) in self.constant_labels.iter() {
+            labels[label.get() as usize].kind = PublicLabelKind::Constant;
+        }
+
+        labels
     }
 
     /// Add an external relocation at the current offset.
@@ -1451,6 +1482,11 @@ impl<T: CompilePhase> MachBufferFinalized<T> {
     /// Get the list of external relocations for this code.
     pub fn relocs(&self) -> &[MachReloc] {
         &self.relocs[..]
+    }
+
+    /// Get the list of labels for this code.
+    pub fn labels(&self) -> &[PublicLabel] {
+        &self.labels[..]
     }
 
     /// Get the list of trap records for this code.

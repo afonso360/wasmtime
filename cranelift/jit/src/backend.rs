@@ -3,7 +3,7 @@
 use crate::{compiled_blob::CompiledBlob, memory::BranchProtection, memory::Memory};
 use cranelift_codegen::isa::{OwnedTargetIsa, TargetIsa};
 use cranelift_codegen::settings::Configurable;
-use cranelift_codegen::{self, ir, settings, MachReloc};
+use cranelift_codegen::{self, ir, settings, MachReloc, PublicLabel};
 use cranelift_codegen::{binemit::Reloc, CodegenError};
 use cranelift_entity::SecondaryMap;
 use cranelift_module::{
@@ -752,6 +752,7 @@ impl Module for JITModule {
         alignment: u64,
         bytes: &[u8],
         relocs: &[MachReloc],
+        _labels: &[PublicLabel],
     ) -> ModuleResult<ModuleCompiledFunction> {
         info!("defining function {} with bytes", id);
         let total_size: u32 = match bytes.len().try_into() {

@@ -11,7 +11,7 @@ use core::fmt::Display;
 use cranelift_codegen::binemit::{CodeOffset, Reloc};
 use cranelift_codegen::entity::{entity_impl, PrimaryMap};
 use cranelift_codegen::ir::Function;
-use cranelift_codegen::{binemit, MachReloc};
+use cranelift_codegen::{binemit, MachReloc, PublicLabel};
 use cranelift_codegen::{ir, isa, CodegenError, CompileError, Context};
 use std::borrow::ToOwned;
 use std::string::String;
@@ -662,6 +662,7 @@ pub trait Module {
         alignment: u64,
         bytes: &[u8],
         relocs: &[MachReloc],
+        labels: &[PublicLabel],
     ) -> ModuleResult<ModuleCompiledFunction>;
 
     /// Define a data object, producing the data contents from the given `DataContext`.
@@ -759,8 +760,9 @@ impl<M: Module> Module for &mut M {
         alignment: u64,
         bytes: &[u8],
         relocs: &[MachReloc],
+        labels: &[PublicLabel],
     ) -> ModuleResult<ModuleCompiledFunction> {
-        (**self).define_function_bytes(func_id, func, alignment, bytes, relocs)
+        (**self).define_function_bytes(func_id, func, alignment, bytes, relocs, labels)
     }
 
     fn define_data(&mut self, data: DataId, data_ctx: &DataContext) -> ModuleResult<()> {

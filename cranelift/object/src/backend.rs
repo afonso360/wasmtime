@@ -2,11 +2,12 @@
 
 use anyhow::anyhow;
 use cranelift_codegen::entity::SecondaryMap;
+use cranelift_codegen::gimli::ReaderOffset;
 use cranelift_codegen::isa::{OwnedTargetIsa, TargetIsa};
-use cranelift_codegen::{self, ir, MachReloc};
+use cranelift_codegen::{self, ir, MachReloc, PublicLabelKind};
 use cranelift_codegen::{
     binemit::{Addend, CodeOffset, Reloc},
-    CodegenError,
+    CodegenError, PublicLabel,
 };
 use cranelift_module::{
     DataContext, DataDescription, DataId, FuncId, Init, Linkage, Module, ModuleCompiledFunction,
@@ -332,6 +333,7 @@ impl Module for ObjectModule {
             alignment,
             &code,
             ctx.compiled_code().unwrap().buffer.relocs(),
+            ctx.compiled_code().unwrap().buffer.labels(),
         )
     }
 
@@ -342,6 +344,7 @@ impl Module for ObjectModule {
         alignment: u64,
         bytes: &[u8],
         relocs: &[MachReloc],
+        labels: &[PublicLabel],
     ) -> ModuleResult<ModuleCompiledFunction> {
         info!("defining function {} with bytes", func_id);
         let total_size: u32 = match bytes.len().try_into() {
@@ -386,6 +389,28 @@ impl Module for ObjectModule {
                 section,
                 offset,
                 relocs,
+            });
+        }
+
+        for label in labels {
+            let name = match label.kind {
+                PublicLabelKind::Generic => {
+                    format!(".L{}_{}", func_id.as_u32(), label.label.as_u32())
+                }
+                PublicLabelKind::Constant => {
+                    format!(".LC{}_{}", func_id.as_u32(), label.label.as_u32())
+                }
+            };
+
+            self.object.add_symbol(Symbol {
+                name: name.as_bytes().to_vec(),
+                kind: SymbolKind::Label,
+                value: offset + label.offset.into_u64(),
+                size: 0,
+                scope: SymbolScope::Compilation,
+                weak: false,
+                section: SymbolSection::Section(section),
+                flags: SymbolFlags::None,
             });
         }
 

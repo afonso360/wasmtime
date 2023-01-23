@@ -436,3 +436,23 @@ pub enum UnwindInfoKind {
     #[cfg(feature = "unwind")]
     Windows,
 }
+
+/// A label that should be published
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PublicLabel {
+    /// The label that should be published
+    pub label: MachLabel,
+    /// Location of the label as an offset from the start of the buffer
+    pub offset: CodeOffset,
+    /// What is this label used for
+    pub kind: PublicLabelKind,
+}
+
+/// The kind of label. This is only used for naming.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PublicLabelKind {
+    /// A generic label
+    Generic,
+    /// A label that points to a embedded constant.
+    Constant,
+}
