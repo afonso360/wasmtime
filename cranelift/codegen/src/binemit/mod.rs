@@ -73,6 +73,11 @@ pub enum Reloc {
     /// jalr ra, ra, 0
     RiscvCall,
 
+    /// Riscv64 TLS GD  R_RISCV_TLS_GD_HI20 (https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/master/riscv-elf.adoc#global-dynamic)
+    RiscvTlsGdHi20,
+    /// R_RISCV_PCREL_LO12_I
+    RiscvPCRelLo12I,
+
     /// s390x TLS GD64 - 64-bit offset of tls_index for GD symbol in GOT
     S390xTlsGd64,
     /// s390x TLS GDCall - marker to enable optimization of TLS calls
@@ -95,7 +100,8 @@ impl fmt::Display for Reloc {
             Self::X86SecRel => write!(f, "SecRel"),
             Self::Arm32Call | Self::Arm64Call => write!(f, "Call"),
             Self::RiscvCall => write!(f, "RiscvCall"),
-
+            Self::RiscvTlsGdHi20 => write!(f, "RiscvTlsGdHi20"),
+            Self::RiscvPCRelLo12I => write!(f, "RiscvPCRelLo12I"),
             Self::ElfX86_64TlsGd => write!(f, "ElfX86_64TlsGd"),
             Self::MachOX86_64Tlv => write!(f, "MachOX86_64Tlv"),
             Self::Aarch64TlsGdAdrPage21 => write!(f, "Aarch64TlsGdAdrPage21"),

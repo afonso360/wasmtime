@@ -36,6 +36,9 @@ pub enum CallConv {
     ///
     /// Differs from apple-aarch64 in the same way as `WasmtimeSystemV`.
     WasmtimeAppleAarch64,
+
+    /// SystemV riscv have different ABI variants.
+    SystemVRiscv(RiscvFloatAbi),
 }
 
 impl CallConv {
@@ -87,6 +90,14 @@ impl CallConv {
             _ => false,
         }
     }
+
+    /// If this is riscv call convention.
+    pub fn is_riscv(self) -> bool {
+        match self {
+            Self::SystemVRiscv(_) => true,
+            _ => false,
+        }
+    }
 }
 
 impl fmt::Display for CallConv {
@@ -101,6 +112,7 @@ impl fmt::Display for CallConv {
             Self::WasmtimeSystemV => "wasmtime_system_v",
             Self::WasmtimeFastcall => "wasmtime_fastcall",
             Self::WasmtimeAppleAarch64 => "wasmtime_apple_aarch64",
+            Self::SystemVRiscv(f) => f.system_v_riscv_v_abi_name(),
         })
     }
 }
@@ -118,7 +130,41 @@ impl str::FromStr for CallConv {
             "wasmtime_system_v" => Ok(Self::WasmtimeSystemV),
             "wasmtime_fastcall" => Ok(Self::WasmtimeFastcall),
             "wasmtime_apple_aarch64" => Ok(Self::WasmtimeAppleAarch64),
+            "system_v_riscv_soft" => Ok(Self::SystemVRiscv(RiscvFloatAbi::Soft)),
+            "system_v_riscv_single" => Ok(Self::SystemVRiscv(RiscvFloatAbi::Single)),
+            "system_v_riscv_double" => Ok(Self::SystemVRiscv(RiscvFloatAbi::Double)),
+            "system_v_riscv_quad" => Ok(Self::SystemVRiscv(RiscvFloatAbi::Quad)),
             _ => Err(()),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "enable-serde", derive(Serialize, Deserialize))]
+pub enum RiscvFloatAbi {
+    Soft,
+    Single,
+    Double,
+    Quad,
+}
+
+impl RiscvFloatAbi {
+    /// Save me from rust ownership compile error.
+    /// So the `system_v_riscv_` comes.
+    pub fn system_v_riscv_v_abi_name(self) -> &'static str {
+        match self {
+            Self::Soft => "system_v_riscv_soft",
+            Self::Single => "system_v_riscv_single",
+            Self::Double => "system_v_riscv_double",
+            Self::Quad => "system_v_riscv_quad",
+        }
+    }
+    pub fn fclass_len(self) -> u32 {
+        match self {
+            Self::Soft => 0,
+            Self::Single => 32,
+            Self::Double => 64,
+            Self::Quad => 128,
         }
     }
 }

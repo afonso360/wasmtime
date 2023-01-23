@@ -24,6 +24,7 @@ use alloc::vec::Vec;
 use regalloc2::PRegSet;
 use regs::x_reg;
 
+use crate::isa::call_conv::RiscvFloatAbi;
 use smallvec::{smallvec, SmallVec};
 
 /// Support for the Riscv64 ABI from the callee side (within a function body).
@@ -80,6 +81,12 @@ impl ABIMachineSpec for Riscv64MachineDeps {
         // Stack space.
         let mut next_stack: u32 = 0;
         let mut return_one_register_used = false;
+        // Max float bits allowed by call_conv.
+        let max_float_bits = match call_conv {
+            CallConv::SystemVRiscv(x) => x.fclass_len(),
+            // Just use the `Quad`,even f128 not supported right now.
+            _ => RiscvFloatAbi::Quad.fclass_len(),
+        };
 
         for param in params {
             if let ir::ArgumentPurpose::StructArgument(size) = param.purpose {
@@ -110,6 +117,8 @@ impl ABIMachineSpec for Riscv64MachineDeps {
                     } else if (next_f_reg <= f_end)
                         && *rc == RegClass::Float
                         && !return_one_register_used
+                        // If float fits in.
+                        && reg_ty.bits() <= max_float_bits
                     {
                         let x = Some(f_reg(next_f_reg));
                         if args_or_rets == ArgsOrRets::Rets && call_conv.extends_wasmtime() {

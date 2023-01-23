@@ -1,8 +1,8 @@
 //! Riscv64 ISA: binary code emission.
 
 use crate::binemit::StackMap;
-use crate::ir::RelSourceLoc;
 use crate::ir::TrapCode;
+use crate::ir::{LibCall, RelSourceLoc};
 use crate::isa::riscv64::inst::*;
 use crate::isa::riscv64::inst::{zero_reg, AluOPRRR};
 use crate::machinst::{AllocationConsumer, Reg, Writable};
@@ -2760,6 +2760,41 @@ impl MachInstEmit for Inst {
                 }
                 .emit(&[], sink, emit_info, state);
                 sink.bind_label(label_done);
+            }
+            &Inst::ElfTlsGetAddr { ref symbol, rd } => {
+                let rd = allocs.next_writable(rd);
+                assert_eq!(a0(), rd.to_reg());
+
+                sink.add_reloc(Reloc::RiscvTlsGdHi20, symbol, 0);
+                Inst::Auipc {
+                    rd: rd,
+                    imm: Imm20::from_bits(0),
+                }
+                .emit(&[], sink, emit_info, state);
+
+                sink.add_reloc(Reloc::RiscvPCRelLo12I, symbol, 0);
+                Inst::AluRRImm12 {
+                    alu_op: AluOPRRI::Addi,
+                    rd: rd,
+                    rs: rd.to_reg(),
+                    imm12: Imm12::from_bits(0),
+                }
+                .emit(&[], sink, emit_info, state);
+                Inst::Call {
+                    info: Box::new(CallInfo {
+                        dest: ExternalName::LibCall(LibCall::ElfTlsGetAddr),
+                        // We are already done with register alloc.
+                        // This call is just help us to emit call to ElfTlsGetAddr.
+                        // So uses clobbers ... are all empty.
+                        uses: smallvec![],
+                        defs: smallvec![],
+                        opcode: crate::ir::Opcode::TlsValue,
+                        caller_callconv: CallConv::SystemV,
+                        callee_callconv: CallConv::SystemV,
+                        clobbers: PRegSet::empty(),
+                    }),
+                }
+                .emit(&[], sink, emit_info, state);
             }
         };
         let end_off = sink.cur_offset();

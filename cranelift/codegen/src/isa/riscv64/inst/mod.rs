@@ -637,6 +637,12 @@ fn riscv64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut Operan
             // gen_prologue is called at emit stage.
             // no need let reg alloc know.
         }
+        &Inst::ElfTlsGetAddr { rd, .. } => {
+            collector.reg_fixed_def(rd, a0());
+            let mut clobbers = Riscv64MachineDeps::get_regs_clobbered_by_call(CallConv::SystemV);
+            clobbers.remove(px_reg(10));
+            collector.reg_clobbers(clobbers);
+        }
     }
 }
 
@@ -999,6 +1005,13 @@ impl Inst {
                     format!(".data {:?}", data)
                 }
             },
+            &Inst::ElfTlsGetAddr { ref symbol, rd } => {
+                format!(
+                    "elf_tls_get_addr {},{}",
+                    format_reg(rd.to_reg(), allocs),
+                    symbol.display(None)
+                )
+            }
             &Inst::Unwind { ref inst } => {
                 format!("unwind {:?}", inst)
             }

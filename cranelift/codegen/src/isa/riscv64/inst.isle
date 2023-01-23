@@ -338,6 +338,10 @@
       (guard_size u32)
       (probe_count u32)
       (tmp WritableReg))
+
+  (ElfTlsGetAddr
+    (symbol ExternalName)
+    (rd WritableReg))
 ))
 
 
@@ -2097,8 +2101,16 @@
 (decl gen_call (SigRef ExternalName RelocDistance ValueSlice) InstOutput)
 (extern constructor gen_call gen_call)
 
+
 (decl gen_call_indirect (SigRef Value ValueSlice) InstOutput)
 (extern constructor gen_call_indirect gen_call_indirect)
+
+;; Helper for emitting ElfTlsGetAddr.
+(decl elf_tls_get_addr (ExternalName) Reg)
+(rule (elf_tls_get_addr name)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.ElfTlsGetAddr name dst))))
+        dst))
 
 ;;; this is trying to imitate aarch64 `madd` instruction.
 (decl madd (Reg Reg Reg) Reg)

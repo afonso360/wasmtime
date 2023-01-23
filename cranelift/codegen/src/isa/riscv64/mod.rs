@@ -5,7 +5,7 @@ use crate::ir::condcodes::IntCC;
 use crate::ir::Function;
 
 use crate::isa::riscv64::settings as riscv_settings;
-use crate::isa::{Builder as IsaBuilder, TargetIsa};
+use crate::isa::{call_conv, Builder as IsaBuilder, TargetFrontendConfig, TargetIsa};
 use crate::machinst::{
     compile, CompiledCode, CompiledCodeStencil, MachTextSectionBuilder, Reg, SigSet,
     TextSectionBuilder, VCode,
@@ -23,6 +23,7 @@ mod settings;
 #[cfg(feature = "unwind")]
 use crate::isa::unwind::systemv;
 
+use crate::isa::call_conv::RiscvFloatAbi;
 use inst::crate_reg_eviroment;
 
 use self::inst::EmitInfo;
@@ -61,6 +62,22 @@ impl Riscv64Backend {
         let sigs = SigSet::new::<abi::Riscv64MachineDeps>(func, &self.flags)?;
         let abi = abi::Riscv64Callee::new(func, self, &self.isa_flags, &sigs)?;
         compile::compile::<Riscv64Backend>(func, self, abi, emit_info, sigs)
+    }
+
+    /// Get the information needed by frontends producing Cranelift IR.
+    pub fn frontend_config(&self) -> TargetFrontendConfig {
+        TargetFrontendConfig {
+            default_call_conv: call_conv::CallConv::SystemVRiscv(self.get_float_abi_from_flags()),
+            pointer_width: self.triple.pointer_width().unwrap(),
+        }
+    }
+    fn get_float_abi_from_flags(&self) -> RiscvFloatAbi {
+        match self.isa_flags.float_abi() {
+            riscv_settings::FloatAbi::Soft => RiscvFloatAbi::Soft,
+            riscv_settings::FloatAbi::Single => RiscvFloatAbi::Single,
+            riscv_settings::FloatAbi::Double => RiscvFloatAbi::Double,
+            riscv_settings::FloatAbi::Quad => RiscvFloatAbi::Quad,
+        }
     }
 }
 
