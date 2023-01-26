@@ -1325,8 +1325,13 @@ impl<I: VCodeInst> MachBuffer<I> {
     }
 
     /// Add an external relocation at the current offset.
-    pub fn add_reloc(&mut self, kind: Reloc, name: &ExternalName, addend: Addend) {
-        let name = name.clone();
+    pub fn add_reloc<T: Into<RelocTarget> + Clone>(
+        &mut self,
+        kind: Reloc,
+        target: &T,
+        addend: Addend,
+    ) {
+        let target: RelocTarget = target.clone().into();
         // FIXME(#3277): This should use `I::LabelUse::from_reloc` to optionally
         // generate a label-use statement to track whether an island is possibly
         // needed to escape this function to actually get to the external name.
@@ -1363,7 +1368,7 @@ impl<I: VCodeInst> MachBuffer<I> {
         self.relocs.push(MachReloc {
             offset: self.data.len() as CodeOffset,
             kind,
-            name,
+            target,
             addend,
         });
     }
@@ -1541,9 +1546,35 @@ pub struct MachReloc {
     /// The kind of relocation.
     pub kind: Reloc,
     /// The external symbol / name to which this relocation refers.
-    pub name: ExternalName,
+    pub target: RelocTarget,
     /// The addend to add to the symbol value.
     pub addend: i64,
+}
+
+/// A Relocation target
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "enable-serde", derive(Serialize, Deserialize))]
+pub enum RelocTarget {
+    /// Points to an [ExternalName] outside the current function.
+    ExternalName(ExternalName),
+    /// Points to a [MachLabel] inside this function.
+    /// This is different from [MachLabelFixup] in that both the relocation and the
+    /// label will be emitted and are only resolved at link time.
+    ///
+    /// There is no reason to prefer this over [MachLabelFixup] unless the ABI requires it.
+    Label(MachLabel),
+}
+
+impl From<ExternalName> for RelocTarget {
+    fn from(name: ExternalName) -> Self {
+        Self::ExternalName(name)
+    }
+}
+
+impl From<MachLabel> for RelocTarget {
+    fn from(label: MachLabel) -> Self {
+        Self::Label(label)
+    }
 }
 
 /// A trap record resulting from a compilation.

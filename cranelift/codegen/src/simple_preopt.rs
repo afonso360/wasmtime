@@ -237,6 +237,7 @@ fn do_divrem_transformation(divrem_info: &DivRemByConstInfo, pos: &mut FuncCurso
             // Now qf holds the final quotient. If necessary calculate the
             // remainder instead.
             if is_rem {
+                pos.ins().iadd_imm
                 let tt = pos.ins().imul_imm(qf, d as i64);
                 pos.func.dfg.replace(inst).isub(n1, tt);
             } else {

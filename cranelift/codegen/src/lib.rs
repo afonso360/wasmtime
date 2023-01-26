@@ -90,8 +90,8 @@ pub mod write;
 pub use crate::entity::packed_option;
 pub use crate::machinst::buffer::{MachCallSite, MachReloc, MachSrcLoc, MachStackMap, MachTrap};
 pub use crate::machinst::{
-    CompiledCode, Final, MachBuffer, MachBufferFinalized, MachInst, MachInstEmit, PublicLabel,
-    PublicLabelKind, Reg, TextSectionBuilder, Writable,
+    CompiledCode, Final, MachBuffer, MachBufferFinalized, MachInst, MachInstEmit, MachLabel,
+    PublicLabel, PublicLabelKind, Reg, RelocTarget, TextSectionBuilder, Writable,
 };
 
 mod alias_analysis;

@@ -3262,7 +3262,7 @@ impl MachInstEmit for Inst {
                     dest: BranchTarget::ResolvedOffset(12),
                 };
                 inst.emit(&[], sink, emit_info, state);
-                sink.add_reloc(Reloc::Abs8, name, offset);
+                sink.add_reloc(Reloc::Abs8, &**name, offset);
                 sink.put8(0);
             }
             &Inst::LoadAddr { rd, ref mem } => {

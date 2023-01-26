@@ -8,7 +8,7 @@ use cranelift_codegen::{binemit::Reloc, CodegenError};
 use cranelift_entity::SecondaryMap;
 use cranelift_module::{
     DataContext, DataDescription, DataId, FuncId, Init, Linkage, Module, ModuleCompiledFunction,
-    ModuleDeclarations, ModuleError, ModuleExtName, ModuleReloc, ModuleResult,
+    ModuleDeclarations, ModuleError, ModuleReloc, ModuleRelocTarget, ModuleResult,
 };
 use log::info;
 use std::cell::RefCell;
@@ -279,9 +279,9 @@ impl JITModule {
         std::ptr::write(plt_ptr, plt_val);
     }
 
-    fn get_address(&self, name: &ModuleExtName) -> *const u8 {
+    fn get_address(&self, name: &ModuleRelocTarget) -> *const u8 {
         match *name {
-            ModuleExtName::User { .. } => {
+            ModuleRelocTarget::User { .. } => {
                 let (name, linkage) = if ModuleDeclarations::is_function(name) {
                     if self.hotswap_enabled {
                         return self.get_plt_address(name);
@@ -313,7 +313,7 @@ impl JITModule {
                     panic!("can't resolve symbol {}", name);
                 }
             }
-            ModuleExtName::LibCall(ref libcall) => {
+            ModuleRelocTarget::LibCall(ref libcall) => {
                 let sym = (self.libcall_names)(*libcall);
                 self.lookup_symbol(&sym)
                     .unwrap_or_else(|| panic!("can't resolve libcall {}", sym))
@@ -330,9 +330,9 @@ impl JITModule {
         unsafe { got_entry.as_ref() }.load(Ordering::SeqCst)
     }
 
-    fn get_got_address(&self, name: &ModuleExtName) -> NonNull<AtomicPtr<u8>> {
+    fn get_got_address(&self, name: &ModuleRelocTarget) -> NonNull<AtomicPtr<u8>> {
         match *name {
-            ModuleExtName::User { .. } => {
+            ModuleRelocTarget::User { .. } => {
                 if ModuleDeclarations::is_function(name) {
                     let func_id = FuncId::from_name(name);
                     self.function_got_entries[func_id].unwrap()
@@ -341,7 +341,7 @@ impl JITModule {
                     self.data_object_got_entries[data_id].unwrap()
                 }
             }
-            ModuleExtName::LibCall(ref libcall) => *self
+            ModuleRelocTarget::LibCall(ref libcall) => *self
                 .libcall_got_entries
                 .get(libcall)
                 .unwrap_or_else(|| panic!("can't resolve libcall {}", libcall)),
@@ -349,9 +349,9 @@ impl JITModule {
         }
     }
 
-    fn get_plt_address(&self, name: &ModuleExtName) -> *const u8 {
+    fn get_plt_address(&self, name: &ModuleRelocTarget) -> *const u8 {
         match *name {
-            ModuleExtName::User { .. } => {
+            ModuleRelocTarget::User { .. } => {
                 if ModuleDeclarations::is_function(name) {
                     let func_id = FuncId::from_name(name);
                     self.function_plt_entries[func_id]
@@ -362,7 +362,7 @@ impl JITModule {
                     unreachable!("PLT relocations can only have functions as target");
                 }
             }
-            ModuleExtName::LibCall(ref libcall) => self
+            ModuleRelocTarget::LibCall(ref libcall) => self
                 .libcall_plt_entries
                 .get(libcall)
                 .unwrap_or_else(|| panic!("can't resolve libcall {}", libcall))
@@ -724,10 +724,10 @@ impl Module for JITModule {
                 .unwrap()
                 .perform_relocations(
                     |name| match *name {
-                        ModuleExtName::User { .. } => {
+                        ModuleRelocTarget::User { .. } => {
                             unreachable!("non GOT or PLT relocation in function {} to {}", id, name)
                         }
-                        ModuleExtName::LibCall(ref libcall) => self
+                        ModuleRelocTarget::LibCall(ref libcall) => self
                             .libcall_plt_entries
                             .get(libcall)
                             .unwrap_or_else(|| panic!("can't resolve libcall {}", libcall))

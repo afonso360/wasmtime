@@ -11,7 +11,7 @@ use cranelift_codegen::{
 };
 use cranelift_module::{
     DataContext, DataDescription, DataId, FuncId, Init, Linkage, Module, ModuleCompiledFunction,
-    ModuleDeclarations, ModuleError, ModuleExtName, ModuleReloc, ModuleResult,
+    ModuleDeclarations, ModuleError, ModuleReloc, ModuleRelocTarget, ModuleResult,
 };
 use log::info;
 use object::write::{
@@ -559,9 +559,9 @@ impl ObjectModule {
 
     /// This should only be called during finish because it creates
     /// symbols for missing libcalls.
-    fn get_symbol(&mut self, name: &ModuleExtName) -> SymbolId {
+    fn get_symbol(&mut self, name: &ModuleRelocTarget) -> SymbolId {
         match *name {
-            ModuleExtName::User { .. } => {
+            ModuleRelocTarget::User { .. } => {
                 if ModuleDeclarations::is_function(name) {
                     let id = FuncId::from_name(name);
                     self.functions[id].unwrap().0
@@ -570,7 +570,7 @@ impl ObjectModule {
                     self.data_objects[id].unwrap().0
                 }
             }
-            ModuleExtName::LibCall(ref libcall) => {
+            ModuleRelocTarget::LibCall(ref libcall) => {
                 let name = (self.libcall_names)(*libcall);
                 if let Some(symbol) = self.object.symbol_id(name.as_bytes()) {
                     symbol
@@ -593,7 +593,7 @@ impl ObjectModule {
             }
             // These are "magic" names well-known to the linker.
             // They require special treatment.
-            ModuleExtName::KnownSymbol(ref known_symbol) => {
+            ModuleRelocTarget::KnownSymbol(ref known_symbol) => {
                 if let Some(symbol) = self.known_symbols.get(known_symbol) {
                     *symbol
                 } else {
@@ -623,6 +623,8 @@ impl ObjectModule {
                     symbol
                 }
             }
+
+            ModuleRelocTarget::FunctionLabel(fname, label) => {}
         }
     }
 
@@ -815,7 +817,7 @@ struct SymbolRelocs {
 #[derive(Clone)]
 struct ObjectRelocRecord {
     offset: CodeOffset,
-    name: ModuleExtName,
+    name: ModuleRelocTarget,
     kind: RelocationKind,
     encoding: RelocationEncoding,
     size: u8,

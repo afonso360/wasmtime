@@ -2765,22 +2765,25 @@ impl MachInstEmit for Inst {
                 let rd = allocs.next_writable(rd);
                 assert_eq!(a0(), rd.to_reg());
 
+                // This label *must* be at the same offset as as TLS_GD_HI20 relocation.
+                let label_reloc = sink.get_label();
+                sink.bind_label(label_reloc);
                 sink.add_reloc(Reloc::RiscvTlsGdHi20, symbol, 0);
-                Inst::Auipc {
+                let inst = Inst::Auipc {
                     rd: rd,
                     imm: Imm20::from_bits(0),
-                }
-                .emit(&[], sink, emit_info, state);
+                };
+                inst.emit(&[], sink, emit_info, state);
 
-                sink.add_reloc(Reloc::RiscvPCRelLo12I, symbol, 0);
-                Inst::AluRRImm12 {
+                sink.add_reloc(Reloc::RiscvPCRelLo12I, &label_reloc, 0);
+                let inst = Inst::AluRRImm12 {
                     alu_op: AluOPRRI::Addi,
                     rd: rd,
                     rs: rd.to_reg(),
                     imm12: Imm12::from_bits(0),
-                }
-                .emit(&[], sink, emit_info, state);
-                Inst::Call {
+                };
+                inst.emit(&[], sink, emit_info, state);
+                let inst = Inst::Call {
                     info: Box::new(CallInfo {
                         dest: ExternalName::LibCall(LibCall::ElfTlsGetAddr),
                         // We are already done with register alloc.
@@ -2793,8 +2796,8 @@ impl MachInstEmit for Inst {
                         callee_callconv: CallConv::SystemV,
                         clobbers: PRegSet::empty(),
                     }),
-                }
-                .emit(&[], sink, emit_info, state);
+                };
+                inst.emit(&[], sink, emit_info, state);
             }
         };
         let end_off = sink.cur_offset();
