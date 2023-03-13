@@ -1,0 +1,162 @@
+test compile precise-output
+set unwind_info=false
+target riscv64
+
+
+function %ctz_i8(i8) -> i8 {
+block0(v0: i8):
+    v1 = ctz v0
+    return v1
+}
+
+; VCode:
+; block0:
+;   mv a2,a0
+;   ctz a0,a2##ty=i8 tmp=t2 step=a1
+;   ret
+; 
+; Disassembled:
+; block0: ; offset 0x0
+;   ori a2, a0, 0
+;   ori a0, zero, 0
+;   addi a1, zero, 8
+;   addi t2, zero, 1
+;   blez a1, 0x1c
+;   and t5, t2, a2
+;   bne zero, t5, 0x14
+;   addi a0, a0, 1
+;   addi a1, a1, -1
+;   slli t2, t2, 1
+;   j -0x18
+;   ret
+
+function %ctz_i16(i16) -> i16 {
+block0(v0: i16):
+    v1 = ctz v0
+    return v1
+}
+
+; VCode:
+; block0:
+;   mv a2,a0
+;   ctz a0,a2##ty=i16 tmp=t2 step=a1
+;   ret
+; 
+; Disassembled:
+; block0: ; offset 0x0
+;   ori a2, a0, 0
+;   ori a0, zero, 0
+;   addi a1, zero, 0x10
+;   addi t2, zero, 1
+;   blez a1, 0x1c
+;   and t5, t2, a2
+;   bne zero, t5, 0x14
+;   addi a0, a0, 1
+;   addi a1, a1, -1
+;   slli t2, t2, 1
+;   j -0x18
+;   ret
+
+function %ctz_i32(i32) -> i32 {
+block0(v0: i32):
+    v1 = ctz v0
+    return v1
+}
+
+; VCode:
+; block0:
+;   mv a2,a0
+;   ctz a0,a2##ty=i32 tmp=t2 step=a1
+;   ret
+; 
+; Disassembled:
+; block0: ; offset 0x0
+;   ori a2, a0, 0
+;   ori a0, zero, 0
+;   addi a1, zero, 0x20
+;   addi t2, zero, 1
+;   blez a1, 0x1c
+;   and t5, t2, a2
+;   bne zero, t5, 0x14
+;   addi a0, a0, 1
+;   addi a1, a1, -1
+;   slli t2, t2, 1
+;   j -0x18
+;   ret
+
+function %ctz_i64(i64) -> i64 {
+block0(v0: i64):
+    v1 = ctz v0
+    return v1
+}
+
+; VCode:
+; block0:
+;   mv a2,a0
+;   ctz a0,a2##ty=i64 tmp=t2 step=a1
+;   ret
+; 
+; Disassembled:
+; block0: ; offset 0x0
+;   ori a2, a0, 0
+;   ori a0, zero, 0
+;   addi a1, zero, 0x40
+;   addi t2, zero, 1
+;   blez a1, 0x1c
+;   and t5, t2, a2
+;   bne zero, t5, 0x14
+;   addi a0, a0, 1
+;   addi a1, a1, -1
+;   slli t2, t2, 1
+;   j -0x18
+;   ret
+
+function %ctz_i128(i128) -> i128 {
+block0(v0: i128):
+    v1 = ctz v0
+    return v1
+}
+
+; VCode:
+; block0:
+;   mv t0,a0
+;   ctz a2,t0##ty=i64 tmp=a0 step=a3
+;   ctz a6,a1##ty=i64 tmp=a4 step=a5
+;   li t3,64
+;   select_reg t0,a6,zero##condition=(t3 eq a2)
+;   add a0,a2,t0
+;   li a1,0
+;   ret
+; 
+; Disassembled:
+; block0: ; offset 0x0
+;   ori t0, a0, 0
+;   ori a2, zero, 0
+;   addi a3, zero, 0x40
+;   addi a0, zero, 1
+;   blez a3, 0x1c
+;   and t5, a0, t0
+;   bne zero, t5, 0x14
+;   addi a2, a2, 1
+;   addi a3, a3, -1
+;   slli a0, a0, 1
+;   j -0x18
+;   ori a6, zero, 0
+;   addi a5, zero, 0x40
+;   addi a4, zero, 1
+;   blez a5, 0x1c
+;   and t5, a4, a1
+;   bne zero, t5, 0x14
+;   addi a6, a6, 1
+;   addi a5, a5, -1
+;   slli a4, a4, 1
+;   j -0x18
+;   addi t3, zero, 0x40
+;   beq t3, a2, 0xc
+;   ori t0, zero, 0
+;   j 8
+;   ori t0, a6, 0
+;   add a0, a2, t0
+;   mv a1, zero
+;   ret
+
