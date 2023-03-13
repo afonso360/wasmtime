@@ -57,6 +57,11 @@
 (decl offset32 (u32) Offset32)
 (extern extractor infallible offset32 offset32)
 
+;; Pure/fallible constructor that tests if one u64 is less than or
+;; equal to another.
+(decl pure partial u64_lteq (u64 u64) Unit)
+(extern constructor u64_lteq u64_lteq)
+
 ;; Pure/fallible constructor that tests if one u32 is less than or
 ;; equal to another.
 (decl pure partial u32_lteq (u32 u32) Unit)
@@ -97,6 +102,9 @@
 (decl pure i64_as_u64 (i64) u64)
 (extern constructor i64_as_u64 i64_as_u64)
 
+(decl pure u64_as_i32 (u64) i32)
+(extern constructor u64_as_i32 u64_as_i32)
+
 ;;;; Primitive Arithmetic ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (decl pure u8_and (u8 u8) u8)
@@ -113,6 +121,9 @@
 
 (decl pure u64_mul (u64 u64) u64)
 (extern constructor u64_mul u64_mul)
+
+(decl pure u64_shl (u64 u64) u64)
+(extern constructor u64_shl u64_shl)
 
 (decl pure partial u64_sdiv (u64 u64) u64)
 (extern constructor u64_sdiv u64_sdiv)

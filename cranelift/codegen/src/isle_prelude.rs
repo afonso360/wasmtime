@@ -39,6 +39,11 @@ macro_rules! isle_common_prelude_methods {
         }
 
         #[inline]
+        fn u64_as_i32(&mut self, x: u64) -> i32 {
+            x as i32
+        }
+
+        #[inline]
         fn u64_add(&mut self, x: u64, y: u64) -> u64 {
             x.wrapping_add(y)
         }
@@ -51,6 +56,11 @@ macro_rules! isle_common_prelude_methods {
         #[inline]
         fn u64_mul(&mut self, x: u64, y: u64) -> u64 {
             x.wrapping_mul(y)
+        }
+
+        #[inline]
+        fn u64_shl(&mut self, a: u64, b: u64) -> u64 {
+            a << b
         }
 
         #[inline]
@@ -565,6 +575,15 @@ macro_rules! isle_common_prelude_methods {
         fn u32_nonnegative(&mut self, x: u32) -> Option<u32> {
             if (x as i32) >= 0 {
                 Some(x)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        fn u64_lteq(&mut self, a: u64, b: u64) -> Option<()> {
+            if a <= b {
+                Some(())
             } else {
                 None
             }
