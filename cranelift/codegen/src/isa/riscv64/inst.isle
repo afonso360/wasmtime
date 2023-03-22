@@ -813,6 +813,20 @@
       (_ Unit (emit (MInst.FloatSelect op rd tmp x y ty))))
     (writable_reg_to_reg rd)))
 
+
+;; Instruction helpers
+
+;; RV32I Base Integer Instruction Set
+
+;; Helper for emitting the `add` instruction.
+(decl rv_add (Reg Reg) Reg)
+(rule (rv_add rs1 rs2)
+  (alu_rrr (AluOPRRR.Add) rs1 rs2))
+
+
+
+
+
 ;; for load immediate
 (decl imm (Type u64) Reg)
 (extern constructor imm imm)
@@ -860,12 +874,6 @@
 (decl imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
-
-;; Helper for emit rd = rs1 + rs2 for Interger.
-(decl alu_add (Reg Reg) Reg)
-(rule
-  (alu_add rs1 rs2)
-  (alu_rrr (AluOPRRR.Add) rs1 rs2))
 
 (decl alu_and (Reg Reg) Reg)
 (rule
@@ -992,7 +1000,7 @@
       (high Reg (gen_select_reg (IntCC.Equal) constant_64 low high_part (zero_reg)))
 
       ;; add low and high together.
-      (result Reg (alu_add low high)))
+      (result Reg (rv_add low high)))
     (value_regs result (load_u64_constant 0))))
 
 (decl lower_clz (Type Reg) Reg)
@@ -1034,7 +1042,7 @@
       (constant_64 Reg (load_u64_constant 64))
       (low Reg (gen_select_reg (IntCC.Equal) constant_64 high low_part (zero_reg)))
       ;; add low and high together.
-      (result Reg (alu_add high low)))
+      (result Reg (rv_add high low)))
     (value_regs result (load_u64_constant 0))))
   
 ;; Extends an integer if it is smaller than 64 bits.
@@ -1327,7 +1335,7 @@
       ;; high part.
       (high Reg (lower_popcnt (value_regs_get a 1) $I64))
       ;; add toghter.
-      (result Reg (alu_add low high)))
+      (result Reg (rv_add low high)))
     (value_regs result (load_u64_constant 0))))
 
 (decl lower_i128_rotl (ValueRegs ValueRegs) ValueRegs)
@@ -1878,7 +1886,7 @@
 
 (rule 1
   (lower_uadd_overflow x y $I64)
-  (let ((tmp Reg (alu_add x y))
+  (let ((tmp Reg (rv_add x y))
         (test Reg (gen_icmp (IntCC.UnsignedLessThan) tmp x $I64)))
     (value_regs tmp test)))
 
@@ -1886,7 +1894,7 @@
   (lower_uadd_overflow x y (fits_in_32 ty))
   (let ((tmp_x Reg (ext_int_if_need $false x ty))
         (tmp_y Reg (ext_int_if_need $false y ty))
-        (sum Reg (alu_add tmp_x tmp_y))
+        (sum Reg (rv_add tmp_x tmp_y))
         (test Reg (alu_srli sum (ty_bits ty))))
     (value_regs sum test)))
 
@@ -2116,7 +2124,7 @@
   (madd n m a)
   (let
     ((t Reg (alu_rrr (AluOPRRR.Mul) n m)))
-    (alu_add t a)))
+    (rv_add t a)))
 
 (decl umulh (Reg Reg) Reg)
 (rule (umulh a b)
