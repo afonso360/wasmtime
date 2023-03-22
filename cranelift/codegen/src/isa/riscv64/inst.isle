@@ -733,6 +733,58 @@
 (decl pure has_zbs () bool)
 (extern constructor has_zbs has_zbs)
 
+
+;; Instruction Format helpers
+
+;; Helper for emitting `MInst.AluRRR` instructions.
+(decl alu_rrr (AluOPRRR Reg Reg) Reg)
+(rule (alu_rrr op src1 src2)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.AluRRR op dst src1 src2))))
+        dst))
+
+;; Helper for emitting `MInst.AluRRImm12` instructions.
+(decl alu_rr_imm12 (AluOPRRI Reg Imm12) Reg)
+(rule (alu_rr_imm12 op src imm)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.AluRRImm12 op dst src imm))))
+        dst))
+  
+;; some instruction use imm12 as funct12.
+;; so we don't need the imm12 paramter.
+(decl alu_rr_funct12 (AluOPRRI Reg) Reg)
+(rule (alu_rr_funct12 op src)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.AluRRImm12 op dst src (imm12_zero)))))
+        dst))
+
+;; Float Helpers
+
+(decl gen_default_frm () OptionFloatRoundingMode)
+(extern constructor gen_default_frm gen_default_frm)
+
+;; Helper for emitting `MInst.FpuRR` instructions.
+(decl fpu_rr (FpuOPRR Type Reg) Reg)
+(rule (fpu_rr op ty src)
+      (let ((dst WritableReg (temp_writable_reg ty))
+            (_ Unit (emit (MInst.FpuRR op (gen_default_frm) dst src))))
+        dst))
+
+;; Helper for emitting `MInst.FpuRRR` instructions.
+(decl fpu_rrr (FpuOPRRR Type Reg Reg) Reg)
+(rule (fpu_rrr op ty src1 src2)
+      (let ((dst WritableReg (temp_writable_reg ty))
+            (_ Unit (emit (MInst.FpuRRR op (gen_default_frm) dst src1 src2))))
+        dst))
+
+;; Helper for emitting `MInst.FpuRRRR` instructions.
+(decl fpu_rrrr (FpuOPRRRR Type Reg Reg Reg) Reg)
+(rule (fpu_rrrr op ty src1 src2 src3)
+      (let ((dst WritableReg (temp_writable_reg ty))
+            (_ Unit (emit (MInst.FpuRRRR op (gen_default_frm) dst src1 src2 src3))))
+        dst))
+
+
 (decl gen_float_round (FloatRoundOP Reg Type) Reg)
 (rule
   (gen_float_round op rs ty)
@@ -808,24 +860,6 @@
 (decl imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
-;; Float Helpers
-
-(decl gen_default_frm () OptionFloatRoundingMode)
-(extern constructor gen_default_frm gen_default_frm)
-
-;; Helper for emitting `MInst.FpuRR` instructions.
-(decl fpu_rr (FpuOPRR Type Reg) Reg)
-(rule (fpu_rr op ty src)
-      (let ((dst WritableReg (temp_writable_reg ty))
-            (_ Unit (emit (MInst.FpuRR op (gen_default_frm) dst src))))
-        dst))
-
-;; Helper for emitting `MInst.AluRRR` instructions.
-(decl alu_rrr (AluOPRRR Reg Reg) Reg)
-(rule (alu_rrr op src1 src2)
-      (let ((dst WritableReg (temp_writable_reg $I64))
-            (_ Unit (emit (MInst.AluRRR op dst src1 src2))))
-        dst))
 
 ;; Helper for emit rd = rs1 + rs2 for Interger.
 (decl alu_add (Reg Reg) Reg)
@@ -848,28 +882,6 @@
 (decl pack_float_rounding_mode (FRM) OptionFloatRoundingMode)
 (extern constructor pack_float_rounding_mode pack_float_rounding_mode)
 
-;; Helper for emitting `MInst.AluRRR` instructions.
-(decl fpu_rrr (FpuOPRRR Type Reg Reg) Reg)
-(rule (fpu_rrr op ty src1 src2)
-      (let ((dst WritableReg (temp_writable_reg ty))
-            (_ Unit (emit (MInst.FpuRRR op (gen_default_frm) dst src1 src2))))
-        dst))
-
-
-;; Helper for emitting `MInst.FpuRRRR` instructions.
-(decl fpu_rrrr (FpuOPRRRR Type Reg Reg Reg) Reg)
-(rule (fpu_rrrr op ty src1 src2 src3)
-      (let ((dst WritableReg (temp_writable_reg ty))
-            (_ Unit (emit (MInst.FpuRRRR op (gen_default_frm) dst src1 src2 src3))))
-        dst))
-
-
-;; Helper for emitting `MInst.AluRRImm12` instructions.
-(decl alu_rr_imm12 (AluOPRRI Reg Imm12) Reg)
-(rule (alu_rr_imm12 op src imm)
-      (let ((dst WritableReg (temp_writable_reg $I64))
-            (_ Unit (emit (MInst.AluRRImm12 op dst src imm))))
-        dst))
 
 (decl alu_andi (Reg i32) Reg)
 (rule (alu_andi r i)
@@ -883,13 +895,6 @@
 (rule (alu_srli r i)
   (alu_rr_imm12 (AluOPRRI.Srli) r (imm12_const i)))
 
-;; some instruction use imm12 as funct12.
-;; so we don't need the imm12 paramter.
-(decl alu_rr_funct12 (AluOPRRI Reg) Reg)
-(rule (alu_rr_funct12 op src)
-      (let ((dst WritableReg (temp_writable_reg $I64))
-            (_ Unit (emit (MInst.AluRRImm12 op dst src (imm12_zero)))))
-        dst))
 
 
 (decl select_addi (Type) AluOPRRI)
