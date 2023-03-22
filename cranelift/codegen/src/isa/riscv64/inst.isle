@@ -824,6 +824,12 @@
 (rule (rv_add rs1 rs2)
   (alu_rrr (AluOPRRR.Add) rs1 rs2))
 
+;; Helper for emitting the `addi` ("Add Immediate") instruction.
+;; rd ← rs1 + sext(imm)
+(decl rv_addi (Reg Imm12) Reg)
+(rule (rv_addi rs1 imm)
+  (alu_rr_imm12 (AluOPRRI.Addi) rs1 imm))
+
 ;; Helper for emitting the `sub` instruction.
 ;; rd ← rs1 - rs2
 (decl rv_sub (Reg Reg) Reg)
@@ -886,7 +892,7 @@
 (decl load_imm12 (i32) Reg)
 (rule
   (load_imm12 x)
-  (alu_rr_imm12 (AluOPRRI.Addi) (zero_reg) (imm12_const x)))
+  (rv_addi (zero_reg) (imm12_const x)))
   
 ;; for load immediate
 (decl imm_from_bits (u64) Imm12)
@@ -1056,7 +1062,7 @@
       ;;
       (count Reg (alu_rr_funct12 (AluOPRRI.Clz) tmp))
       ;;make result
-      (result Reg (alu_rr_imm12 (AluOPRRI.Addi) count (imm12_const_add (ty_bits ty) -64))))
+      (result Reg (rv_addi count (imm12_const_add (ty_bits ty) -64))))
     result))
 
 (decl lower_clz_i128 (ValueRegs) ValueRegs)
@@ -1325,7 +1331,7 @@
       (tmp2 Reg (gen_select_reg (IntCC.SignedLessThan) tmp (zero_reg) (gen_bit_not r) r))
       ;;
       (tmp3 Reg (lower_clz ty tmp2)))
-    (alu_rr_imm12 (AluOPRRI.Addi) tmp3 (imm12_const -1))))
+    (rv_addi tmp3 (imm12_const -1))))
 
 (decl gen_cltz (bool Reg Type) Reg)
 (rule
@@ -1516,7 +1522,7 @@
       ;; count leading zeros.
       (tmp  ValueRegs (lower_clz_i128 (value_regs low high)))
       (count Reg (value_regs_get tmp 0))
-      (result Reg (alu_rr_imm12 (AluOPRRI.Addi) count (imm12_const -1))))
+      (result Reg (rv_addi count (imm12_const -1))))
     (value_regs result (load_u64_constant 0))))
 
 
