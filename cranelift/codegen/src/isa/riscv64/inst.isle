@@ -1279,7 +1279,10 @@
 (rule (rv_brev8 rs1)
   (alu_rr_funct12 (AluOPRRI.Brev8) rs1))
 
-
+;; Helper for emitting the `bseti` ("Single-Bit Set Immediate") instruction.
+(decl rv_bseti (Reg Imm12) Reg)
+(rule (rv_bseti rs1 imm)
+  (alu_rr_imm12 (AluOPRRI.Bseti) rs1 imm))
 
 
 
@@ -1402,7 +1405,7 @@
   (if-let $true (has_zbb))
   (if-let $true (has_zbs))
   (let
-    ((tmp Reg (alu_rr_imm12 (AluOPRRI.Bseti) x (imm12_const (ty_bits ty)))))
+    ((tmp Reg (rv_bseti x (imm12_const (ty_bits ty)))))
     (rv_ctzw x)))
 
 ;;;;
