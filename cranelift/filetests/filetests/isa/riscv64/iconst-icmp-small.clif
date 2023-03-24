@@ -20,7 +20,8 @@ block0:
 ;   srli a7,a5,48
 ;   slli t4,a2,48
 ;   srli t1,t4,48
-;   ne a0,a7,t1##ty=i16
+;   xor a0,a7,t1
+;   snez a0,a0
 ;   ret
 ; 
 ; Disassembled:
@@ -33,9 +34,7 @@ block0:
 ;   srli a7, a5, 0x30
 ;   slli t4, a2, 0x30
 ;   srli t1, t4, 0x30
-;   beq a7, t1, 0xc
-;   addi a0, zero, 1
-;   j 8
-;   mv a0, zero
+;   xor a0, a7, t1
+;   snez a0, a0
 ;   ret
 

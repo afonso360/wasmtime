@@ -48,7 +48,7 @@
 ;;   add t2,t2,t1
 ;;   auipc t4,0; ld t4,12(t4); j 12; .8byte 0xffff0000
 ;;   add t2,t2,t4
-;;   ugt t4,t1,t0##ty=i64
+;;   sltu t4,t0,t1
 ;;   li t1,0
 ;;   selectif_spectre_guard t0,t1,t2##test=t4
 ;;   sb a1,0(t0)
@@ -65,7 +65,7 @@
 ;;   add t2,t2,t1
 ;;   auipc t4,0; ld t4,12(t4); j 12; .8byte 0xffff0000
 ;;   add t2,t2,t4
-;;   ugt t4,t1,t0##ty=i64
+;;   sltu t4,t0,t1
 ;;   li t1,0
 ;;   selectif_spectre_guard t0,t1,t2##test=t4
 ;;   lbu a0,0(t0)

@@ -43,7 +43,7 @@
 ;;   srli t0,t3,32
 ;;   lui t3,65535
 ;;   addi t3,t3,4092
-;;   ugt t1,t0,t3##ty=i64
+;;   sltu t1,t3,t0
 ;;   bne t1,zero,taken(label3),not_taken(label1)
 ;; block1:
 ;;   ld t1,0(a2)
@@ -63,7 +63,7 @@
 ;;   srli t0,t3,32
 ;;   lui t3,65535
 ;;   addi t3,t3,4092
-;;   ugt t1,t0,t3##ty=i64
+;;   sltu t1,t3,t0
 ;;   bne t1,zero,taken(label3),not_taken(label1)
 ;; block1:
 ;;   ld t1,0(a1)

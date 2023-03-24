@@ -45,7 +45,7 @@
 ;;   add t4,t4,t0
 ;;   lui a7,65536
 ;;   addi a7,a7,4095
-;;   ugt t0,t0,a7##ty=i64
+;;   sltu t0,a7,t0
 ;;   li t2,0
 ;;   selectif_spectre_guard t1,t2,t4##test=t0
 ;;   sb a1,0(t1)
@@ -61,7 +61,7 @@
 ;;   add t4,t4,t0
 ;;   lui a7,65536
 ;;   addi a7,a7,4095
-;;   ugt t0,t0,a7##ty=i64
+;;   sltu t0,a7,t0
 ;;   li t2,0
 ;;   selectif_spectre_guard t1,t2,t4##test=t0
 ;;   lbu a0,0(t1)

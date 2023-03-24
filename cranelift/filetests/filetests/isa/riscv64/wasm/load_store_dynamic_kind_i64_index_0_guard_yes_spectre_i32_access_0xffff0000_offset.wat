@@ -43,14 +43,14 @@
 ;; block0:
 ;;   auipc t4,0; ld t4,12(t4); j 12; .8byte 0xffff0004
 ;;   add t1,a0,t4
-;;   ult a3,t1,a0##ty=i64
+;;   sltu a3,t1,a0
 ;;   trap_if a3,heap_oob
 ;;   ld t2,8(a2)
 ;;   ld a2,0(a2)
 ;;   add a0,a2,a0
 ;;   auipc a2,0; ld a2,12(a2); j 12; .8byte 0xffff0000
 ;;   add a0,a0,a2
-;;   ugt t1,t1,t2##ty=i64
+;;   sltu t1,t2,t1
 ;;   li a2,0
 ;;   selectif_spectre_guard t2,a2,a0##test=t1
 ;;   sw a1,0(t2)
@@ -62,14 +62,14 @@
 ;; block0:
 ;;   auipc t4,0; ld t4,12(t4); j 12; .8byte 0xffff0004
 ;;   add t1,a0,t4
-;;   ult a2,t1,a0##ty=i64
+;;   sltu a2,t1,a0
 ;;   trap_if a2,heap_oob
 ;;   ld t2,8(a1)
 ;;   ld a1,0(a1)
 ;;   add a0,a1,a0
 ;;   auipc a1,0; ld a1,12(a1); j 12; .8byte 0xffff0000
 ;;   add a0,a0,a1
-;;   ugt t1,t1,t2##ty=i64
+;;   sltu t1,t2,t1
 ;;   li a1,0
 ;;   selectif_spectre_guard t2,a1,a0##test=t1
 ;;   lw a0,0(t2)

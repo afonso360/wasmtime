@@ -41,26 +41,28 @@
 
 ;; function u0:0:
 ;; block0:
-;;   ld a6,8(a2)
+;;   ld t3,8(a2)
 ;;   ld a7,0(a2)
 ;;   add a7,a7,a0
-;;   uge a5,a0,a6##ty=i64
-;;   li t3,0
-;;   selectif_spectre_guard a6,t3,a7##test=a5
-;;   sb a1,0(a6)
+;;   sltu a5,a0,t3
+;;   xori t3,a5,1
+;;   li t4,0
+;;   selectif_spectre_guard t0,t4,a7##test=t3
+;;   sb a1,0(t0)
 ;;   j label1
 ;; block1:
 ;;   ret
 ;;
 ;; function u0:1:
 ;; block0:
-;;   ld a6,8(a1)
+;;   ld t3,8(a1)
 ;;   ld a7,0(a1)
 ;;   add a7,a7,a0
-;;   uge a5,a0,a6##ty=i64
-;;   li t3,0
-;;   selectif_spectre_guard a6,t3,a7##test=a5
-;;   lbu a0,0(a6)
+;;   sltu a5,a0,t3
+;;   xori t3,a5,1
+;;   li t4,0
+;;   selectif_spectre_guard t0,t4,a7##test=t3
+;;   lbu a0,0(t0)
 ;;   j label1
 ;; block1:
 ;;   ret
