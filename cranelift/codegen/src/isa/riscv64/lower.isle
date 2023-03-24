@@ -842,18 +842,10 @@
   (lower (store flags x @ (value_type $I128 ) p @ (value_type (ty_addr64 _)) offset))
   (gen_store_128 p offset flags x))
 
-(decl gen_icmp (IntCC ValueRegs ValueRegs Type) Reg)
-(rule
-  (gen_icmp cc x y ty)
-  (let
-    ((result WritableReg (temp_writable_reg $I64))
-      (_ Unit (emit (MInst.Icmp cc result x y ty))))
-    result))
-
 ;;;;;  Rules for `icmp`;;;;;;;;;
 (rule
   (lower (icmp cc x @ (value_type ty) y))
-  (lower_icmp cc x y ty))
+  (gen_icmp cc x y ty))
 
 ;;;;;  Rules for `fcmp`;;;;;;;;;
 (rule
@@ -931,7 +923,7 @@
   (lower (has_type r_ty (select_spectre_guard (icmp cc ca @ (value_type cty) cb) a b)))
   (let
     ((dst VecWritableReg (alloc_vec_writable r_ty))
-      (r Reg (lower_icmp cc ca cb cty))
+      (r Reg (gen_icmp cc ca cb cty))
       (_ Unit (emit (MInst.SelectIf $true (vec_writable_clone dst) r a b))))
     (vec_writable_to_regs dst)))
 
