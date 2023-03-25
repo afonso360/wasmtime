@@ -11,19 +11,19 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   andi a1,a0,255
-;   andi a3,t2,255
-;   xor a5,a1,a3
+;   andi t2,a0,255
+;   li a1,42
+;   andi a3,a1,255
+;   xor a5,t2,a3
 ;   seqz a0,a5
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   andi a1, a0, 0xff
-;   andi a3, t2, 0xff
-;   xor a5, a1, a3
+;   andi t2, a0, 0xff
+;   addi a1, zero, 0x2a
+;   andi a3, a1, 0xff
+;   xor a5, t2, a3
 ;   seqz a0, a5
 ;   ret
 
@@ -55,18 +55,18 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,1
-;   sext.w a1,a0
-;   sext.w a3,t2
-;   slt a0,a1,a3
+;   sext.w t2,a0
+;   li a1,1
+;   sext.w a3,a1
+;   slt a0,t2,a3
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 1
-;   sext.w a1, a0
-;   sext.w a3, t2
-;   slt a0, a1, a3
+;   sext.w t2, a0
+;   addi a1, zero, 1
+;   sext.w a3, a1
+;   slt a0, t2, a3
 ;   ret
 
 function %icmp_slt_i32_imm(i32) -> i8 {
@@ -101,23 +101,23 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srli a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srli a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srli a7,a5,48
-;   xor t4,a3,a7
+;   xor t4,a1,a7
 ;   seqz a0,t4
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srli a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srli a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srli a7, a5, 0x30
-;   xor t4, a3, a7
+;   xor t4, a1, a7
 ;   seqz a0, t4
 ;   ret
 
@@ -130,19 +130,19 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   sext.w a1,a0
-;   sext.w a3,t2
-;   xor a5,a1,a3
+;   sext.w t2,a0
+;   li a1,42
+;   sext.w a3,a1
+;   xor a5,t2,a3
 ;   seqz a0,a5
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   sext.w a1, a0
-;   sext.w a3, t2
-;   xor a5, a1, a3
+;   sext.w t2, a0
+;   addi a1, zero, 0x2a
+;   sext.w a3, a1
+;   xor a5, t2, a3
 ;   seqz a0, a5
 ;   ret
 
@@ -176,19 +176,19 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   andi a1,a0,255
-;   andi a3,t2,255
-;   xor a5,a1,a3
+;   andi t2,a0,255
+;   li a1,42
+;   andi a3,a1,255
+;   xor a5,t2,a3
 ;   snez a0,a5
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   andi a1, a0, 0xff
-;   andi a3, t2, 0xff
-;   xor a5, a1, a3
+;   andi t2, a0, 0xff
+;   addi a1, zero, 0x2a
+;   andi a3, a1, 0xff
+;   xor a5, t2, a3
 ;   snez a0, a5
 ;   ret
 
@@ -201,23 +201,23 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srli a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srli a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srli a7,a5,48
-;   xor t4,a3,a7
+;   xor t4,a1,a7
 ;   snez a0,t4
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srli a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srli a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srli a7, a5, 0x30
-;   xor t4, a3, a7
+;   xor t4, a1, a7
 ;   snez a0, t4
 ;   ret
 
@@ -230,19 +230,19 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   sext.w a1,a0
-;   sext.w a3,t2
-;   xor a5,a1,a3
+;   sext.w t2,a0
+;   li a1,42
+;   sext.w a3,a1
+;   xor a5,t2,a3
 ;   snez a0,a5
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   sext.w a1, a0
-;   sext.w a3, t2
-;   xor a5, a1, a3
+;   sext.w t2, a0
+;   addi a1, zero, 0x2a
+;   sext.w a3, a1
+;   xor a5, t2, a3
 ;   snez a0, a5
 ;   ret
 
@@ -276,23 +276,23 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,56
-;   srai a3,a1,56
-;   slli a5,t2,56
+;   slli t2,a0,56
+;   srai a1,t2,56
+;   li a3,42
+;   slli a5,a3,56
 ;   srai a7,a5,56
-;   slt t4,a3,a7
+;   slt t4,a1,a7
 ;   xori a0,t4,1
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x38
-;   srai a3, a1, 0x38
-;   slli a5, t2, 0x38
+;   slli t2, a0, 0x38
+;   srai a1, t2, 0x38
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x38
 ;   srai a7, a5, 0x38
-;   slt t4, a3, a7
+;   slt t4, a1, a7
 ;   xori a0, t4, 1
 ;   ret
 
@@ -305,23 +305,23 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srai a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srai a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srai a7,a5,48
-;   slt t4,a3,a7
+;   slt t4,a1,a7
 ;   xori a0,t4,1
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srai a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srai a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srai a7, a5, 0x30
-;   slt t4, a3, a7
+;   slt t4, a1, a7
 ;   xori a0, t4, 1
 ;   ret
 
@@ -334,22 +334,22 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,56
-;   srai a3,a1,56
-;   slli a5,t2,56
+;   slli t2,a0,56
+;   srai a1,t2,56
+;   li a3,42
+;   slli a5,a3,56
 ;   srai a7,a5,56
-;   slt a0,a3,a7
+;   slt a0,a1,a7
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x38
-;   srai a3, a1, 0x38
-;   slli a5, t2, 0x38
+;   slli t2, a0, 0x38
+;   srai a1, t2, 0x38
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x38
 ;   srai a7, a5, 0x38
-;   slt a0, a3, a7
+;   slt a0, a1, a7
 ;   ret
 
 function %icmp_slt_i16_imm(i16) -> i8 {
@@ -361,22 +361,22 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srai a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srai a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srai a7,a5,48
-;   slt a0,a3,a7
+;   slt a0,a1,a7
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srai a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srai a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srai a7, a5, 0x30
-;   slt a0, a3, a7
+;   slt a0, a1, a7
 ;   ret
 
 function %icmp_slt_i32_imm(i32) -> i8 {
@@ -388,18 +388,18 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   sext.w a1,a0
-;   sext.w a3,t2
-;   slt a0,a1,a3
+;   sext.w t2,a0
+;   li a1,42
+;   sext.w a3,a1
+;   slt a0,t2,a3
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   sext.w a1, a0
-;   sext.w a3, t2
-;   slt a0, a1, a3
+;   sext.w t2, a0
+;   addi a1, zero, 0x2a
+;   sext.w a3, a1
+;   slt a0, t2, a3
 ;   ret
 
 function %icmp_slt_i64_imm(i64) -> i8 {
@@ -430,19 +430,19 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   andi a1,a0,255
-;   andi a3,t2,255
-;   sltu a5,a1,a3
+;   andi t2,a0,255
+;   li a1,42
+;   andi a3,a1,255
+;   sltu a5,t2,a3
 ;   xori a0,a5,1
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   andi a1, a0, 0xff
-;   andi a3, t2, 0xff
-;   sltu a5, a1, a3
+;   andi t2, a0, 0xff
+;   addi a1, zero, 0x2a
+;   andi a3, a1, 0xff
+;   sltu a5, t2, a3
 ;   xori a0, a5, 1
 ;   ret
 
@@ -455,23 +455,23 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srli a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srli a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srli a7,a5,48
-;   sltu t4,a3,a7
+;   sltu t4,a1,a7
 ;   xori a0,t4,1
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srli a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srli a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srli a7, a5, 0x30
-;   sltu t4, a3, a7
+;   sltu t4, a1, a7
 ;   xori a0, t4, 1
 ;   ret
 
@@ -484,23 +484,23 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,32
-;   srli a3,a1,32
-;   slli a5,t2,32
+;   slli t2,a0,32
+;   srli a1,t2,32
+;   li a3,42
+;   slli a5,a3,32
 ;   srli a7,a5,32
-;   sltu t4,a3,a7
+;   sltu t4,a1,a7
 ;   xori a0,t4,1
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x20
-;   srli a3, a1, 0x20
-;   slli a5, t2, 0x20
+;   slli t2, a0, 0x20
+;   srli a1, t2, 0x20
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x20
 ;   srli a7, a5, 0x20
-;   sltu t4, a3, a7
+;   sltu t4, a1, a7
 ;   xori a0, t4, 1
 ;   ret
 
@@ -513,22 +513,22 @@ block0(v0: i16):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,48
-;   srli a3,a1,48
-;   slli a5,t2,48
+;   slli t2,a0,48
+;   srli a1,t2,48
+;   li a3,42
+;   slli a5,a3,48
 ;   srli a7,a5,48
-;   sltu a0,a3,a7
+;   sltu a0,a1,a7
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x30
-;   srli a3, a1, 0x30
-;   slli a5, t2, 0x30
+;   slli t2, a0, 0x30
+;   srli a1, t2, 0x30
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x30
 ;   srli a7, a5, 0x30
-;   sltu a0, a3, a7
+;   sltu a0, a1, a7
 ;   ret
 
 function %icmp_ult_i32_imm(i32) -> i8 {
@@ -540,21 +540,21 @@ block0(v0: i32):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   slli a1,a0,32
-;   srli a3,a1,32
-;   slli a5,t2,32
+;   slli t2,a0,32
+;   srli a1,t2,32
+;   li a3,42
+;   slli a5,a3,32
 ;   srli a7,a5,32
-;   sltu a0,a3,a7
+;   sltu a0,a1,a7
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   slli a1, a0, 0x20
-;   srli a3, a1, 0x20
-;   slli a5, t2, 0x20
+;   slli t2, a0, 0x20
+;   srli a1, t2, 0x20
+;   addi a3, zero, 0x2a
+;   slli a5, a3, 0x20
 ;   srli a7, a5, 0x20
-;   sltu a0, a3, a7
+;   sltu a0, a1, a7
 ;   ret
 

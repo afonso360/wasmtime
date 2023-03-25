@@ -38,19 +38,19 @@ block0(v0: i8):
 
 ; VCode:
 ; block0:
-;   li t2,42
-;   andi a1,a0,255
-;   andi a3,t2,255
-;   xor a5,a1,a3
+;   andi t2,a0,255
+;   li a1,42
+;   andi a3,a1,255
+;   xor a5,t2,a3
 ;   seqz a0,a5
 ;   ret
 ; 
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi t2, zero, 0x2a
-;   andi a1, a0, 0xff
-;   andi a3, t2, 0xff
-;   xor a5, a1, a3
+;   andi t2, a0, 0xff
+;   addi a1, zero, 0x2a
+;   andi a3, a1, 0xff
+;   xor a5, t2, a3
 ;   seqz a0, a5
 ;   ret
 
