@@ -334,6 +334,13 @@
       (guard_size u32)
       (probe_count u32)
       (tmp WritableReg))
+    
+    ;; (VecAluOpRRR
+    ;;   (op VecAluOp)
+    ;;   (rd VecWritableReg)
+    ;;   (rs1 VecReg)
+    ;;   (rs2 VecReg)
+    ;;   (ty VType))
 ))
 
 

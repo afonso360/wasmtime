@@ -54,5 +54,5 @@
   ;; Dynamic AVL emits a `vsetvli` that reads from this register
   (Dynamic (size Reg))
   ;; Static AVL emits a `vsetivli` that uses a constant value
-  (Static (size u32))
+  (Static (size UImm5))
 ))

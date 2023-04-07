@@ -41,7 +41,7 @@ use std::fmt::{Display, Formatter};
 pub(crate) type OptionReg = Option<Reg>;
 pub(crate) type OptionImm12 = Option<Imm12>;
 pub(crate) type VecBranchTarget = Vec<BranchTarget>;
-pub(crate) type OptionUimm5 = Option<Uimm5>;
+pub(crate) type OptionUimm5 = Option<UImm5>;
 pub(crate) type OptionFloatRoundingMode = Option<FRM>;
 pub(crate) type VecU8 = Vec<u8>;
 pub(crate) type VecWritableReg = Vec<Writable<Reg>>;
