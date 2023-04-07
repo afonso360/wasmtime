@@ -806,6 +806,12 @@ pub fn reg_name(reg: Reg) -> String {
         }
     }
 }
+pub fn vec_reg_name(reg: Reg) -> String {
+    assert!(reg.to_real_reg().is_some());
+    assert!(reg.to_real_reg().unwrap().class() == RegClass::Float);
+
+    format!("v{}", reg.to_real_reg().unwrap().hw_enc())
+}
 
 impl Inst {
     fn print_with_state(
@@ -816,6 +822,10 @@ impl Inst {
         let format_reg = |reg: Reg, allocs: &mut AllocationConsumer<'_>| -> String {
             let reg = allocs.next(reg);
             reg_name(reg)
+        };
+        let format_vec_reg = |reg: Reg, allocs: &mut AllocationConsumer<'_>| -> String {
+            let reg = allocs.next(reg);
+            vec_reg_name(reg)
         };
 
         let format_regs = |regs: &[Reg], allocs: &mut AllocationConsumer<'_>| -> String {
@@ -1555,9 +1565,9 @@ impl Inst {
                 vs2,
                 ref state,
             } => {
-                let vs1_s = format_reg(vs1, allocs);
-                let vs2_s = format_reg(vs2, allocs);
-                let vd_s = format_reg(vd.to_reg(), allocs);
+                let vs1_s = format_vec_reg(vs1, allocs);
+                let vs2_s = format_vec_reg(vs2, allocs);
+                let vd_s = format_vec_reg(vd.to_reg(), allocs);
                 format!("{} {},{},{} {}", op, vd_s, vs1_s, vs2_s, state)
             }
         }
