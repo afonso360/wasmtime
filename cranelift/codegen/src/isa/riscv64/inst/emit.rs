@@ -530,13 +530,14 @@ impl MachInstEmit for Inst {
                     (rs1, rs2)
                 };
 
-                let x: u32 = alu_op.op_code()
-                    | reg_to_gpr_num(rd.to_reg()) << 7
-                    | (alu_op.funct3()) << 12
-                    | reg_to_gpr_num(rs1) << 15
-                    | reg_to_gpr_num(rs2) << 20
-                    | alu_op.funct7() << 25;
-                sink.put4(x);
+                sink.put4(encode_r_type(
+                    alu_op.op_code(),
+                    reg_to_gpr_num(rd.to_reg()),
+                    alu_op.funct3(),
+                    reg_to_gpr_num(rs1),
+                    reg_to_gpr_num(rs2),
+                    alu_op.funct7(),
+                ));
             }
             &Inst::AluRRImm12 {
                 alu_op,
@@ -2737,8 +2738,26 @@ impl MachInstEmit for Inst {
                 .emit(&[], sink, emit_info, state);
                 sink.bind_label(label_done, &mut state.ctrl_plane);
             }
-            &Inst::VecAluRRR { .. } => {
-                unimplemented!("VecAluRRR");
+            &Inst::VecAluRRR {
+                op, vd, vs1, vs2, ..
+            } => {
+                let vs1 = allocs.next(vs1);
+                let vs2 = allocs.next(vs2);
+                let vd = allocs.next_writable(vd);
+
+                // This is the mask bit, we don't yet implement masking, so set it to 1, which means
+                // masking disabled.
+                let vm = 1;
+
+                sink.put4(encode_valu(
+                    op.opcode(),
+                    reg_to_gpr_num(vd.to_reg()),
+                    op.funct3(),
+                    reg_to_gpr_num(vs1),
+                    reg_to_gpr_num(vs2),
+                    vm,
+                    op.funct6(),
+                ));
             }
         };
         let end_off = sink.cur_offset();

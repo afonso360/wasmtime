@@ -63,3 +63,30 @@
 (type VecAluOpRRR (enum
   (Vadd)
 ))
+
+
+;; Builds a static VState matching a SIMD type.
+;; The VState is guaranteed to be static with AVL set to the number of lanes.
+;; Element size is set to the size of the type.
+;; LMUL is set to 1.
+;; Tail mode is set to agnostic.
+;; Mask mode is set to agnostic.
+(decl pure vstate_from_type (Type) VState)
+(extern constructor vstate_from_type vstate_from_type)
+
+
+;;;; Instruction Helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; Helper for emitting `MInst.VecAluRRR` instructions.
+(decl vec_alu_rrr (VecAluOpRRR Reg Reg VState) Reg)
+(rule (vec_alu_rrr op vs1 vs2 vstate)
+      (let ((vd WritableReg (temp_writable_reg $I8X16))
+            (_ Unit (emit (MInst.VecAluRRR op vd vs1 vs2 vstate))))
+        vd))
+
+
+;; Helper for emitting the `vadd.vv` instruction.
+(decl rv_vadd_vv (Type Reg Reg) Reg)
+(rule (rv_vadd_vv ty vs1 vs2)
+  (vec_alu_rrr (VecAluOpRRR.Vadd) vs1 vs2 (vstate_from_type ty)))

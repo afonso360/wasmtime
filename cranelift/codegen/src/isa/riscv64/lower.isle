@@ -97,6 +97,10 @@
         (high Reg (rv_add high_tmp carry)))
     (value_regs low high)))
 
+;; Vectors!
+(rule 8 (lower (has_type (ty_vec128_int ty) (iadd x y)))
+  (rv_vadd_vv ty x y))
+
 ;;; Rules for `uadd_overflow_trap` ;;;;;;;;;;;;;
 (rule
   (lower (has_type (fits_in_64 ty) (uadd_overflow_trap x y tc)))

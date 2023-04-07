@@ -3,6 +3,16 @@ use crate::isa::riscv64::lower::isle::generated_code::{
 };
 use core::fmt;
 
+use super::UImm5;
+
+impl VecAvl {
+    pub fn _static(size: u32) -> Self {
+        VecAvl::Static {
+            size: UImm5::maybe_from_u8(size as u8).expect("Invalid size for AVL"),
+        }
+    }
+}
+
 // TODO: Can we tell ISLE to derive this?
 impl PartialEq for VecAvl {
     fn eq(&self, other: &Self) -> bool {
@@ -21,6 +31,16 @@ impl fmt::Display for VecAvl {
 }
 
 impl VecSew {
+    pub fn from_bits(bits: u32) -> Self {
+        match bits {
+            8 => VecSew::E8,
+            16 => VecSew::E16,
+            32 => VecSew::E32,
+            64 => VecSew::E64,
+            _ => panic!("Invalid number of bits for VecSew: {}", bits),
+        }
+    }
+
     pub fn bits(&self) -> u32 {
         match self {
             VecSew::E8 => 8,
@@ -104,6 +124,24 @@ pub struct VState {
 impl fmt::Display for VState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "#avl={}, #vtype=({})", self.avl, self.vtype)
+    }
+}
+
+impl VecAluOpRRR {
+    pub fn opcode(&self) -> u32 {
+        match self {
+            VecAluOpRRR::Vadd => 0b00000,
+        }
+    }
+    pub fn funct3(&self) -> u32 {
+        match self {
+            VecAluOpRRR::Vadd => 0b00000,
+        }
+    }
+    pub fn funct6(&self) -> u32 {
+        match self {
+            VecAluOpRRR::Vadd => 0b00000,
+        }
     }
 }
 

@@ -335,11 +335,12 @@
       (probe_count u32)
       (tmp WritableReg))
     
+    ;; TODO: Missing the `vm` bit that controls the mask register.
     (VecAluRRR
       (op VecAluOpRRR)
-      (rd WritableReg)
-      (rs1 Reg)
-      (rs2 Reg)
+      (vd WritableReg)
+      (vs1 Reg)
+      (vs2 Reg)
       (state VState))
 ))
 
