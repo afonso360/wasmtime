@@ -2737,6 +2737,9 @@ impl MachInstEmit for Inst {
                 .emit(&[], sink, emit_info, state);
                 sink.bind_label(label_done, &mut state.ctrl_plane);
             }
+            &Inst::VecAluRRR { .. } => {
+                unimplemented!("VecAluRRR");
+            }
         };
         let end_off = sink.cur_offset();
         assert!(

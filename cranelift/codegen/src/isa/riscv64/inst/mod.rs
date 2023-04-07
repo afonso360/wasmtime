@@ -637,6 +637,11 @@ fn riscv64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut Operan
             // gen_prologue is called at emit stage.
             // no need let reg alloc know.
         }
+        &Inst::VecAluRRR { rd, rs1, rs2, .. } => {
+            collector.reg_use(rs1);
+            collector.reg_use(rs2);
+            collector.reg_def(rd);
+        }
     }
 }
 
@@ -1540,6 +1545,18 @@ impl Inst {
             &MInst::Udf { trap_code } => format!("udf##trap_code={}", trap_code),
             &MInst::EBreak {} => String::from("ebreak"),
             &MInst::ECall {} => String::from("ecall"),
+            &Inst::VecAluRRR {
+                op,
+                rd,
+                rs1,
+                rs2,
+                ref state,
+            } => {
+                let rs1_s = format_reg(rs1, allocs);
+                let rs2_s = format_reg(rs2, allocs);
+                let rd_s = format_reg(rd.to_reg(), allocs);
+                format!("{} {},{},{} {}", op, rd_s, rs1_s, rs2_s, state)
+            }
         }
     }
 }

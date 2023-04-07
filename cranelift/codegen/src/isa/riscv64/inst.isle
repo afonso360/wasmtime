@@ -335,12 +335,12 @@
       (probe_count u32)
       (tmp WritableReg))
     
-    ;; (VecAluOpRRR
-    ;;   (op VecAluOp)
-    ;;   (rd VecWritableReg)
-    ;;   (rs1 VecReg)
-    ;;   (rs2 VecReg)
-    ;;   (ty VType))
+    (VecAluRRR
+      (op VecAluOpRRR)
+      (rd WritableReg)
+      (rs1 Reg)
+      (rs2 Reg)
+      (state VState))
 ))
 
 

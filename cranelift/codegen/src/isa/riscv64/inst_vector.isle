@@ -3,10 +3,10 @@
 ;; The SEW setting specifies the desired number of bits for each element in the
 ;; vector register.
 (type VecSew (enum
-  (Sew8)
-  (Sew16)
-  (Sew32)
-  (Sew64)
+  (E8)
+  (E16)
+  (E32)
+  (E64)
 ))
 
 ;; Vector Register Group Multiplier (LMUL)
@@ -51,11 +51,15 @@
 ;; in a single instruction. Note: We may end up processing fewer elements than
 ;; the AVL setting, if they don't fit in a single register.
 (type VecAvl (enum
-  ;; Dynamic AVL emits a `vsetvli` that reads from this register
-  (Dynamic (size Reg))
   ;; Static AVL emits a `vsetivli` that uses a constant value
   (Static (size UImm5))
+  ;; TODO: Add a dynamic, register based AVL mode when we are able to properly test it
 ))
 
 (type VType (primitive VType))
 (type VState (primitive VState))
+
+;; Register to Register ALU Ops
+(type VecAluOpRRR (enum
+  (Vadd)
+))
