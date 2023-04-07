@@ -1,0 +1,58 @@
+;; Set Element Width (SEW)
+;;
+;; The SEW setting specifies the desired number of bits for each element in the
+;; vector register.
+(type VecSew (enum
+  (Sew8)
+  (Sew16)
+  (Sew32)
+  (Sew64)
+))
+
+;; Vector Register Group Multiplier (LMUL)
+;;
+;; The LMUL setting specifies how we should group registers together. LMUL can
+;; also be a fractional value, reducing the number of bits used in a single
+;; vector register. Fractional LMUL is used to increase the number of effective
+;; usable vector register groups when operating on mixed-width values.
+(type VecLmul (enum
+  (Lmul1_8)
+  (Lmul1_4)
+  (Lmul1_2)
+  (Lmul1)
+  (Lmul2)
+  (Lmul4)
+  (Lmul8)
+))
+
+;; Tail Mode
+;;
+;; The tail mode specifies how the tail elements of a vector register are handled.
+(type VecTailMode (enum
+  ;; Tail Agnostic means that the tail elements are left in an undefined state.
+  (Agnostic)
+  ;; Tail Undisturbed means that the tail elements are left in their original values.
+  (Undisturbed)
+))
+
+;; Mask Mode
+;;
+;; The mask mode specifies how the masked elements of a vector register are handled.
+(type VecMaskMode (enum
+  ;; Mask Agnostic means that the masked out elements are left in an undefined state.
+  (Agnostic)
+  ;; Mask Undisturbed means that the masked out elements are left in their original values.
+  (Undisturbed)
+))
+
+;; Application Vector Length (AVL)
+;;
+;; This setting specifies the number of elements that are going to be processed
+;; in a single instruction. Note: We may end up processing fewer elements than
+;; the AVL setting, if they don't fit in a single register.
+(type VecAvl (enum
+  ;; Dynamic AVL emits a `vsetvli` that reads from this register
+  (Dynamic (size Reg))
+  ;; Static AVL emits a `vsetivli` that uses a constant value
+  (Static (size u32))
+))
