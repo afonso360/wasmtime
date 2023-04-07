@@ -14,13 +14,13 @@ block0:
 ; block0:
 ;   lui t1,14
 ;   addi t1,t1,3532
-;   lui a2,14
-;   addi a2,a2,3532
-;   slli a5,t1,48
-;   srli a7,a5,48
-;   slli t4,a2,48
+;   slli a1,t1,48
+;   srli a3,a1,48
+;   lui a6,1048574
+;   addi a6,a6,3532
+;   slli t4,a6,48
 ;   srli t1,t4,48
-;   xor a0,a7,t1
+;   xor a0,a3,t1
 ;   snez a0,a0
 ;   ret
 ; 
@@ -28,13 +28,13 @@ block0:
 ; block0: ; offset 0x0
 ;   lui t1, 0xe
 ;   addi t1, t1, -0x234
-;   lui a2, 0xe
-;   addi a2, a2, -0x234
-;   slli a5, t1, 0x30
-;   srli a7, a5, 0x30
-;   slli t4, a2, 0x30
+;   slli a1, t1, 0x30
+;   srli a3, a1, 0x30
+;   lui a6, 0xffffe
+;   addi a6, a6, -0x234
+;   slli t4, a6, 0x30
 ;   srli t1, t4, 0x30
-;   xor a0, a7, t1
+;   xor a0, a3, t1
 ;   snez a0, a0
 ;   ret
 
