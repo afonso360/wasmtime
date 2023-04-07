@@ -56,3 +56,6 @@
   ;; Static AVL emits a `vsetivli` that uses a constant value
   (Static (size UImm5))
 ))
+
+(type VType (primitive VType))
+(type VState (primitive VState))

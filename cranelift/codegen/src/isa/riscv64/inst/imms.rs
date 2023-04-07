@@ -100,7 +100,7 @@ impl Display for Imm20 {
 }
 
 /// An unsigned 5-bit immediate.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct UImm5 {
     value: u8,
 }

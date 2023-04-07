@@ -29,6 +29,8 @@ pub mod args;
 pub use self::args::*;
 pub mod emit;
 pub use self::emit::*;
+pub mod vector;
+pub use self::vector::*;
 pub mod unwind;
 
 use crate::isa::riscv64::abi::Riscv64MachineDeps;
