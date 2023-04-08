@@ -1,6 +1,6 @@
 test compile precise-output
 set unwind_info=false
-target riscv64
+target riscv64 has_v
 
 
 function %iadd_i8x16(i8x16, i8x16) -> i8x16 {

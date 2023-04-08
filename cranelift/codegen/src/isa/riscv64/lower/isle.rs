@@ -283,6 +283,10 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, Riscv64Backend> {
         ValueRegs::two(shamt, len_sub_shamt)
     }
 
+    fn has_v(&mut self) -> bool {
+        self.backend.isa_flags.has_v()
+    }
+
     fn has_zbkb(&mut self) -> bool {
         self.backend.isa_flags.has_zbkb()
     }

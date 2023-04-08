@@ -728,6 +728,9 @@
 
 ;; ISA Extension helpers
 
+(decl pure has_v () bool)
+(extern constructor has_v has_v)
+
 (decl pure has_zbkb () bool)
 (extern constructor has_zbkb has_zbkb)
 
