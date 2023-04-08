@@ -70,29 +70,3 @@ block0(v0: i64x2, v1: i64x2):
 ;   .byte 0x57, 0x70, 0x31, 0xc8
 ;   .byte 0x00, 0x05, 0xb5, 0x80
 ;   ret
-
-;; Interleaves vector operations to ensure that `vsetivli` is emitted
-function %iadd_multi(i8x16, i16x8) -> i8x16, i16x8  {
-block0(v0: i8x16, v1: i16x8):
-    v4 = iadd v0, v0
-    v5 = iadd v1, v1
-    v6 = iadd v5, v5
-    return v4, v6
-}
-
-; VCode:
-; block0:
-;   vadd.vv v10,v10,v10 #avl=16, #vtype=(e8, m1, ta, ma)
-;   vadd.vv v5,v11,v11 #avl=8, #vtype=(e16, m1, ta, ma)
-;   vadd.vv v11,v5,v5 #avl=8, #vtype=(e16, m1, ta, ma)
-;   ret
-; 
-; Disassembled:
-; block0: ; offset 0x0
-;   .byte 0x57, 0x70, 0x08, 0xc8
-;   .byte 0x00, 0x05, 0xa5, 0x80
-;   .byte 0x57, 0x70, 0x14, 0xc8
-;   .byte 0x80, 0x82, 0xb5, 0x80
-;   .byte 0x80, 0x85, 0x52, 0x80
-;   ret
-

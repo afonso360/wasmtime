@@ -170,6 +170,11 @@ impl MachInstEmitState<Inst> for EmitState {
     fn take_ctrl_plane(self) -> ControlPlane {
         self.ctrl_plane
     }
+
+    fn on_new_block(&mut self) {
+        // Reset the vector state.
+        self.vstate = EmitVState::Unknown;
+    }
 }
 
 impl Inst {
