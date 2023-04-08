@@ -11,6 +11,18 @@ impl VecAvl {
             size: UImm5::maybe_from_u8(size as u8).expect("Invalid size for AVL"),
         }
     }
+
+    pub fn is_static(&self) -> bool {
+        match self {
+            VecAvl::Static { .. } => true,
+        }
+    }
+
+    pub fn unwrap_static(&self) -> UImm5 {
+        match self {
+            VecAvl::Static { size } => *size,
+        }
+    }
 }
 
 // TODO: Can we tell ISLE to derive this?
@@ -49,6 +61,15 @@ impl VecSew {
             VecSew::E64 => 64,
         }
     }
+
+    pub fn encode(&self) -> u32 {
+        match self {
+            VecSew::E8 => 0b000,
+            VecSew::E16 => 0b001,
+            VecSew::E32 => 0b010,
+            VecSew::E64 => 0b011,
+        }
+    }
 }
 
 impl fmt::Display for VecSew {
@@ -57,16 +78,39 @@ impl fmt::Display for VecSew {
     }
 }
 
+impl VecLmul {
+    pub fn encode(&self) -> u32 {
+        match self {
+            VecLmul::LmulF8 => 0b101,
+            VecLmul::LmulF4 => 0b110,
+            VecLmul::LmulF2 => 0b111,
+            VecLmul::Lmul1 => 0b000,
+            VecLmul::Lmul2 => 0b001,
+            VecLmul::Lmul4 => 0b010,
+            VecLmul::Lmul8 => 0b011,
+        }
+    }
+}
+
 impl fmt::Display for VecLmul {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            VecLmul::Lmul1_8 => write!(f, "m1/8"),
-            VecLmul::Lmul1_4 => write!(f, "m1/4"),
-            VecLmul::Lmul1_2 => write!(f, "m1/2"),
+            VecLmul::LmulF8 => write!(f, "mf8"),
+            VecLmul::LmulF4 => write!(f, "mf4"),
+            VecLmul::LmulF2 => write!(f, "mf2"),
             VecLmul::Lmul1 => write!(f, "m1"),
             VecLmul::Lmul2 => write!(f, "m2"),
             VecLmul::Lmul4 => write!(f, "m4"),
             VecLmul::Lmul8 => write!(f, "m8"),
+        }
+    }
+}
+
+impl VecTailMode {
+    pub fn encode(&self) -> u32 {
+        match self {
+            VecTailMode::Agnostic => 1,
+            VecTailMode::Undisturbed => 0,
         }
     }
 }
@@ -76,6 +120,15 @@ impl fmt::Display for VecTailMode {
         match self {
             VecTailMode::Agnostic => write!(f, "ta"),
             VecTailMode::Undisturbed => write!(f, "tu"),
+        }
+    }
+}
+
+impl VecMaskMode {
+    pub fn encode(&self) -> u32 {
+        match self {
+            VecMaskMode::Agnostic => 1,
+            VecMaskMode::Undisturbed => 0,
         }
     }
 }
@@ -98,6 +151,18 @@ pub struct VType {
     pub lmul: VecLmul,
     pub tail_mode: VecTailMode,
     pub mask_mode: VecMaskMode,
+}
+
+impl VType {
+    // https://github.com/riscv/riscv-v-spec/blob/master/vtype-format.adoc
+    pub fn encode(&self) -> u32 {
+        let mut bits = 0;
+        bits |= self.sew.encode();
+        bits |= self.lmul.encode() << 3;
+        bits |= self.tail_mode.encode() << 7;
+        bits |= self.mask_mode.encode() << 7;
+        bits
+    }
 }
 
 impl fmt::Display for VType {

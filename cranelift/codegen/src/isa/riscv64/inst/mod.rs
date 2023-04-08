@@ -644,6 +644,9 @@ fn riscv64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut Operan
             collector.reg_use(vs2);
             collector.reg_def(vd);
         }
+        &Inst::VecSetState { rd, .. } => {
+            collector.reg_def(rd);
+        }
     }
 }
 
@@ -871,6 +874,7 @@ impl Inst {
                 "".into()
             }
         }
+
         match self {
             &Inst::Nop0 => {
                 format!("##zero length nop")
@@ -1569,6 +1573,11 @@ impl Inst {
                 let vs2_s = format_vec_reg(vs2, allocs);
                 let vd_s = format_vec_reg(vd.to_reg(), allocs);
                 format!("{} {},{},{} {}", op, vd_s, vs1_s, vs2_s, state)
+            }
+            &Inst::VecSetState { rd, ref vstate } => {
+                let rd_s = format_reg(rd.to_reg(), allocs);
+                assert!(vstate.avl.is_static());
+                format!("vsetivli {}, {}, {}", rd_s, vstate.avl, vstate.vtype)
             }
         }
     }

@@ -16,9 +16,9 @@
 ;; vector register. Fractional LMUL is used to increase the number of effective
 ;; usable vector register groups when operating on mixed-width values.
 (type VecLmul (enum
-  (Lmul1_8)
-  (Lmul1_4)
-  (Lmul1_2)
+  (LmulF8)
+  (LmulF4)
+  (LmulF2)
   (Lmul1)
   (Lmul2)
   (Lmul4)

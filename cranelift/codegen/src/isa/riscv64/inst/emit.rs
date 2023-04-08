@@ -102,6 +102,13 @@ pub(crate) fn reg_to_gpr_num(m: Reg) -> u32 {
     u32::try_from(m.to_real_reg().unwrap().hw_enc() & 31).unwrap()
 }
 
+#[derive(Clone, Debug, PartialEq, Default)]
+pub enum EmitVState {
+    #[default]
+    Unknown,
+    Known(VState),
+}
+
 /// State carried between emissions of a sequence of instructions.
 #[derive(Default, Clone, Debug)]
 pub struct EmitState {
@@ -114,6 +121,9 @@ pub struct EmitState {
     /// Only used during fuzz-testing. Otherwise, it is a zero-sized struct and
     /// optimized away at compiletime. See [cranelift_control].
     ctrl_plane: ControlPlane,
+    // Vector State
+    // Controls the current state of the vector unit at the emission point.
+    vstate: EmitVState,
 }
 
 impl EmitState {
@@ -141,6 +151,7 @@ impl MachInstEmitState<Inst> for EmitState {
             stack_map: None,
             cur_srcloc: RelSourceLoc::default(),
             ctrl_plane,
+            vstate: EmitVState::Unknown,
         }
     }
 
@@ -386,6 +397,15 @@ impl Inst {
         }
         insts
     }
+
+    /// Returns Some(VState) if this insturction is expecting a specific vector state
+    /// before emission.
+    fn expected_vstate(&self) -> Option<&VState> {
+        match self {
+            MInst::VecAluRRR { state, .. } => Some(state),
+            _ => None,
+        }
+    }
 }
 
 impl MachInstEmit for Inst {
@@ -400,6 +420,19 @@ impl MachInstEmit for Inst {
         state: &mut EmitState,
     ) {
         let mut allocs = AllocationConsumer::new(allocs);
+
+        // Check if we need to update the vector state before emitting this instruction
+        if let Some(expected) = self.expected_vstate() {
+            if state.vstate != EmitVState::Known(expected.clone()) {
+                // Update the vector state.
+                Inst::VecSetState {
+                    rd: writable_zero_reg(),
+                    vstate: expected.clone(),
+                }
+                .emit(&[], sink, emit_info, state);
+            }
+        }
+
         // N.B.: we *must* not exceed the "worst-case size" used to compute
         // where to insert islands, except when islands are explicitly triggered
         // (with an `EmitIsland`). We check this in debug builds. This is `mut`
@@ -2758,6 +2791,19 @@ impl MachInstEmit for Inst {
                     vm,
                     op.funct6(),
                 ));
+            }
+            &Inst::VecSetState { rd, ref vstate } => {
+                let rd = allocs.next_writable(rd);
+
+                sink.put4(encode_vcfg_imm(
+                    0x57, // `vsetivli`
+                    reg_to_gpr_num(rd.to_reg()),
+                    vstate.avl.unwrap_static(),
+                    &vstate.vtype,
+                ));
+
+                // Update the current vector emit state.
+                state.vstate = EmitVState::Known(vstate.clone());
             }
         };
         let end_off = sink.cur_offset();
