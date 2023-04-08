@@ -810,10 +810,15 @@ pub fn reg_name(reg: Reg) -> String {
     }
 }
 pub fn vec_reg_name(reg: Reg) -> String {
-    assert!(reg.to_real_reg().is_some());
-    assert!(reg.to_real_reg().unwrap().class() == RegClass::Float);
-
-    format!("v{}", reg.to_real_reg().unwrap().hw_enc())
+    match reg.to_real_reg() {
+        Some(real) => {
+            assert_eq!(real.class(), RegClass::Float);
+            format!("v{}", real.hw_enc())
+        }
+        None => {
+            format!("{:?}", reg)
+        }
+    }
 }
 
 impl Inst {
