@@ -445,15 +445,7 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, Riscv64Backend> {
 
     #[inline]
     fn vstate_from_type(&mut self, ty: Type) -> VState {
-        VState {
-            avl: VecAvl::_static(ty.lane_count()),
-            vtype: VType {
-                sew: VecSew::from_bits(ty.lane_bits()),
-                lmul: VecLmul::Lmul1,
-                tail_mode: VecTailMode::Agnostic,
-                mask_mode: VecMaskMode::Agnostic,
-            },
-        }
+        VState::from_type(ty)
     }
 }
 

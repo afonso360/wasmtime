@@ -407,8 +407,73 @@ impl Inst {
     /// before emission.
     fn expected_vstate(&self) -> Option<&VState> {
         match self {
-            MInst::VecAluRRR { state, .. } => Some(state),
-            _ => None,
+            &Inst::Nop0
+            | &Inst::Nop4
+            | &Inst::BrTable { .. }
+            | &Inst::Auipc { .. }
+            | &Inst::Lui { .. }
+            | &Inst::LoadConst32 { .. }
+            | &Inst::LoadConst64 { .. }
+            | &Inst::AluRRR { .. }
+            | &Inst::FpuRRR { .. }
+            | &Inst::AluRRImm12 { .. }
+            | &Inst::Load { .. }
+            | &Inst::Store { .. }
+            | &Inst::Args { .. }
+            | &Inst::Ret { .. }
+            | &Inst::Extend { .. }
+            | &Inst::AjustSp { .. }
+            | &Inst::Call { .. }
+            | &Inst::CallInd { .. }
+            | &Inst::TrapIf { .. }
+            | &Inst::Jal { .. }
+            | &Inst::CondBr { .. }
+            | &Inst::LoadExtName { .. }
+            | &Inst::LoadAddr { .. }
+            | &Inst::VirtualSPOffsetAdj { .. }
+            | &Inst::Mov { .. }
+            | &Inst::MovFromPReg { .. }
+            | &Inst::Fence { .. }
+            | &Inst::FenceI
+            | &Inst::ECall
+            | &Inst::EBreak
+            | &Inst::Udf { .. }
+            | &Inst::FpuRR { .. }
+            | &Inst::FpuRRRR { .. }
+            | &Inst::Jalr { .. }
+            | &Inst::Atomic { .. }
+            | &Inst::Select { .. }
+            | &Inst::AtomicCas { .. }
+            | &Inst::IntSelect { .. }
+            | &Inst::Csr { .. }
+            | &Inst::Icmp { .. }
+            | &Inst::SelectReg { .. }
+            | &Inst::FcvtToInt { .. }
+            | &Inst::SelectIf { .. }
+            | &Inst::RawData { .. }
+            | &Inst::AtomicStore { .. }
+            | &Inst::AtomicLoad { .. }
+            | &Inst::AtomicRmwLoop { .. }
+            | &Inst::TrapIfC { .. }
+            | &Inst::Unwind { .. }
+            | &Inst::DummyUse { .. }
+            | &Inst::FloatRound { .. }
+            | &Inst::FloatSelect { .. }
+            | &Inst::FloatSelectPseudo { .. }
+            | &Inst::Popcnt { .. }
+            | &Inst::Rev8 { .. }
+            | &Inst::Cltz { .. }
+            | &Inst::Brev8 { .. }
+            | &Inst::StackProbeLoop { .. } => None,
+            // VecSetState does not expect any vstate, rather it updates it.
+            &Inst::VecSetState { .. } => None,
+            
+            &Inst::VecAluRRR { ref vstate, .. }
+            // TODO: Unit-stride loads and stores are in an interesting position. They only need
+            // the AVL to be correct, not the vtype. A future optimization could be to decouple
+            // these two when updating vstate.
+            | &Inst::VecUnitStrideLoad { ref vstate, .. }
+            | &Inst::VecUnitStrideStore { ref vstate, .. } => Some(vstate),
         }
     }
 }
@@ -2809,6 +2874,82 @@ impl MachInstEmit for Inst {
 
                 // Update the current vector emit state.
                 state.vstate = EmitVState::Known(vstate.clone());
+            }
+
+            &Inst::VecUnitStrideLoad {
+                eew,
+                to,
+                from,
+                flags,
+                ..
+            } => {
+                let offset = from.get_offset_with_state(state);
+                let from = allocs.next(from.get_base_register());
+                let to = allocs.next_writable(to);
+
+                // Vector Loads don't support immediate offsets, so we need to load it into a register.
+                let addr = writable_spilltmp_reg();
+                LoadConstant::U64(offset as u64)
+                    .load_constant_and_add(addr, from)
+                    .into_iter()
+                    .for_each(|inst| inst.emit(&[], sink, emit_info, state));
+
+
+
+                let srcloc = state.cur_srcloc();
+                if !srcloc.is_default() && !flags.notrap() {
+                    // Register the offset at which the actual load instruction starts.
+                    sink.add_trap(TrapCode::HeapOutOfBounds);
+                }
+                sink.put4(encode_vmem_load(
+                    0x27,
+                    reg_to_gpr_num(to.to_reg()),
+                    0x00, // width,
+                    reg_to_gpr_num(addr.to_reg()),
+                    0x00, // lumop
+                    0x00, // vm
+                    0x00, // mop
+                    0x00, // mew
+                    0x00, // nf
+                ));
+            }
+
+            &Inst::VecUnitStrideStore {
+                eew,
+                to,
+                from,
+                flags,
+                ..
+            } => {
+                let offset = to.get_offset_with_state(state);
+                let to = allocs.next(to.get_base_register());
+                let from = allocs.next(from);
+
+                // Vector Stores don't support immediate offsets, so we need to load it into a register.
+                let addr = writable_spilltmp_reg();
+                LoadConstant::U64(offset as u64)
+                    .load_constant_and_add(addr, to)
+                    .into_iter()
+                    .for_each(|inst| inst.emit(&[], sink, emit_info, state));
+
+
+
+                let srcloc = state.cur_srcloc();
+                if !srcloc.is_default() && !flags.notrap() {
+                    // Register the offset at which the actual load instruction starts.
+                    sink.add_trap(TrapCode::HeapOutOfBounds);
+                }
+                sink.put4(encode_vmem_store(
+                    0x27,
+                    reg_to_gpr_num(to),
+                    0x00, // width,
+                    reg_to_gpr_num(addr.to_reg()),
+                    0x00, // lumop
+                    0x00, // vm
+                    0x00, // mop
+                    0x00, // mew
+                    0x00, // nf
+                ));
             }
         };
         let end_off = sink.cur_offset();

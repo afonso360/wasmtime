@@ -63,3 +63,51 @@ pub fn encode_vcfg_imm(opcode: u32, rd: u32, imm: UImm5, vtype: &VType) -> u32 {
     bits |= 0b11 << 30;
     bits
 }
+
+/// Encodes a Vector Mem Unit Stride Load instruction.
+///
+/// See: https://github.com/riscv/riscv-v-spec/blob/master/vmem-format.adoc
+/// TODO: These instructions share opcode space with LOAD-FP and STORE-FP
+pub fn encode_vmem_load(
+    opcode: u32,
+    vd: u32,
+    width: u32,
+    rs1: u32,
+    lumop: u32,
+    vm: u32,
+    mop: u32,
+    mew: u32,
+    nf: u32,
+) -> u32 {
+    let mut bits = 0;
+    bits |= opcode & 0b1111111;
+    bits |= (vd & 0b11111) << 7;
+    bits |= (width & 0b111) << 12;
+    bits |= (rs1 & 0b11111) << 15;
+    bits |= (lumop & 0b11111) << 20;
+    bits |= (vm & 0b1) << 25;
+    bits |= (mop & 0b11) << 26;
+    bits |= (mew & 0b1) << 28;
+    bits |= (nf & 0b111) << 29;
+    bits
+}
+
+/// Encodes a Vector Mem Unit Stride Load instruction.
+///
+/// See: https://github.com/riscv/riscv-v-spec/blob/master/vmem-format.adoc
+/// TODO: These instructions share opcode space with LOAD-FP and STORE-FP
+pub fn encode_vmem_store(
+    opcode: u32,
+    vs3: u32,
+    width: u32,
+    rs1: u32,
+    sumop: u32,
+    vm: u32,
+    mop: u32,
+    mew: u32,
+    nf: u32,
+) -> u32 {
+    // This is pretty much the same as the load instruction, just
+    // with different names on the fields.
+    encode_vmem_load(opcode, vs3, width, rs1, sumop, vm, mop, mew, nf)
+}

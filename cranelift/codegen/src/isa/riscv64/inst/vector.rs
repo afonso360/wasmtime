@@ -3,7 +3,7 @@ use crate::isa::riscv64::lower::isle::generated_code::{
 };
 use core::fmt;
 
-use super::UImm5;
+use super::{Type, UImm5};
 
 impl VecAvl {
     pub fn _static(size: u32) -> Self {
@@ -43,6 +43,10 @@ impl fmt::Display for VecAvl {
 }
 
 impl VecSew {
+    pub fn from_type(ty: Type) -> Self {
+        Self::from_bits(ty.lane_bits())
+    }
+
     pub fn from_bits(bits: u32) -> Self {
         match bits {
             8 => VecSew::E8,
@@ -184,6 +188,20 @@ impl fmt::Display for VType {
 pub struct VState {
     pub avl: VecAvl,
     pub vtype: VType,
+}
+
+impl VState {
+    pub fn from_type(ty: Type) -> Self {
+        VState {
+            avl: VecAvl::_static(ty.lane_count()),
+            vtype: VType {
+                sew: VecSew::from_type(ty),
+                lmul: VecLmul::Lmul1,
+                tail_mode: VecTailMode::Agnostic,
+                mask_mode: VecMaskMode::Agnostic,
+            },
+        }
+    }
 }
 
 impl fmt::Display for VState {

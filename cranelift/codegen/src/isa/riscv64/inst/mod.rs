@@ -4,6 +4,7 @@
 #![allow(dead_code)]
 #![allow(non_camel_case_types)]
 
+use super::lower::isle::generated_code::VecSew;
 use crate::binemit::{Addend, CodeOffset, Reloc};
 pub use crate::ir::condcodes::IntCC;
 use crate::ir::types::{self, F32, F64, I128, I16, I32, I64, I8, R32, R64};
@@ -317,22 +318,42 @@ impl Inst {
 
     /// Generic constructor for a load (zero-extending where appropriate).
     pub fn gen_load(into_reg: Writable<Reg>, mem: AMode, ty: Type, flags: MemFlags) -> Inst {
-        Inst::Load {
-            rd: into_reg,
-            op: LoadOP::from_type(ty),
-            from: mem,
-            flags,
-        }
+        return if ty.is_vector() {
+            Inst::VecUnitStrideLoad {
+                eew: VecSew::from_type(ty),
+                to: into_reg,
+                from: mem,
+                flags,
+                vstate: VState::from_type(ty),
+            }
+        } else {
+            Inst::Load {
+                rd: into_reg,
+                op: LoadOP::from_type(ty),
+                from: mem,
+                flags,
+            }
+        };
     }
 
     /// Generic constructor for a store.
     pub fn gen_store(mem: AMode, from_reg: Reg, ty: Type, flags: MemFlags) -> Inst {
-        Inst::Store {
-            src: from_reg,
-            op: StoreOP::from_type(ty),
-            to: mem,
-            flags,
-        }
+        return if ty.is_vector() {
+            Inst::VecUnitStrideStore {
+                eew: VecSew::from_type(ty),
+                to: mem,
+                from: from_reg,
+                flags,
+                vstate: VState::from_type(ty),
+            }
+        } else {
+            Inst::Store {
+                src: from_reg,
+                op: StoreOP::from_type(ty),
+                to: mem,
+                flags,
+            }
+        };
     }
 }
 
@@ -646,6 +667,14 @@ fn riscv64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut Operan
         }
         &Inst::VecSetState { rd, .. } => {
             collector.reg_def(rd);
+        }
+        &Inst::VecUnitStrideLoad { to, from, .. } => {
+            collector.reg_use(from.get_base_register());
+            collector.reg_def(to);
+        }
+        &Inst::VecUnitStrideStore { to, from, .. } => {
+            collector.reg_use(to.get_base_register());
+            collector.reg_use(from);
         }
     }
 }
@@ -1572,17 +1601,39 @@ impl Inst {
                 vd,
                 vs1,
                 vs2,
-                ref state,
+                ref vstate,
             } => {
                 let vs1_s = format_vec_reg(vs1, allocs);
                 let vs2_s = format_vec_reg(vs2, allocs);
                 let vd_s = format_vec_reg(vd.to_reg(), allocs);
-                format!("{} {},{},{} {}", op, vd_s, vs1_s, vs2_s, state)
+                format!("{} {},{},{} {}", op, vd_s, vs1_s, vs2_s, vstate)
             }
             &Inst::VecSetState { rd, ref vstate } => {
                 let rd_s = format_reg(rd.to_reg(), allocs);
                 assert!(vstate.avl.is_static());
                 format!("vsetivli {}, {}, {}", rd_s, vstate.avl, vstate.vtype)
+            }
+            &Inst::VecUnitStrideLoad {
+                eew,
+                to,
+                from,
+                ref vstate,
+                ..
+            } => {
+                let base = from.to_string_with_alloc(allocs);
+                let vd = format_vec_reg(to.to_reg(), allocs);
+                format!("vl{}.v {},{} {}", eew, vd, base, vstate)
+            }
+            &Inst::VecUnitStrideStore {
+                eew,
+                to,
+                from,
+                ref vstate,
+                ..
+            } => {
+                let dst = to.to_string_with_alloc(allocs);
+                let vs3 = format_vec_reg(from, allocs);
+                format!("vs{}.v {},{} {}", eew, vs3, dst, vstate)
             }
         }
     }

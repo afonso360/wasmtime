@@ -341,10 +341,24 @@
       (vd WritableReg)
       (vs1 Reg)
       (vs2 Reg)
-      (state VState))
+      (vstate VState))
     
     (VecSetState
       (rd WritableReg)
+      (vstate VState))
+
+    (VecUnitStrideStore
+      (eew VecSew)
+      (to AMode)
+      (from Reg)
+      (flags MemFlags)
+      (vstate VState))
+
+    (VecUnitStrideLoad
+      (eew VecSew)
+      (to WritableReg)
+      (from AMode)
+      (flags MemFlags)
       (vstate VState))
 ))
 

@@ -68,6 +68,7 @@ fn is_isa_compatible(
             ))
         }
     }
+    // return Ok(());
 
     // We need to check that the requested ISA does not have any flags that
     // we can't natively support on the host.
