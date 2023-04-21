@@ -2316,7 +2316,7 @@
   (let ((extend_op ExtendOp (icmp_intcc_extend cc ty))
         (x_ext Reg (extend x extend_op ty $I64))
         (y_ext Reg (extend y extend_op ty $I64)))
-      (gen_icmp_inner cc x_ext y_ext ty)))
+      (gen_icmp_inner cc x_ext y_ext $I64)))
 
 
 
