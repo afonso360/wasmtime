@@ -2452,7 +2452,7 @@
   (if-let imm (imm12_sextend_i64 ty n))
   (rv_slti (sext x ty $I64) imm))
 (rule 1 (gen_icmp_imm (IntCC.UnsignedLessThan) x n (fits_in_64 ty))
-  (if-let (imm12_from_u64 imm) (i64_as_u64 n))
+  (if-let (imm12_from_u64 imm) (u64_and (i64_as_u64 n) (ty_mask ty)))
   (rv_sltiu (zext x ty $I64) imm))
 
 ;; In the fallback case we load the immediate and then compare.
