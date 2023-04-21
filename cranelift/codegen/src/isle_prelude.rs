@@ -39,6 +39,11 @@ macro_rules! isle_common_prelude_methods {
         }
 
         #[inline]
+        fn u64_as_i64(&mut self, x: u64) -> i64 {
+            x as i64
+        }
+
+        #[inline]
         fn u64_as_i32(&mut self, x: u64) -> i32 {
             x as i32
         }

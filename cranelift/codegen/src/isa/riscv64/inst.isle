@@ -872,7 +872,7 @@
 (decl rv_sgtz (Reg) Reg)
 (rule (rv_sgtz rs1)
   (rv_slt (zero_reg) rs1))
-  
+
 ;; Helper for emiting the `slti` ("Set Less Than Immediate") instruction.
 ;; rd ← rs1 < imm
 (decl rv_slti (Reg Imm12) Reg)
@@ -884,7 +884,7 @@
 (decl rv_sltu (Reg Reg) Reg)
 (rule (rv_sltu rs1 rs2)
   (alu_rrr (AluOPRRR.SltU) rs1 rs2))
-  
+
 ;; Helper for emitting the `snez` instruction.
 ;; This instruction is a mnemonic for `sltu rd, zero, rs`.
 (decl rv_snez (Reg) Reg)
@@ -1326,7 +1326,7 @@
   (imm12_from_value n)
   (def_inst (iconst (u64_from_imm64 (imm12_from_u64 n)))))
 
-(decl imm12_from_u64 (Imm12) u64)
+(decl pure imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
 ;; Extracts an imm12 from an i64. The i64 must be in a range that can be
@@ -2287,7 +2287,7 @@
 
 
 
-;; For Equal and NotEqual it doesen't matter the type of extension that we 
+;; For Equal and NotEqual it doesen't matter the type of extension that we
 ;; perform, as long as we are consistent on both sides. So try to pick the
 ;; ExtendOp's that have a dedicated instruction in the Base ISA.
 ;;
@@ -2357,7 +2357,7 @@
 ;; and if the number is negative in the signed case we can still use
 ;; an unsigned comparision due to the way two's complement works.
 ;;
-;; As an example:  0xFFFE < 0xFFFF Here both are negative numbers, but when 
+;; As an example:  0xFFFE < 0xFFFF Here both are negative numbers, but when
 ;; considering only at the bottom byte, 0xFE is smaller than 0xFF when viewed
 ;; as unsigned. This also holds true when viewing both of these numbers as
 ;; signed (-2 < -1), so we can use the unsigned comparison for the bottom half.
@@ -2426,9 +2426,12 @@
 ;; i.e. `x > imm` is the same as `!(x < imm + 1)`.
 (rule 4 (gen_icmp_imm cc x imm ty)
   (if-let (IntCC.UnsignedGreaterThan) (intcc_unsigned cc))
-  (let ((res Reg (gen_icmp_imm (intcc_reverse cc) x (i64_add imm 1) ty)))
+  ;; We can do this check as signed since we only add 1 to the immediate, so we
+  ;; only run into overflow situations, not underflow.
+  (if-let imm_plus_1 (u64_add_fallible (i64_as_u64 imm) 1))
+  (let ((res Reg (gen_icmp_imm (intcc_reverse cc) x (u64_as_i64 imm_plus_1) ty)))
     (rv_xori res (imm12_const 1))))
-  
+
 ;; We directly support the inverse of these condition codes. So lower the inverse
 ;; and then invert the result using `xor`.
 ;; i.e. `x >= imm` is the same as `!(x < imm)`.
@@ -2440,15 +2443,16 @@
 ;; Here we can add 1 to the immediate and use the reverse condition code.
 ;; i.e. `x <= imm` is the same as `x < imm + 1`.
 (rule 2 (gen_icmp_imm cc x imm ty)
+  (if-let imm_plus_1 (u64_add_fallible (i64_as_u64 imm) 1))
   (if-let (IntCC.UnsignedLessThanOrEqual) (intcc_unsigned cc))
-  (gen_icmp_imm (intcc_without_equal cc) x (i64_add imm 1) ty))
+  (gen_icmp_imm (intcc_without_equal cc) x (u64_as_i64 imm_plus_1) ty))
 
 ;; We have dedicated instructions for these two cases. (`slti`/`sltiu`)
 (rule 1 (gen_icmp_imm (IntCC.SignedLessThan) x n (fits_in_64 ty))
   (if-let imm (imm12_sextend_i64 ty n))
   (rv_slti (sext x ty $I64) imm))
-(rule 1 (gen_icmp_imm (IntCC.UnsignedLessThan) x n (fits_in_64 ty)) 
-  (if-let imm (imm12_sextend_i64 ty n))
+(rule 1 (gen_icmp_imm (IntCC.UnsignedLessThan) x n (fits_in_64 ty))
+  (if-let (imm12_from_u64 imm) (i64_as_u64 n))
   (rv_sltiu (zext x ty $I64) imm))
 
 ;; In the fallback case we load the immediate and then compare.
