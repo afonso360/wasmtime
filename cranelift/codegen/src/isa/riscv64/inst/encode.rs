@@ -6,7 +6,7 @@
 //! Some instructions especially in extensions have slight variations from
 //! the base RISC-V specification.
 
-use super::{UImm5, VType};
+use super::{Imm12, UImm5, VType};
 use crate::isa::riscv64::inst::reg_to_gpr_num;
 use crate::isa::riscv64::lower::isle::generated_code::VecElementWidth;
 use crate::Reg;
@@ -24,6 +24,21 @@ pub fn encode_r_type(opcode: u32, rd: Reg, funct3: u32, rs1: Reg, rs2: Reg, func
     bits |= reg_to_gpr_num(rs1) << 15;
     bits |= reg_to_gpr_num(rs2) << 20;
     bits |= (funct7 & 0b1111111) << 25;
+    bits
+}
+
+/// Encode an I-type instruction.
+///
+/// Layout:
+/// 0-------6-7-------11-12------14-15------19-20------------------31
+/// | Opcode |   rd     |  width   |   rs1    |     Offset[11:0]    |
+pub fn encode_i_type(opcode: u32, rd: Reg, width: u32, rs1: Reg, offset: Imm12) -> u32 {
+    let mut bits = 0;
+    bits |= opcode & 0b1111111;
+    bits |= reg_to_gpr_num(rd) << 7;
+    bits |= (width & 0b111) << 12;
+    bits |= reg_to_gpr_num(rs1) << 15;
+    bits |= (offset.as_u32() & 0b1111_1111_1111) << 20;
     bits
 }
 
