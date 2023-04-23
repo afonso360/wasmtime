@@ -1,3 +1,4 @@
+use crate::isa::riscv64::inst::AllocationConsumer;
 use crate::isa::riscv64::inst::EmitState;
 use crate::isa::riscv64::lower::isle::generated_code::{
     VecAMode, VecAluOpRRR, VecAvl, VecElementWidth, VecLmul, VecMaskMode, VecTailMode,
@@ -242,6 +243,14 @@ impl VecAMode {
     pub fn get_base_register(&self) -> Reg {
         match self {
             VecAMode::UnitStride { base, .. } => base.get_base_register(),
+        }
+    }
+
+    pub(crate) fn with_allocs(self, allocs: &mut AllocationConsumer<'_>) -> Self {
+        match self {
+            VecAMode::UnitStride { base } => VecAMode::UnitStride {
+                base: base.with_allocs(allocs),
+            },
         }
     }
 
