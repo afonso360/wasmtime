@@ -53,11 +53,11 @@ pub(crate) type VecWritableReg = Vec<Writable<Reg>>;
 //=============================================================================
 // Instructions (top level): definition
 
-use crate::isa::riscv64::lower::isle::generated_code::MInst;
 pub use crate::isa::riscv64::lower::isle::generated_code::{
     AluOPRRI, AluOPRRR, AtomicOP, FClassResult, FFlagsException, FenceFm, FloatRoundOP,
     FloatSelectOP, FpuOPRR, FpuOPRRR, FpuOPRRRR, IntSelectOP, LoadOP, MInst as Inst, StoreOP, FRM,
 };
+use crate::isa::riscv64::lower::isle::generated_code::{MInst, VecAluOpRRR};
 
 type BoxCallInfo = Box<CallInfo>;
 type BoxCallIndInfo = Box<CallIndInfo>;
@@ -1598,7 +1598,12 @@ impl Inst {
 
                 // Note: vs2 and vs1 here are opposite to the standard scalar ordering.
                 // This is noted in Section 10.1 of the RISC-V Vector spec.
-                format!("{} {},{},{} {}", op, vd_s, vs2_s, vs1_s, vstate)
+                match (op, vs1) {
+                    (VecAluOpRRR::VrsubVX, vs1) if vs1 == zero_reg() => {
+                        format!("vneg.v {},{} {}", vd_s, vs2_s, vstate)
+                    }
+                    _ => format!("{} {},{},{} {}", op, vd_s, vs2_s, vs1_s, vstate),
+                }
             }
             &Inst::VecAluRRImm5 {
                 op,
