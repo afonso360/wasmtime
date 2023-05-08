@@ -64,9 +64,13 @@ impl RiscvFlags {
         ];
 
         for (has_flag, size) in entries.into_iter() {
-            if has_flag {
-                return size;
+            if !has_flag {
+                continue;
             }
+
+            // Due to a limitation in regalloc2, we can't support types
+            // larger than 1024 bytes. So limit that here.
+            return std::cmp::min(size, 1024);
         }
 
         return 0;
@@ -611,7 +615,14 @@ impl ABIMachineSpec for Riscv64MachineDeps {
         match rc {
             RegClass::Int => 1,
             RegClass::Float => 1,
-            RegClass::Vector => (isa_flags.min_vec_reg_size() / 8) as u32,
+            RegClass::Vector => {
+                let size = (isa_flags.min_vec_reg_size() / 8) as u32;
+
+                // regalloc2 seems to have a limitation where it can't spill values larger
+                // than 255 slots. This limits us to the next power of 2 down, which is 128.
+                assert!(size <= 128);
+                size
+            }
         }
     }
 
