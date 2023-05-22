@@ -509,9 +509,53 @@
   (rv_sraiw x y))
 
 ;;;; Rules for `popcnt` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(rule (lower (has_type (fits_in_64 ty) (popcnt x)))
+
+(rule 0 (lower (has_type (ty_int_ref_scalar_64 ty) (popcnt x)))
   (lower_popcnt x ty))
+
 (rule 1 (lower (has_type $I128 (popcnt x)))
+  (lower_popcnt_i128 x))
+
+;; For vectors we implement popcnt using the HACKMEM 169 algorithm.
+;; https://github.com/hcs0/Hackers-Delight/blob/master/pop.c.txt#L21-L28
+;;
+;; Here's the C version for 32 bits:
+;; x = x - ((x >> 1) & 0x55555555);
+;; x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+;; x = (x + (x >> 4)) & 0x0F0F0F0F;
+;; x = x + (x >> 8);
+;; x = x + (x >> 16);
+;; return x & 0x0000003F;
+;;
+;; This has a few variation depending on the type that we are trying
+;; to popcnt. `gen_hackmem` builds the i8 version but does not clear
+;; the upper bits. This allows the other versions to build off of this.
+(decl (gen_hackmem Type Reg) Reg)
+(rule (gen_hackmem (ty x))
+  ;; We are doing a unknown size popcnt, so splat out 0x55 to the whole vector register.
+  ;; TODO: We should implement this using a vconst helper.
+  ;; TODO: Don't hardcode I8X16 here!
+  (let ((mask_55 Reg (rv_vmv_vx (imm $I64 0x55) $I8X16))
+        (mask_33 Reg (rv_vmv_vx (imm $I64 0x33) $I8X16))
+        (mask_0f Reg (rv_vmv_vx (imm $I64 0x0f) $I8X16))
+
+        ;; x - ((x >> 1) & 0x55555555);
+        (simd2_rhs Reg (rv_vshr_vv x mask_55 (unmasked) $I8X16))
+        (simd2 Reg (rv_vsub_vv x mask_55 (unmasked) $I8X16))
+    )))
+
+const v128_t mask_55555555 = wasm_i32x4_const(0x55555555, 0x55555555, 0x55555555, 0x55555555);
+const v128_t mask_33333333 = wasm_i32x4_const(0x33333333, 0x33333333, 0x33333333, 0x33333333);
+const v128_t mask_0F0F0F0F = wasm_i32x4_const(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
+
+...
+
+const v128_t count_simd2 = wasm_i8x16_sub(bitmask, wasm_v128_and(wasm_u8x16_shr(bitmask, 1), mask_55555555));
+const v128_t count_simd4 = wasm_i8x16_add(wasm_v128_and(count_simd2, mask_33333333),
+                                          wasm_v128_and(wasm_u8x16_shr(count_simd2, 2), mask_33333333));
+const v128_t count_simd8 = wasm_v128_and(wasm_i8x16_add(count_simd4, wasm_u8x16_shr(count_simd4, 4)), mask_0F0F0F0F);
+
+(rule 2 (lower (has_type (ty_vec_fits_in_register ty) (popcnt x)))
   (lower_popcnt_i128 x))
 
 ;;;; Rules for `ishl` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
