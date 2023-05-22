@@ -149,6 +149,7 @@
   (VandVI)
   (VorVI)
   (VxorVI)
+  (VssrlVI)
   (VslidedownVI)
   (VmergeVIM)
 ))
@@ -432,6 +433,11 @@
 (decl rv_vxor_vi (Reg Imm5 VecOpMasking VState) Reg)
 (rule (rv_vxor_vi vs2 imm mask vstate)
   (vec_alu_rr_imm5 (VecAluOpRRImm5.VxorVI) vs2 imm mask vstate))
+
+;; Helper for emitting the `vssrl.vi` instruction.
+(decl rv_vssrl_vi (Reg UImm5 VecOpMasking VState) Reg)
+(rule (rv_vssrl_vi vs2 imm mask vstate)
+  (vec_alu_rr_uimm5 (VecAluOpRRImm5.VssrlVI) vs2 imm mask vstate))
 
 ;; Helper for emitting the `vnot.v` instruction.
 ;; This is just a mnemonic for `vxor.vi vd, vs, -1`
