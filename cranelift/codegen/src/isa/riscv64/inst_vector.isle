@@ -726,6 +726,24 @@
   (gen_extractlane ty (rv_vslidedown_vx src (imm $I64 idx) (unmasked) ty) 0))
 
 
+;; Emits the ByteSlice into a VReg in the most efficient way possible.
+;;
+;; Only the bytes needed to represent the constant are guaranteed to be
+;; set. The remaining bytes in the register may be set to any value.
+;;
+;; Type represents the preferred type to use in instructions (to minimize
+;; VState changes). This can be ignored if it is deemed beneficial.
+(decl gen_vconst (Type ByteSlice) VReg)
+
+;; Here we give up and just emit a load into the constant pool.
+(rule (gen_vconst ty bytes)
+  (vec_load
+    (element_width_from_type ty)
+    (VecAMode.UnitStride (gen_const_amode (const_to_vconst bytes)))
+    (mem_flags_trusted)
+    (unmasked)
+    ty))
+
 ;; Build a vector mask from a u64
 ;; TODO: We should merge this with the `vconst` rules, and take advantage of
 ;; the other existing `vconst` rules. One example is using `vmv.v.i` which

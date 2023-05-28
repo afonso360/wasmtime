@@ -37,6 +37,8 @@ type VecMachLabel = Vec<MachLabel>;
 type VecArgPair = Vec<ArgPair>;
 use crate::machinst::valueregs;
 
+pub type ByteSlice<'a> = &'a [u8];
+
 pub(crate) struct RV64IsleContext<'a, 'b, I, B>
 where
     I: VCodeInst,
@@ -524,6 +526,11 @@ impl generated_code::Context for RV64IsleContext<'_, '_, MInst, Riscv64Backend> 
 
     fn vec_alu_rr_dst_type(&mut self, op: &VecAluOpRR) -> Type {
         MInst::canonical_type_for_rc(op.dst_regclass())
+    }
+
+    fn byte_slice_from_constant(&mut self, arg0: ByteSlice) -> Option<Constant> {
+        unimplemented!();
+        // Some(Constant::Bytes(arg0))
     }
 }
 

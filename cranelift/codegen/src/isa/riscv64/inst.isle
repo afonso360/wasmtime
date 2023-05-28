@@ -920,6 +920,14 @@
 (rule (temp_writable_vreg) (temp_writable_reg $I8X16))
 
 
+;; ByteSlice is essentially a &[u8] wrapper.
+(type ByteSlice (primitive ByteSlice))
+
+;; Returns the underlying bytes from a constant.
+(decl pure byteslice_from_constant (ByteSlice) Constant)
+(extern extractor infallible byteslice_from_constant byteslice_from_constant)
+
+
 ;; Converters
 
 (convert u8 i32 u8_as_i32)
