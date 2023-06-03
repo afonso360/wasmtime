@@ -1,30 +1,8 @@
 name: CI
 on:
-  # Run CI for PRs to `main` and to release branches.
-  #
-  # Note that PRs to `main` will run a subset of tests and PRs to the
-  # `release-*` branches will run full CI.
-  pull_request:
-    branches:
-    - main
-    - 'release-*'
-
-  # Run full CI on the `main` branch once a day to prime the GitHub Actions
-  # caches used by PRs and the merge queue.
-  schedule:
-  - cron: '13 4 * * *'
-
-  # This is the CI that runs for PRs-to-merge.
-  merge_group:
-
   push:
     branches:
-    # Right now merge queues can't be used with wildcards in branch protections
-    # so full CI runs both on PRs to release branches as well as merges to
-    # release branches. Note that the merge to a release branch may produce a
-    # tag at the end of CI if successful and the tag will trigger the artifact
-    # uploads as well as publication to crates.io.
-    - 'release-*'
+      - '*'
 
 defaults:
   run:
@@ -382,7 +360,7 @@ jobs:
     env:
       QEMU_BUILD_VERSION: 7.2.0
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix: ${{ fromJson(needs.determine.outputs.test-matrix) }}
     steps:
     - uses: actions/checkout@v3
