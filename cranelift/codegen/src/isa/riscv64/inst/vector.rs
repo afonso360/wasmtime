@@ -304,6 +304,9 @@ impl VecAluOpRRR {
             VecAluOpRRR::VwaddVV | VecAluOpRRR::VwaddVX => 0b110001,
             VecAluOpRRR::VwadduWV | VecAluOpRRR::VwadduWX => 0b110100,
             VecAluOpRRR::VwaddWV | VecAluOpRRR::VwaddWX => 0b110101,
+            VecAluOpRRR::VwmuluVV | VecAluOpRRR::VwmuluVX => 0b111000,
+            VecAluOpRRR::VwmulsuVV | VecAluOpRRR::VwmulsuVX => 0b111010,
+            VecAluOpRRR::VwmulVV | VecAluOpRRR::VwmulVX => 0b111011,
             VecAluOpRRR::VmsltVX => 0b011011,
         }
     }
@@ -335,6 +338,9 @@ impl VecAluOpRRR {
             | VecAluOpRRR::VmulVV
             | VecAluOpRRR::VmulhVV
             | VecAluOpRRR::VmulhuVV
+            | VecAluOpRRR::VwmulVV
+            | VecAluOpRRR::VwmuluVV
+            | VecAluOpRRR::VwmulsuVV
             | VecAluOpRRR::VredmaxuVS
             | VecAluOpRRR::VredminuVS => VecOpCategory::OPMVV,
             VecAluOpRRR::VwaddVX
@@ -343,7 +349,10 @@ impl VecAluOpRRR {
             | VecAluOpRRR::VwaddWX
             | VecAluOpRRR::VmulVX
             | VecAluOpRRR::VmulhVX
-            | VecAluOpRRR::VmulhuVX => VecOpCategory::OPMVX,
+            | VecAluOpRRR::VmulhuVX
+            | VecAluOpRRR::VwmulVX
+            | VecAluOpRRR::VwmuluVX
+            | VecAluOpRRR::VwmulsuVX => VecOpCategory::OPMVX,
             VecAluOpRRR::VaddVX
             | VecAluOpRRR::VsaddVX
             | VecAluOpRRR::VsadduVX
@@ -402,7 +411,13 @@ impl VecAluOpRRR {
             | VecAluOpRRR::VwadduWV
             | VecAluOpRRR::VwadduWX
             | VecAluOpRRR::VwaddWV
-            | VecAluOpRRR::VwaddWX => true,
+            | VecAluOpRRR::VwaddWX
+            | VecAluOpRRR::VwmuluVV
+            | VecAluOpRRR::VwmuluVX
+            | VecAluOpRRR::VwmulsuVV
+            | VecAluOpRRR::VwmulsuVX
+            | VecAluOpRRR::VwmulVV
+            | VecAluOpRRR::VwmulVX => true,
             _ => false,
         }
     }
