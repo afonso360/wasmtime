@@ -1,0 +1,233 @@
+test interpret
+test run
+set bb_padding_log2_minus_one=1
+set enable_llvm_abi_extensions
+target x86_64
+target aarch64
+target s390x
+target riscv64gc
+
+;; This is a fuzzer discovered test case for RISC-V.
+;; Some relocations were specified as supporting a max range larger than was actually supported.
+;; This lead to this test case entering an infinite loop.
+
+function %a(i32, i16 uext, i8, f32, i16 sext, i8 sext, i64 sext, i8, i128) -> i32 fast {
+block0(v0: i32, v1: i16, v2: i8, v3: f32, v4: i16, v5: i8, v6: i64, v7: i8, v8: i128):
+    v25 -> v2
+    v28 -> v2
+    v29 -> v2
+    v72 -> v2
+    v75 -> v2
+    v26 -> v6
+    v27 -> v8
+    v20 = iconst.i8 0
+    v21 = iconst.i16 0
+    v22 = iconst.i32 0
+    v23 = iconst.i64 0
+    v24 = uextend.i128 v23  ; v23 = 0
+    jump block1(v0)
+
+block1(v9: i32):
+    brif.i8 v25, block2(v9, v9, v9, v9, v9), block6
+
+block2(v10: i32, v11: i32, v12: i32, v13: i32, v14: i32):
+    brif.i8 v28, block3(v14, v26, v26, v26, v27), block10
+
+block3(v15: i32, v16: i64, v17: i64, v18: i64, v19: i128) cold:
+    v32 -> v15
+    v30 = icmp_imm.i8 eq v29, 115
+    brif v30, block7, block12
+
+block12:
+    v31 = icmp_imm.i8 eq v29, 107
+    brif v31, block7, block4
+
+block4 cold:
+    v33 = icmp_imm.i32 uge v32, 0x3100_0000
+    brif v33, block14, block13
+
+block14:
+    v34 = icmp_imm.i32 uge v32, 0x6b6b_6b6b
+    brif v34, block16, block15
+
+block16:
+    v35 = icmp_imm.i32 uge v32, 0xff31_ffff
+    brif v35, block18, block17
+
+block18:
+    v36 = icmp_imm.i32 uge v32, 0xffff_ff1e
+    brif v36, block20, block19
+
+block20:
+    v37 = iadd_imm.i32 v32, 0xffff_ffff_0000_00e2
+    br_table v37, block5, [block8, block8, block8, block8, block8, block8, block7, block7, block7, block7, block7, block7, block7, block7]
+
+block19:
+    v38 = icmp_imm.i32 uge v32, 0xffff_1e1e
+    brif v38, block22, block21
+
+block22:
+    v39 = iadd_imm.i32 v32, 0xffff_ffff_0000_e1e2
+    br_table v39, block5, [block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block6, block5, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7]
+
+block21:
+    v40 = icmp_imm.i32 eq v32, 0xff31_ffff
+    brif v40, block7, block5
+
+block17:
+    v41 = icmp_imm.i32 eq v32, 0x6b9e_6b6b
+    brif v41, block7, block23
+
+block23:
+    v42 = icmp_imm.i32 eq v32, 0x6b6b_6b9e
+    brif v42, block7, block24
+
+block24:
+    v43 = icmp_imm.i32 eq v32, 0x6b6b_6b6b
+    brif v43, block7, block5
+
+block15:
+    v44 = icmp_imm.i32 uge v32, 0x6b08_6b6b
+    brif v44, block26, block25
+
+block26:
+    v45 = icmp_imm.i32 eq v32, 0x6b6b_313a
+    brif v45, block10, block27
+
+block27:
+    v46 = icmp_imm.i32 uge v32, 0x6b6b_0000
+    brif v46, block29, block28
+
+block29:
+    v47 = iadd_imm.i32 v32, 0xffff_ffff_9495_0000
+    br_table v47, block5, [block8, block8]
+
+block28:
+    v48 = icmp_imm.i32 eq v32, 0x6b08_6b6b
+    brif v48, block7, block5
+
+block25:
+    v49 = icmp_imm.i32 uge v32, 0x5600_0000
+    brif v49, block31, block30
+
+block31:
+    v50 = iadd_imm.i32 v32, 0xffff_ffff_aa00_0000
+    br_table v50, block5, [block8, block8, block5, block7, block5, block10, block8, block8, block8]
+
+block30:
+    v51 = icmp_imm.i32 uge v32, 0x3a23_3df6
+    brif v51, block33, block32
+
+block33:
+    v52 = iadd_imm.i32 v32, 0xffff_ffff_c5dc_c20a
+    br_table v52, block5, [block5, block8]
+
+block32:
+    v53 = icmp_imm.i32 eq v32, 0x3100_0000
+    brif v53, block5, block5
+
+block13:
+    v54 = icmp_imm.i32 uge v32, 0x003d_f600
+    brif v54, block35, block34
+
+block35:
+    v55 = icmp_imm.i32 uge v32, 0x1531_3a23
+    brif v55, block37, block36
+
+block37:
+    v56 = icmp_imm.i32 eq v32, 0x1e1e_6b6b
+    brif v56, block7, block38
+
+block38:
+    v57 = icmp_imm.i32 eq v32, 0x1e1e_0cff
+    brif v57, block8, block39
+
+block39:
+    v58 = icmp_imm.i32 eq v32, 0x1531_3a23
+    brif v58, block6, block5
+
+block36:
+    v59 = icmp_imm.i32 eq v32, 0x105c_ca04
+    brif v59, block8, block40
+
+block40:
+    v60 = icmp_imm.i32 uge v32, 0x005c_3d00
+    brif v60, block42, block41
+
+block42:
+    v61 = iadd_imm.i32 v32, 0xffff_ffff_ffa3_c300
+    br_table v61, block5, [block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block11]
+
+block41:
+    v62 = icmp_imm.i32 uge v32, 0x003d_f600
+    brif v62, block43, block5
+
+block43:
+    v63 = iadd_imm.i32 v32, 0xffff_ffff_ffc2_0a00
+    br_table v63, block5, [block5, block5]
+
+block34:
+    v64 = icmp_imm.i32 uge v32, 0xcb6b
+    brif v64, block45, block44
+
+block45:
+    v65 = icmp_imm.i32 eq v32, 0xffff
+    brif v65, block5, block46
+
+block46:
+    v66 = icmp_imm.i32 uge v32, 0xfe00
+    brif v66, block48, block47
+
+block48:
+    v67 = iadd_imm.i32 v32, 0xffff_ffff_ffff_0200
+    br_table v67, block5, [block5, block8, block7, block10, block6, block7]
+
+block47:
+    v68 = icmp_imm.i32 eq v32, 0xcb6b
+    brif v68, block7, block5
+
+block44:
+    v69 = icmp_imm.i32 eq v32, 107
+    brif v69, block7, block49
+
+block49:
+    v70 = icmp_imm.i32 uge v32, 3
+    brif v70, block51, block50
+
+block51:
+    v71 = iadd_imm.i32 v32, -3
+    br_table v71, block5, [block5, block7]
+
+block50:
+    brif.i32 v32, block5, block8
+
+block5 cold:
+    jump block6
+
+block6 cold:
+    v73 = icmp_imm.i8 eq v72, 49
+    brif v73, block7, block52
+
+block52:
+    v74 = uextend.i32 v72
+    br_table v74, block7, [block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7, block7]
+
+block7 cold:
+    jump block8
+
+block8 cold:
+    jump block9
+
+block9 cold:
+    jump block10
+
+block10 cold:
+    jump block11
+
+block11 cold:
+    v1000 = iconst.i32 0
+    return v1000
+}
+
+
+; run: %a(0, 0, 0, 0.0, 0, 0, 0, 0, 0) == 0

@@ -1886,19 +1886,26 @@ impl MachInstLabelUse for LabelUse {
     /// Maximum PC-relative range (positive), inclusive.
     fn max_pos_range(self) -> CodeOffset {
         match self {
-            LabelUse::Jal20 => ((1 << 19) - 1) * 2,
+            LabelUse::Jal20 => (1 << 19) - 1,
+            // The Imm field in these instructions stores a signed 12-bit value. Thus
+            // we can store values in the range [-2^11, 2^11 - 1] (inclusive).
+            LabelUse::B12 => (1 << 11) - 1,
             LabelUse::PCRelLo12I | LabelUse::PCRelHi20 | LabelUse::PCRel32 => {
                 Inst::imm_max() as CodeOffset
             }
-            LabelUse::B12 => ((1 << 11) - 1) * 2,
         }
     }
 
     /// Maximum PC-relative range (negative).
     fn max_neg_range(self) -> CodeOffset {
         match self {
-            LabelUse::PCRel32 => Inst::imm_min().abs() as CodeOffset,
-            _ => self.max_pos_range() + 2,
+            LabelUse::PCRelLo12I | LabelUse::PCRelHi20 | LabelUse::PCRel32 => {
+                Inst::imm_min().abs() as CodeOffset
+            }
+
+            // The relocations are twos-complement signed offsets, so the negative limit is
+            // one more than positive limit.
+            LabelUse::B12 | LabelUse::Jal20 => self.max_pos_range() + 1,
         }
     }
 
@@ -2053,18 +2060,5 @@ impl LabelUse {
                 buffer[0..4].clone_from_slice(&u32::to_le_bytes(insn));
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    fn label_use_max_range() {
-        assert!(LabelUse::B12.max_neg_range() == LabelUse::B12.max_pos_range() + 2);
-        assert!(LabelUse::Jal20.max_neg_range() == LabelUse::Jal20.max_pos_range() + 2);
-        assert!(LabelUse::PCRel32.max_pos_range() == (Inst::imm_max() as CodeOffset));
-        assert!(LabelUse::PCRel32.max_neg_range() == (Inst::imm_min().abs() as CodeOffset));
-        assert!(LabelUse::B12.max_pos_range() == ((1 << 11) - 1) * 2);
     }
 }
