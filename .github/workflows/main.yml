@@ -24,7 +24,7 @@ on:
     # release branches. Note that the merge to a release branch may produce a
     # tag at the end of CI if successful and the tag will trigger the artifact
     # uploads as well as publication to crates.io.
-    - 'release-*'
+    - '*'
 
 defaults:
   run:
