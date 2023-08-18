@@ -61,18 +61,3 @@
 ;; TODO: perform this same optimization to `f{min,max}_pseudo` for vectors
 ;; with the `bitselect` instruction, but the pattern is a bit more complicated
 ;; due to most bitselects-over-floats having bitcasts.
-
-;; Remove extends before selects if possible
-;; These preserve the "truthiness" of their argument, so we should be able to remove them
-(rule (simplify (select ty (uextend _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (sextend _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (ineg _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (bmask _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (bswap _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (bitrev _ c) lhs rhs)) (select ty c lhs rhs))
-(rule (simplify (select ty (popcnt _ c) lhs rhs)) (select ty c lhs rhs))
-
-;; `(select c -1 0)` can be rewritten to `bmask`
-(rule (simplify (select ty c (iconst ty selected) (iconst ty (u64_from_imm64 0))))
-      (if-let -1 (i64_sextend_imm64 ty selected))
-      (bmask ty c))
