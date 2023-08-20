@@ -1,4 +1,4 @@
-test optimize precise-output
+test optimize
 set opt_level=speed
 target x86_64
 
@@ -12,12 +12,8 @@ block0(v1: i64, v2: i64):
     return v5
 }
 
-; function %mask_icmp_result(i64, i64) -> i8 fast {
-; block0(v1: i64, v2: i64):
-;     v3 = icmp ult v1, v2
-;     v6 -> v3
-;     return v3
-; }
+; check: v3 = icmp ult v1, v2
+; check: return v3
 
 function %mask_icmp_extend_result(i64, i64) -> i64 {
 block0(v1: i64, v2: i64):
@@ -28,11 +24,7 @@ block0(v1: i64, v2: i64):
     return v6
 }
 
-; function %mask_icmp_extend_result(i64, i64) -> i64 fast {
-; block0(v1: i64, v2: i64):
-;     v3 = icmp ult v1, v2
-;     v4 = uextend.i64 v3
-;     v7 -> v4
-;     return v4
-; }
+; check: v3 = icmp ult v1, v2
+; check: v4 = uextend.i64 v3
+; check: return v4
 
