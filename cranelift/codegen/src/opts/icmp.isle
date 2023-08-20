@@ -19,15 +19,6 @@
                       (iconst _ (u64_from_imm64 0))))
       (subsume (icmp ty (intcc_inverse cc) x y)))
 
-;; Optimize select-of-uextend-of-icmp to select-of-icmp, because
-;; select can take an I8 condition too.
-(rule (simplify
-       (select ty (uextend _ c @ (icmp _ _ _ _)) x y))
-      (select ty c x y))
-(rule (simplify
-       (select ty (uextend _ c @ (icmp _ _ _ _)) x y))
-      (select ty c x y))
-
 ;; Masking the result of a comparison with 1 always results in the comparison
 ;; itself. Note that comparisons in wasm may sometimes be hidden behind
 ;; extensions.
