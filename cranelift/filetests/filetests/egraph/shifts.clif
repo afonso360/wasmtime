@@ -315,3 +315,43 @@ block0(v0: i64):
     ; check: v8 = uextend.i64 v7
     ; check: return v8
 }
+
+function %band_ushr_to_ushr_i64(i64) -> i64 {
+block0(v0: i64):
+    v1 = ushr_imm.i64 v0, 63
+    v2 = band_imm.i64 v1, 1
+    return v2
+    ; check: v3 = iconst.i64 63
+    ; check: v1 = ushr v0, v3
+    ; check: return v1
+}
+
+function %band_sshr_to_ushr_i64(i64) -> i64 {
+block0(v0: i64):
+    v1 = sshr_imm.i64 v0, 63
+    v2 = band_imm.i64 v1, 1
+    return v2
+    ; check: v3 = iconst.i64 63
+    ; check: v5 = ushr v0, v3
+    ; check: return v5
+}
+
+function %band_ushr_to_ushr_i32(i32) -> i32 {
+block0(v0: i32):
+    v1 = ushr_imm.i32 v0, 24
+    v2 = band_imm.i32 v1, 0xFF
+    return v2
+    ; check: v3 = iconst.i32 24
+    ; check: v1 = ushr v0, v3
+    ; check: return v1
+}
+
+function %band_sshr_to_ushr_i32(i32) -> i32 {
+block0(v0: i32):
+    v1 = sshr_imm.i32 v0, 16
+    v2 = band_imm.i32 v1, 0xFFFF
+    return v2
+    ; check: v3 = iconst.i32 16
+    ; check: v5 = ushr v0, v3
+    ; check: return v5
+}
