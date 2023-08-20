@@ -50,3 +50,15 @@ block0(v1: i64, v2: i64):
 
 ; check: v7 = icmp uge v1, v2
 ; check: return v7
+
+function %opt_icmp_sext_icmp_eq_0(i64, i64) -> i8 {
+block0(v1: i64, v2: i64):
+    v3 = icmp ult v1, v2
+    v4 = sextend.i64 v3
+    v5 = iconst.i64 0
+    v6 = icmp eq v4, v5
+    return v6
+}
+
+; check: v9 = icmp uge v1, v2
+; check: return v9

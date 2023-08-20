@@ -13,6 +13,11 @@
 (rule (simplify (slt (fits_in_64 (ty_int ty)) x x)) (iconst ty (imm64 0)))
 (rule (simplify (sle (fits_in_64 (ty_int ty)) x x)) (iconst ty (imm64 1)))
 
+;; Transform sextend into uextend for icmp-of-icmp. This allows
+;; the rules below to fire on the sextend as well.
+(rule (simplify (icmp ty cc (sextend ext_ty cmp @ (icmp _ _ _ _)) y))
+      (icmp ty cc (uextend ext_ty cmp) y))
+
 ;; Optimize icmp-of-icmp.
 (rule (simplify (eq ty
                       (icmp ty cc x y)
