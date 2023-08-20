@@ -15,6 +15,11 @@
 
 ;; Optimize icmp-of-icmp.
 (rule (simplify (eq ty
+                      (icmp ty cc x y)
+                      (iconst _ (u64_from_imm64 0))))
+      (subsume (icmp ty (intcc_inverse cc) x y)))
+
+(rule (simplify (eq ty
                       (uextend _ (icmp ty cc x y))
                       (iconst _ (u64_from_imm64 0))))
       (subsume (icmp ty (intcc_inverse cc) x y)))

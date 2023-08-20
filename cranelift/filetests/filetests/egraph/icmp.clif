@@ -28,3 +28,25 @@ block0(v1: i64, v2: i64):
 ; check: v4 = uextend.i64 v3
 ; check: return v4
 
+function %opt_icmp_of_icmp_eq_0(i64, i64) -> i8 {
+block0(v1: i64, v2: i64):
+    v3 = icmp ult v1, v2
+    v4 = iconst.i8 0
+    v5 = icmp eq v3, v4
+    return v5
+}
+
+; check: v6 = icmp uge v1, v2
+; check: return v6
+
+function %opt_icmp_uext_icmp_eq_0(i64, i64) -> i8 {
+block0(v1: i64, v2: i64):
+    v3 = icmp ult v1, v2
+    v4 = uextend.i64 v3
+    v5 = iconst.i64 0
+    v6 = icmp eq v4, v5
+    return v6
+}
+
+; check: v7 = icmp uge v1, v2
+; check: return v7
