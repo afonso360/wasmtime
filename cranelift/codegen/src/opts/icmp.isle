@@ -14,11 +14,6 @@
 (rule (simplify (sle (fits_in_64 (ty_int ty)) x x)) (iconst ty (imm64 1)))
 
 ;; Optimize icmp-of-icmp.
-(rule (simplify (ne ty
-                      (uextend _ inner @ (icmp ty _ _ _))
-                      (iconst _ (u64_from_imm64 0))))
-      (subsume inner))
-
 (rule (simplify (eq ty
                       (uextend _ (icmp ty cc x y))
                       (iconst _ (u64_from_imm64 0))))
