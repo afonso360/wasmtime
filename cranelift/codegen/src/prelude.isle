@@ -269,6 +269,10 @@
 (decl pure ty_lane_mask (Type) u64)
 (extern constructor ty_lane_mask ty_lane_mask)
 
+;; Generate a mask for the maximum allowed shift amount for a possible type.
+(decl pure ty_shift_mask (Type) u64)
+(rule (ty_shift_mask ty) (u64_sub (ty_bits (lane_type ty)) 1))
+
 ;; Get the number of lanes for a given type.
 (decl pure ty_lane_count (Type) u64)
 (extern constructor ty_lane_count ty_lane_count)

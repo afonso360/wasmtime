@@ -1530,9 +1530,6 @@
 
 
 
-;; Generate a mask for the bit-width of the given type
-(decl pure shift_mask (Type) u64)
-(rule (shift_mask ty) (u64_sub (ty_bits (lane_type ty)) 1))
 
 ;; for load immediate
 (decl imm (Type u64) Reg)
