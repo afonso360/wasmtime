@@ -107,15 +107,17 @@
 ;; The band is not necessary since any bits that could be set that are not in
 ;; the mask, are already masked out by the shift.
 (rule (simplify (band ty
-            shr @ (ushr ty _ (iconst ty (u64_from_imm64 shift_amt)))
+            shr @ (ushr ty _ (iconst _ (u64_from_imm64 shift_amt)))
             (iconst ty (u64_from_imm64 mask))))
-      (if-let $true (u64_eq mask (u64_sub (u64_shl 1 (u64_sub (ty_bits ty) shift_amt)) 1)))
+      (if-let $true (u64_eq mask
+                            (u64_sub (u64_shl 1 (u64_sub (ty_bits ty) (u64_and shift_amt (ty_shift_mask ty)))) 1)))
       shr)
 
 ;; band(sshr(x, shft), mask) == ushr(x, shft) when mask == (1 << (ty_bits - shft)) - 1
 ;; This extracts the top bits, which can more efficiently be done with `ushr`.
 (rule (simplify (band ty
-            (sshr ty lhs shift @ (iconst ty (u64_from_imm64 shift_amt)))
+            (sshr ty lhs shift @ (iconst _ (u64_from_imm64 shift_amt)))
             (iconst ty (u64_from_imm64 mask))))
-      (if-let $true (u64_eq mask (u64_sub (u64_shl 1 (u64_sub (ty_bits ty) shift_amt)) 1)))
+      (if-let $true (u64_eq mask
+                            (u64_sub (u64_shl 1 (u64_sub (ty_bits ty) (u64_and shift_amt (ty_shift_mask ty)))) 1)))
       (ushr ty lhs shift))
