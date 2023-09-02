@@ -43,7 +43,27 @@ pub(crate) fn define() -> TargetIsa {
     let _has_f = setting.add_bool("has_f", "has extension F?", "", true);
     let _has_d = setting.add_bool("has_d", "has extension D?", "", true);
     let _has_v = setting.add_bool("has_v", "has extension V?", "", false);
-    let _has_c = setting.add_bool("has_c", "has extension C?", "", true);
+
+    let has_zca = setting.add_bool(
+        "has_zca",
+        "has extension Zca?",
+        "Zca is the C extension without floating point loads",
+        true,
+    );
+    let has_zcd = setting.add_bool(
+        "has_zcd",
+        "has extension Zcd?",
+        "Zcd contains only the double precision floating point loads from the C extension",
+        true,
+    );
+    setting.add_preset("has_c", "has extension C?", preset!(has_zca && has_zcd));
+
+    let _has_zcb = setting.add_bool(
+        "has_zcb",
+        "has extension Zcb?",
+        "Zcb: Extra compressed instructions",
+        false,
+    );
 
     let _has_zbkb = setting.add_bool(
         "has_zbkb",
