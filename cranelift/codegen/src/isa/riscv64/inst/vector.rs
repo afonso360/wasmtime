@@ -235,6 +235,7 @@ impl VecOpCategory {
     }
 }
 
+impl Copy for VecOpMasking {}
 impl VecOpMasking {
     pub fn encode(&self) -> u32 {
         match self {
