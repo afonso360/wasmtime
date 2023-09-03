@@ -41,8 +41,8 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
@@ -53,7 +53,7 @@ block0(v0: i64):
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr a2
 
 ;;;; Test colocated tail calls ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,12 +78,12 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   auipc t6, 0 ; reloc_external RiscvCall %callee_i64 0
 ;   jr t6
 
@@ -138,8 +138,8 @@ block0(v0: f64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
@@ -150,7 +150,7 @@ block0(v0: f64):
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr a2
 
 ;;;; Test passing `i8`s ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -202,8 +202,8 @@ block0(v0: i8):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
@@ -214,7 +214,7 @@ block0(v0: i8):
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr a2
 
 ;;;; Test passing many arguments on stack ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,8 +245,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   ld a4, 0x10(s0)
 ;   ld a0, 0x18(s0)
 ;   ld a2, 0x20(s0)
@@ -343,9 +343,9 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
 ;   addi a0, zero, 0xf
@@ -404,7 +404,7 @@ block0:
 ;   ld t5, 0(sp)
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr t0
 
 ;;;; Test diff blocks with diff return calls with diff # of stack args ;;;;;;;;;
@@ -435,8 +435,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   ld a4, 0x10(s0)
 ;   ld a0, 0x18(s0)
 ;   ld a2, 0x20(s0)
@@ -475,8 +475,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   ld a4, 0x10(s0)
 ;   ld a0, 0x18(s0)
 ;   ld a2, 0x20(s0)
@@ -601,9 +601,9 @@ block2:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi a0, zero, 0xa
 ;   sd a0, 0x10(sp)
 ;   addi a0, zero, 0xf
@@ -633,8 +633,8 @@ block2:
 ;   addi t2, zero, 0x7d
 ;   addi t1, zero, 0x82
 ;   addi t0, zero, 0x87
-;   bnez s1, 0x88
-; block2: ; offset 0x8c
+;   bnez s1, 0x86
+; block2: ; offset 0x8a
 ;   addi s1, zero, 0x8c
 ;   addi sp, sp, -0x30
 ;   sd a1, 0(sp)
@@ -668,9 +668,9 @@ block2:
 ;   ld t5, 0(sp)
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr t0
-; block3: ; offset 0x110
+; block3: ; offset 0x10c
 ;   ld s1, 0x10(sp)
 ;   addi sp, sp, -0x30
 ;   sd a1, 0(sp)
@@ -702,6 +702,6 @@ block2:
 ;   ld t5, 0(sp)
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
-;   ori s0, t6, 0
+;   c.mv s0, t6
 ;   jr t0
 

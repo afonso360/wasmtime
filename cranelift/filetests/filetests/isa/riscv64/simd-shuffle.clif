@@ -32,8 +32,8 @@ block0(v0: i8x16, v1: i8x16):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -43,7 +43,7 @@ block0(v0: i8x16, v1: i8x16):
 ;   .byte 0x87, 0x85
 ;   .byte 0x0f, 0x02
 ;   auipc t6, 0
-;   addi t6, t6, 0x3c
+;   addi t6, t6, 0x3e
 ;   .byte 0x07, 0x87
 ;   .byte 0x0f, 0x02
 ;   .byte 0x57, 0x04
@@ -59,6 +59,7 @@ block0(v0: i8x16, v1: i8x16):
 ;   ld s0, 0(sp)
 ;   addi sp, sp, 0x10
 ;   ret
+;   c.unimp
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp

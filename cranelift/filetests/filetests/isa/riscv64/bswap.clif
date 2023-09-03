@@ -230,10 +230,10 @@ block0(v0: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s5, -8(sp)
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   slli a3, a1, 8
 ;   srli a5, a1, 8
 ;   andi a2, a5, 0xff
@@ -265,7 +265,7 @@ block0(v0: i128):
 ;   slli a1, a3, 0x20
 ;   srli a1, a1, 0x20
 ;   or a3, a5, a1
-;   ori s5, a3, 0
+;   c.mv s5, a3
 ;   slli a5, a0, 8
 ;   srli a1, a0, 8
 ;   andi a3, a1, 0xff
@@ -297,7 +297,7 @@ block0(v0: i128):
 ;   slli a2, a5, 0x20
 ;   srli a3, a2, 0x20
 ;   or a1, a1, a3
-;   ori a0, s5, 0
+;   c.mv a0, s5
 ;   addi sp, sp, 0x10
 ;   ld s5, -8(sp)
 ;   ld ra, 8(sp)

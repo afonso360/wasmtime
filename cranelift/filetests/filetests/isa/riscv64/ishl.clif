@@ -372,21 +372,21 @@ block0(v0: i128, v1: i8):
 ;   sub a3, a3, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a3
-;   beqz a5, 0xc
-;   ori a3, a0, 0
+;   beqz a5, 0xa
+;   c.mv a3, a0
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   sll a5, a1, a5
 ;   or a1, a3, a5
 ;   addi a3, zero, 0x40
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a3, 0xc
-;   ori a0, a4, 0
+;   bgeu a5, a3, 0xa
+;   c.mv a0, a4
 ;   j 8
-;   ori a0, zero, 0
+;   mv a0, zero
 ;   bgeu a5, a3, 8
-;   j 8
-;   ori a1, a4, 0
+;   j 6
+;   c.mv a1, a4
 ;   ret
 
 function %ishl_i128_i16(i128, i16) -> i128 {
@@ -418,21 +418,21 @@ block0(v0: i128, v1: i16):
 ;   sub a3, a3, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a3
-;   beqz a5, 0xc
-;   ori a3, a0, 0
+;   beqz a5, 0xa
+;   c.mv a3, a0
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   sll a5, a1, a5
 ;   or a1, a3, a5
 ;   addi a3, zero, 0x40
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a3, 0xc
-;   ori a0, a4, 0
+;   bgeu a5, a3, 0xa
+;   c.mv a0, a4
 ;   j 8
-;   ori a0, zero, 0
+;   mv a0, zero
 ;   bgeu a5, a3, 8
-;   j 8
-;   ori a1, a4, 0
+;   j 6
+;   c.mv a1, a4
 ;   ret
 
 function %ishl_i128_i32(i128, i32) -> i128 {
@@ -464,21 +464,21 @@ block0(v0: i128, v1: i32):
 ;   sub a3, a3, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a3
-;   beqz a5, 0xc
-;   ori a3, a0, 0
+;   beqz a5, 0xa
+;   c.mv a3, a0
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   sll a5, a1, a5
 ;   or a1, a3, a5
 ;   addi a3, zero, 0x40
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a3, 0xc
-;   ori a0, a4, 0
+;   bgeu a5, a3, 0xa
+;   c.mv a0, a4
 ;   j 8
-;   ori a0, zero, 0
+;   mv a0, zero
 ;   bgeu a5, a3, 8
-;   j 8
-;   ori a1, a4, 0
+;   j 6
+;   c.mv a1, a4
 ;   ret
 
 function %ishl_i128_i64(i128, i64) -> i128 {
@@ -510,21 +510,21 @@ block0(v0: i128, v1: i64):
 ;   sub a3, a3, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a3
-;   beqz a5, 0xc
-;   ori a3, a0, 0
+;   beqz a5, 0xa
+;   c.mv a3, a0
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   sll a5, a1, a5
 ;   or a1, a3, a5
 ;   addi a3, zero, 0x40
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a3, 0xc
-;   ori a0, a4, 0
+;   bgeu a5, a3, 0xa
+;   c.mv a0, a4
 ;   j 8
-;   ori a0, zero, 0
+;   mv a0, zero
 ;   bgeu a5, a3, 8
-;   j 8
-;   ori a1, a4, 0
+;   j 6
+;   c.mv a1, a4
 ;   ret
 
 function %ishl_i128_i128(i128, i128) -> i128 {
@@ -553,26 +553,26 @@ block0(v0: i128, v1: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   ori a5, a0, 0
+;   c.mv a5, a0
 ;   andi a0, a2, 0x3f
 ;   addi a3, zero, 0x40
 ;   sub a3, a3, a0
-;   ori a4, a5, 0
+;   c.mv a4, a5
 ;   sll a5, a4, a0
 ;   srl a3, a4, a3
 ;   beqz a0, 8
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   sll a0, a1, a0
 ;   or a1, a3, a0
 ;   addi a3, zero, 0x40
 ;   andi a2, a2, 0x7f
-;   bgeu a2, a3, 0xc
-;   ori a0, a5, 0
+;   bgeu a2, a3, 0xa
+;   c.mv a0, a5
 ;   j 8
-;   ori a0, zero, 0
+;   mv a0, zero
 ;   bgeu a2, a3, 8
-;   j 8
-;   ori a1, a5, 0
+;   j 6
+;   c.mv a1, a5
 ;   ret
 

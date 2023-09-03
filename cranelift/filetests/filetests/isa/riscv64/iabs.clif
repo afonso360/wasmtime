@@ -21,8 +21,8 @@ block0(v0: i8):
 ;   srai a4, a2, 0x38
 ;   neg a0, a4
 ;   blt a0, a4, 8
-;   j 8
-;   ori a0, a4, 0
+;   j 6
+;   c.mv a0, a4
 ;   ret
 
 function %iabs_i16(i16) -> i16 {
@@ -45,8 +45,8 @@ block0(v0: i16):
 ;   srai a4, a2, 0x30
 ;   neg a0, a4
 ;   blt a0, a4, 8
-;   j 8
-;   ori a0, a4, 0
+;   j 6
+;   c.mv a0, a4
 ;   ret
 
 function %iabs_i32(i32) -> i32 {
@@ -66,10 +66,10 @@ block0(v0: i32):
 ; block0: ; offset 0x0
 ;   sext.w a2, a0
 ;   neg a4, a2
-;   blt a4, a2, 0xc
-;   ori a0, a4, 0
-;   j 8
-;   ori a0, a2, 0
+;   blt a4, a2, 0xa
+;   c.mv a0, a4
+;   j 6
+;   c.mv a0, a2
 ;   ret
 
 function %iabs_i64(i64) -> i64 {
@@ -87,7 +87,7 @@ block0(v0: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   neg a2, a0
-;   blt a2, a0, 8
-;   ori a0, a2, 0
+;   blt a2, a0, 6
+;   c.mv a0, a2
 ;   ret
 

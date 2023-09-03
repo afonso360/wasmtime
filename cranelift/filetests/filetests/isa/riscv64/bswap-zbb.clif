@@ -73,10 +73,10 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   ori a5, a0, 0
+;   c.mv a5, a0
 ;   .byte 0x13, 0xd5
 ;   c.lui s7, 1
-;   ori a1, a5, 0
+;   c.mv a1, a5
 ;   .byte 0x93, 0xd5
 ;   c.lui s7, 1
 ;   ret

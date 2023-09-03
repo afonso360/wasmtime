@@ -421,27 +421,27 @@ block0(v0: i128):
 ;   addi a3, zero, 0x40
 ;   sub a3, a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xc
-;   ori a3, a5, 0
+;   beqz a4, 0xa
+;   c.mv a3, a5
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi a0, zero, 0x40
 ;   sra a3, a1, a4
 ;   addi a4, zero, -1
 ;   bltz a1, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a4, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a4
 ;   addi a4, zero, 0x40
 ;   andi a2, a2, 0x7f
-;   bgeu a2, a4, 0xc
-;   ori a0, a5, 0
-;   j 8
-;   ori a0, a3, 0
-;   bgeu a2, a4, 8
-;   ori a1, a3, 0
+;   bgeu a2, a4, 0xa
+;   c.mv a0, a5
+;   j 6
+;   c.mv a0, a3
+;   bgeu a2, a4, 6
+;   c.mv a1, a3
 ;   ret
 
 function %sshr_i128_const_i16(i128) -> i128 {
@@ -478,27 +478,27 @@ block0(v0: i128):
 ;   addi a3, zero, 0x40
 ;   sub a3, a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xc
-;   ori a3, a5, 0
+;   beqz a4, 0xa
+;   c.mv a3, a5
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi a0, zero, 0x40
 ;   sra a3, a1, a4
 ;   addi a4, zero, -1
 ;   bltz a1, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a4, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a4
 ;   addi a4, zero, 0x40
 ;   andi a2, a2, 0x7f
-;   bgeu a2, a4, 0xc
-;   ori a0, a5, 0
-;   j 8
-;   ori a0, a3, 0
-;   bgeu a2, a4, 8
-;   ori a1, a3, 0
+;   bgeu a2, a4, 0xa
+;   c.mv a0, a5
+;   j 6
+;   c.mv a0, a3
+;   bgeu a2, a4, 6
+;   c.mv a1, a3
 ;   ret
 
 function %sshr_i128_const_i32(i128) -> i128 {
@@ -535,27 +535,27 @@ block0(v0: i128):
 ;   addi a3, zero, 0x40
 ;   sub a3, a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xc
-;   ori a3, a5, 0
+;   beqz a4, 0xa
+;   c.mv a3, a5
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi a0, zero, 0x40
 ;   sra a3, a1, a4
 ;   addi a4, zero, -1
 ;   bltz a1, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a4, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a4
 ;   addi a4, zero, 0x40
 ;   andi a2, a2, 0x7f
-;   bgeu a2, a4, 0xc
-;   ori a0, a5, 0
-;   j 8
-;   ori a0, a3, 0
-;   bgeu a2, a4, 8
-;   ori a1, a3, 0
+;   bgeu a2, a4, 0xa
+;   c.mv a0, a5
+;   j 6
+;   c.mv a0, a3
+;   bgeu a2, a4, 6
+;   c.mv a1, a3
 ;   ret
 
 function %sshr_i128_const_i64(i128) -> i128 {
@@ -592,27 +592,27 @@ block0(v0: i128):
 ;   addi a3, zero, 0x40
 ;   sub a3, a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xc
-;   ori a3, a5, 0
+;   beqz a4, 0xa
+;   c.mv a3, a5
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi a0, zero, 0x40
 ;   sra a3, a1, a4
 ;   addi a4, zero, -1
 ;   bltz a1, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a4, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a4
 ;   addi a4, zero, 0x40
 ;   andi a2, a2, 0x7f
-;   bgeu a2, a4, 0xc
-;   ori a0, a5, 0
-;   j 8
-;   ori a0, a3, 0
-;   bgeu a2, a4, 8
-;   ori a1, a3, 0
+;   bgeu a2, a4, 0xa
+;   c.mv a0, a5
+;   j 6
+;   c.mv a0, a3
+;   bgeu a2, a4, 6
+;   c.mv a1, a3
 ;   ret
 
 function %sshr_i128_const_i128(i128) -> i128 {
@@ -654,22 +654,22 @@ block0(v0: i128):
 ;   sll a3, a1, a3
 ;   beqz a5, 8
 ;   j 8
-;   ori a3, zero, 0
+;   mv a3, zero
 ;   srl a4, a0, a5
 ;   or a0, a3, a4
 ;   addi a3, zero, 0x40
 ;   sra a3, a1, a5
 ;   addi a5, zero, -1
 ;   bltz a1, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a5, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a5
 ;   addi a4, zero, 0x40
 ;   andi a5, a2, 0x7f
 ;   bgeu a5, a4, 8
-;   j 8
-;   ori a0, a3, 0
-;   bgeu a5, a4, 8
-;   ori a1, a3, 0
+;   j 6
+;   c.mv a0, a3
+;   bgeu a5, a4, 6
+;   c.mv a1, a3
 ;   ret
 

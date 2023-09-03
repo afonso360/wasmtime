@@ -29,8 +29,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   ld a4, 0x10(s0)
 ;   ld a0, 0x18(s0)
 ;   ld a2, 0x20(s0)
@@ -133,9 +133,9 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
 ;   addi a0, zero, 0xf
@@ -274,9 +274,9 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi a3, zero, 0xa
 ;   sd a3, 0x10(sp)
 ;   addi a0, zero, 0xf
@@ -356,10 +356,10 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   addi sp, sp, -0x30
-;   mv s1, sp
+;   c.mv s1, sp
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc
@@ -422,9 +422,9 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   sd a0, 0(sp)
 ;   sd a2, 8(sp)
 ;   sd a4, 0x10(sp)
@@ -549,9 +549,9 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
 ;   addi a0, zero, 0xf

@@ -209,10 +209,10 @@ block0(v0: i8, v1: i128, v2: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s8, -8(sp)
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   addi a5, zero, 0x2a
 ;   andi a0, a0, 0xff
 ;   andi a5, a5, 0xff
@@ -893,10 +893,10 @@ block0(v0: i64, v1: i128, v2: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s6, -8(sp)
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   addi a5, zero, 0x2a
 ;   bne a0, a5, 0xc
 ;   addi a0, zero, 1
@@ -1127,10 +1127,10 @@ block0(v0: i128, v1: i128, v2: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s8, -8(sp)
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   addi t2, zero, 0x2a
 ;   mv a6, zero
 ;   bne a1, a6, 0x10

@@ -483,6 +483,20 @@ impl Inst {
                 sink.put2(encode_cr_type(CrOp::CAdd, rd, rs2));
             }
 
+            // C.MV
+            Inst::AluRRImm12 {
+                alu_op: AluOPRRI::Addi,
+                rd,
+                rs,
+                imm12,
+            } if has_zca
+                && rd.to_reg() != rs
+                && rd.to_reg() != zero_reg()
+                && rs != zero_reg()
+                && imm12.as_i16() == 0 =>
+            {
+                sink.put2(encode_cr_type(CrOp::CMv, rd, rs));
+            }
             _ => return false,
         }
 
@@ -1013,7 +1027,7 @@ impl Inst {
 
                 match rm.class() {
                     RegClass::Int => Inst::AluRRImm12 {
-                        alu_op: AluOPRRI::Ori,
+                        alu_op: AluOPRRI::Addi,
                         rd: rd,
                         rs: rm,
                         imm12: Imm12::zero(),

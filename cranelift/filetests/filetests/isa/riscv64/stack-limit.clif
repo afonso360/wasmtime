@@ -72,11 +72,11 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   bgeu sp, a0, 8
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
@@ -122,13 +122,13 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   ld t6, 0(a0)
 ;   ld t6, 4(t6)
 ;   bgeu sp, t6, 8
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
-; block1: ; offset 0x20
+; block1: ; offset 0x1e
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
@@ -168,13 +168,13 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   addi t6, a0, 0xb0
 ;   bgeu sp, t6, 8
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
 ;   addi sp, sp, -0xb0
-; block1: ; offset 0x20
+; block1: ; offset 0x1e
 ;   addi sp, sp, 0xb0
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
@@ -213,7 +213,7 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   bgeu sp, a0, 8
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
@@ -236,7 +236,7 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x58
+; block1: ; offset 0x56
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp
@@ -277,7 +277,7 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   ld t6, 0(a0)
 ;   ld t6, 4(t6)
 ;   addi t6, t6, 0x20
@@ -285,7 +285,7 @@ block0(v0: i64):
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x28
+; block1: ; offset 0x26
 ;   addi sp, sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
@@ -330,7 +330,7 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   ld t6, 0(a0)
 ;   ld t6, 4(t6)
 ;   bgeu sp, t6, 8
@@ -355,7 +355,7 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x60
+; block1: ; offset 0x5e
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp
@@ -394,7 +394,7 @@ block0(v0: i64):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   c.add t6, a0
@@ -404,7 +404,7 @@ block0(v0: i64):
 ;   c.unimp ; trap: stk_ovf
 ;   c.unimp
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x2e
+; block1: ; offset 0x2c
 ;   addi sp, sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)

@@ -78,7 +78,7 @@ block0:
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s1, -8(sp)
 ;   sd s2, -0x10(sp)
 ;   sd s3, -0x18(sp)
@@ -101,7 +101,7 @@ block0:
 ;   fsd fs10, -0xa0(sp)
 ;   fsd fs11, -0xa8(sp)
 ;   addi sp, sp, -0xc0
-; block1: ; offset 0x68
+; block1: ; offset 0x66
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc

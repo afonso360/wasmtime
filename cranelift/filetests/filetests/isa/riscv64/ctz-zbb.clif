@@ -99,9 +99,9 @@ block0(v0: i128):
 ;   .byte 0x93, 0x17
 ;   .byte 0x15, 0x60
 ;   beqz a0, 0xc
-;   ori a1, zero, 0
-;   j 8
-;   ori a1, a3, 0
+;   mv a1, zero
+;   j 6
+;   c.mv a1, a3
 ;   add a0, a5, a1
 ;   mv a1, zero
 ;   ret

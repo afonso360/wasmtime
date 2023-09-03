@@ -23,10 +23,10 @@ block0(v0: i8, v1: i8, v2: i8):
 ;   addi a3, zero, 0x2a
 ;   andi a5, a0, 0xff
 ;   andi a3, a3, 0xff
-;   beq a5, a3, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a5, a3, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i8_i16(i8, i16, i16) -> i16 {
@@ -50,10 +50,10 @@ block0(v0: i8, v1: i16, v2: i16):
 ;   addi a3, zero, 0x2a
 ;   andi a5, a0, 0xff
 ;   andi a3, a3, 0xff
-;   beq a5, a3, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a5, a3, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i8_i32(i8, i32, i32) -> i32 {
@@ -77,10 +77,10 @@ block0(v0: i8, v1: i32, v2: i32):
 ;   addi a3, zero, 0x2a
 ;   andi a5, a0, 0xff
 ;   andi a3, a3, 0xff
-;   beq a5, a3, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a5, a3, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i8_i64(i8, i64, i64) -> i64 {
@@ -104,10 +104,10 @@ block0(v0: i8, v1: i64, v2: i64):
 ;   addi a3, zero, 0x2a
 ;   andi a5, a0, 0xff
 ;   andi a3, a3, 0xff
-;   beq a5, a3, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a5, a3, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i8_i128(i8, i128, i128) -> i128 {
@@ -132,8 +132,8 @@ block0(v0: i8, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   ori a5, a0, 0
-;   ori t2, a1, 0
+;   c.mv a5, a0
+;   c.mv t2, a1
 ;   addi a0, zero, 0x2a
 ;   andi a5, a5, 0xff
 ;   andi a0, a0, 0xff
@@ -142,12 +142,12 @@ block0(v0: i8, v1: i128, v2: i128):
 ;   j 8
 ;   mv a5, zero
 ;   andi a5, a5, 0xff
-;   beqz a5, 0x10
-;   ori a0, t2, 0
-;   ori a1, a2, 0
-;   j 0xc
-;   ori a0, a3, 0
-;   ori a1, a4, 0
+;   beqz a5, 0xc
+;   c.mv a0, t2
+;   c.mv a1, a2
+;   j 8
+;   c.mv a0, a3
+;   c.mv a1, a4
 ;   ret
 
 function %select_icmp_i16_i8(i16, i8, i8) -> i8 {
@@ -175,10 +175,10 @@ block0(v0: i16, v1: i8, v2: i8):
 ;   srli a4, a5, 0x30
 ;   slli a3, a3, 0x30
 ;   srli a5, a3, 0x30
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i16_i16(i16, i16, i16) -> i16 {
@@ -206,10 +206,10 @@ block0(v0: i16, v1: i16, v2: i16):
 ;   srli a4, a5, 0x30
 ;   slli a3, a3, 0x30
 ;   srli a5, a3, 0x30
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i16_i32(i16, i32, i32) -> i32 {
@@ -237,10 +237,10 @@ block0(v0: i16, v1: i32, v2: i32):
 ;   srli a4, a5, 0x30
 ;   slli a3, a3, 0x30
 ;   srli a5, a3, 0x30
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i16_i64(i16, i64, i64) -> i64 {
@@ -268,10 +268,10 @@ block0(v0: i16, v1: i64, v2: i64):
 ;   srli a4, a5, 0x30
 ;   slli a3, a3, 0x30
 ;   srli a5, a3, 0x30
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i16_i128(i16, i128, i128) -> i128 {
@@ -297,7 +297,7 @@ block0(v0: i16, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   ori a7, a1, 0
+;   c.mv a7, a1
 ;   addi a5, zero, 0x2a
 ;   slli a0, a0, 0x30
 ;   srli a0, a0, 0x30
@@ -308,12 +308,12 @@ block0(v0: i16, v1: i128, v2: i128):
 ;   j 8
 ;   mv a0, zero
 ;   andi a5, a0, 0xff
-;   beqz a5, 0x10
-;   ori a0, a7, 0
-;   ori a1, a2, 0
-;   j 0xc
-;   ori a0, a3, 0
-;   ori a1, a4, 0
+;   beqz a5, 0xc
+;   c.mv a0, a7
+;   c.mv a1, a2
+;   j 8
+;   c.mv a0, a3
+;   c.mv a1, a4
 ;   ret
 
 function %select_icmp_i32_i8(i32, i8, i8) -> i8 {
@@ -341,10 +341,10 @@ block0(v0: i32, v1: i8, v2: i8):
 ;   srli a4, a5, 0x20
 ;   slli a3, a3, 0x20
 ;   srli a5, a3, 0x20
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i32_i16(i32, i16, i16) -> i16 {
@@ -372,10 +372,10 @@ block0(v0: i32, v1: i16, v2: i16):
 ;   srli a4, a5, 0x20
 ;   slli a3, a3, 0x20
 ;   srli a5, a3, 0x20
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i32_i32(i32, i32, i32) -> i32 {
@@ -403,10 +403,10 @@ block0(v0: i32, v1: i32, v2: i32):
 ;   srli a4, a5, 0x20
 ;   slli a3, a3, 0x20
 ;   srli a5, a3, 0x20
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i32_i64(i32, i64, i64) -> i64 {
@@ -434,10 +434,10 @@ block0(v0: i32, v1: i64, v2: i64):
 ;   srli a4, a5, 0x20
 ;   slli a3, a3, 0x20
 ;   srli a5, a3, 0x20
-;   beq a4, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a4, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i32_i128(i32, i128, i128) -> i128 {
@@ -463,7 +463,7 @@ block0(v0: i32, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   ori a7, a1, 0
+;   c.mv a7, a1
 ;   addi a5, zero, 0x2a
 ;   slli a0, a0, 0x20
 ;   srli a0, a0, 0x20
@@ -474,12 +474,12 @@ block0(v0: i32, v1: i128, v2: i128):
 ;   j 8
 ;   mv a0, zero
 ;   andi a5, a0, 0xff
-;   beqz a5, 0x10
-;   ori a0, a7, 0
-;   ori a1, a2, 0
-;   j 0xc
-;   ori a0, a3, 0
-;   ori a1, a4, 0
+;   beqz a5, 0xc
+;   c.mv a0, a7
+;   c.mv a1, a2
+;   j 8
+;   c.mv a0, a3
+;   c.mv a1, a4
 ;   ret
 
 function %select_icmp_i64_i8(i64, i8, i8) -> i8 {
@@ -499,10 +499,10 @@ block0(v0: i64, v1: i8, v2: i8):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   beq a0, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a0, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i64_i16(i64, i16, i16) -> i16 {
@@ -522,10 +522,10 @@ block0(v0: i64, v1: i16, v2: i16):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   beq a0, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a0, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i64_i32(i64, i32, i32) -> i32 {
@@ -545,10 +545,10 @@ block0(v0: i64, v1: i32, v2: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   beq a0, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a0, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i64_i64(i64, i64, i64) -> i64 {
@@ -568,10 +568,10 @@ block0(v0: i64, v1: i64, v2: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   beq a0, a5, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a1, 0
+;   beq a0, a5, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a1
 ;   ret
 
 function %select_icmp_i64_i128(i64, i128, i128) -> i128 {
@@ -607,23 +607,23 @@ block0(v0: i64, v1: i128, v2: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s8, -8(sp)
 ;   addi sp, sp, -0x10
-; block1: ; offset 0x18
-;   ori s8, a1, 0
+; block1: ; offset 0x16
+;   c.mv s8, a1
 ;   addi a5, zero, 0x2a
 ;   bne a0, a5, 0xc
 ;   addi a5, zero, 1
 ;   j 8
 ;   mv a5, zero
 ;   andi a5, a5, 0xff
-;   beqz a5, 0x10
-;   ori a0, s8, 0
-;   ori a1, a2, 0
-;   j 0xc
-;   ori a0, a3, 0
-;   ori a1, a4, 0
+;   beqz a5, 0xc
+;   c.mv a0, s8
+;   c.mv a1, a2
+;   j 8
+;   c.mv a0, a3
+;   c.mv a1, a4
 ;   addi sp, sp, 0x10
 ;   ld s8, -8(sp)
 ;   ld ra, 8(sp)
@@ -659,10 +659,10 @@ block0(v0: i128, v1: i8, v2: i8):
 ;   j 8
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a3, 0
+;   beqz a4, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a3
 ;   ret
 
 function %select_icmp_i128_i16(i128, i16, i16) -> i16 {
@@ -693,10 +693,10 @@ block0(v0: i128, v1: i16, v2: i16):
 ;   j 8
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a3, 0
+;   beqz a4, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a3
 ;   ret
 
 function %select_icmp_i128_i32(i128, i32, i32) -> i32 {
@@ -727,10 +727,10 @@ block0(v0: i128, v1: i32, v2: i32):
 ;   j 8
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a3, 0
+;   beqz a4, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a3
 ;   ret
 
 function %select_icmp_i128_i64(i128, i64, i64) -> i64 {
@@ -761,10 +761,10 @@ block0(v0: i128, v1: i64, v2: i64):
 ;   j 8
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a3, 0
+;   beqz a4, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a3
 ;   ret
 
 function %select_icmp_i128_i128(i128, i128, i128) -> i128 {
@@ -805,12 +805,12 @@ block0(v0: i128, v1: i128, v2: i128):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
+;   c.mv s0, sp
 ;   sd s4, -8(sp)
 ;   sd s6, -0x10(sp)
 ;   sd s7, -0x18(sp)
 ;   addi sp, sp, -0x20
-; block1: ; offset 0x20
+; block1: ; offset 0x1e
 ;   addi s6, zero, 0x2a
 ;   mv s7, zero
 ;   bne a1, s7, 0x10
@@ -819,12 +819,12 @@ block0(v0: i128, v1: i128, v2: i128):
 ;   j 8
 ;   mv a0, zero
 ;   andi s4, a0, 0xff
-;   beqz s4, 0x10
-;   ori a0, a2, 0
-;   ori a1, a3, 0
-;   j 0xc
-;   ori a0, a4, 0
-;   ori a1, a5, 0
+;   beqz s4, 0xc
+;   c.mv a0, a2
+;   c.mv a1, a3
+;   j 8
+;   c.mv a0, a4
+;   c.mv a1, a5
 ;   addi sp, sp, 0x20
 ;   ld s4, -8(sp)
 ;   ld s6, -0x10(sp)

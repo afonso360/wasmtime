@@ -25,10 +25,10 @@ block0(v0: i8):
 ;   .byte 0x13, 0x16
 ;   .byte 0x45, 0x60
 ;   not a4, a2
-;   bltz a2, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a4, 0
+;   bltz a2, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a4
 ;   andi a2, a0, 0xff
 ;   .byte 0x13, 0x17
 ;   .byte 0x06, 0x60
@@ -58,10 +58,10 @@ block0(v0: i16):
 ;   .byte 0x13, 0x16
 ;   .byte 0x55, 0x60
 ;   not a4, a2
-;   bltz a2, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a4, 0
+;   bltz a2, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a4
 ;   .byte 0x3b, 0x46
 ;   c.addi a6, 1
 ;   .byte 0x13, 0x17
@@ -89,10 +89,10 @@ block0(v0: i32):
 ; block0: ; offset 0x0
 ;   sext.w a2, a0
 ;   not a4, a2
-;   bltz a2, 0xc
-;   ori a0, a2, 0
-;   j 8
-;   ori a0, a4, 0
+;   bltz a2, 0xa
+;   c.mv a0, a2
+;   j 6
+;   c.mv a0, a4
 ;   .byte 0x1b, 0x16
 ;   .byte 0x05, 0x60
 ;   addi a0, a2, -1
@@ -115,10 +115,10 @@ block0(v0: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a2, a0
-;   bltz a0, 0xc
-;   ori a4, a0, 0
-;   j 8
-;   ori a4, a2, 0
+;   bltz a0, 0xa
+;   c.mv a4, a0
+;   j 6
+;   c.mv a4, a2
 ;   .byte 0x13, 0x15
 ;   .byte 0x07, 0x60
 ;   addi a0, a0, -1
@@ -148,23 +148,23 @@ block0(v0: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a3, a0
-;   bltz a1, 0xc
-;   ori a5, a0, 0
-;   j 8
-;   ori a5, a3, 0
+;   bltz a1, 0xa
+;   c.mv a5, a0
+;   j 6
+;   c.mv a5, a3
 ;   not a2, a1
-;   bltz a1, 0xc
-;   ori a3, a1, 0
-;   j 8
-;   ori a3, a2, 0
+;   bltz a1, 0xa
+;   c.mv a3, a1
+;   j 6
+;   c.mv a3, a2
 ;   .byte 0x13, 0x95
 ;   .byte 0x06, 0x60
 ;   .byte 0x93, 0x95
 ;   .byte 0x07, 0x60
 ;   beqz a3, 0xc
-;   ori a3, zero, 0
-;   j 8
-;   ori a3, a1, 0
+;   mv a3, zero
+;   j 6
+;   c.mv a3, a1
 ;   add a5, a0, a3
 ;   mv a1, zero
 ;   addi a0, a5, -1

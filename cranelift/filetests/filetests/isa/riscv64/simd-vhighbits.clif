@@ -31,8 +31,8 @@ block0(v0: i8x16):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -78,8 +78,8 @@ block0(v0: i16x8):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -125,8 +125,8 @@ block0(v0: i32x4):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -172,8 +172,8 @@ block0(v0: i64x2):
 ;   addi sp, sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
-;   ori s0, sp, 0
-; block1: ; offset 0x10
+;   c.mv s0, sp
+; block1: ; offset 0xe
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
