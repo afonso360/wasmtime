@@ -255,6 +255,6 @@ block0(v0: i8, v1: i64):
 ; block0: ; offset 0x0
 ;   slli a4, a0, 0x38
 ;   srai a0, a4, 0x38
-;   add a0, a0, a1
+;   c.add a0, a1
 ;   ret
 

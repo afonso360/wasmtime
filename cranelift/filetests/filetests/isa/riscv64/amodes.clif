@@ -42,7 +42,7 @@ block0(v0: i64, v1: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   sext.w a5, a1
-;   add a5, a5, a0
+;   c.add a5, a0
 ;   lw a0, 0(a5)
 ;   ret
 
@@ -99,8 +99,8 @@ block0(v0: i64, v1: i32):
 ; block0: ; offset 0x0
 ;   sext.w a1, a1
 ;   addi a1, a1, 0x20
-;   add a1, a1, a0
-;   add a1, a1, a1
+;   c.add a1, a0
+;   c.add a1, a1
 ;   lw a0, 4(a1)
 ;   ret
 
@@ -125,7 +125,7 @@ block0(v0: i64, v1: i64, v2: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   add a1, a0, a1
-;   add a1, a1, a2
+;   c.add a1, a2
 ;   addi a1, a1, 0x30
 ;   lw a0, 0(a1)
 ;   ret
@@ -155,8 +155,8 @@ block0(v0: i64, v1: i64, v2: i64):
 ;   lui a3, 1
 ;   addi a4, a3, 4
 ;   add a3, a0, a1
-;   add a3, a3, a2
-;   add a3, a3, a4
+;   c.add a3, a2
+;   c.add a3, a4
 ;   lw a0, 0(a3)
 ;   ret
 
@@ -285,7 +285,7 @@ block0(v0: i32, v1: i32):
 ; block0: ; offset 0x0
 ;   sext.w a0, a0
 ;   sext.w a1, a1
-;   add a0, a0, a1
+;   c.add a0, a1
 ;   lw a0, 0(a0)
 ;   ret
 

@@ -413,7 +413,7 @@ block0(v0: i64):
 ;   add s6, a0, s5
 ;   add s7, a0, s6
 ;   add a1, a0, a1
-;   add a2, a2, a3
+;   c.add a2, a3
 ;   add a3, a4, a5
 ;   add a4, t1, t2
 ;   add a5, a6, a7
@@ -422,11 +422,11 @@ block0(v0: i64):
 ;   add t2, s3, s4
 ;   add a6, s5, s6
 ;   add a1, s7, a1
-;   add a2, a2, a3
+;   c.add a2, a3
 ;   add a3, a4, a5
 ;   add a4, a0, t1
 ;   add a5, t2, a6
-;   add a1, a1, a2
+;   c.add a1, a2
 ;   add a2, a3, a4
 ;   add a1, a5, a1
 ;   add a0, a2, a1

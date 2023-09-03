@@ -57,17 +57,17 @@ block1(v4: f32):
 ;   addi a2, zero, 1
 ;   bltu t6, a2, 0xc
 ;   auipc a2, 0
-;   jalr zero, a2, 0x28
+;   jalr zero, a2, 0x26
 ;   auipc a1, 0
 ;   slli a2, t6, 3
-;   add a1, a1, a2
+;   c.add a1, a2
 ;   jalr zero, a1, 0x10
 ;   auipc a2, 0
 ;   jalr zero, a2, 0xc
-; block1: ; offset 0x58
+; block1: ; offset 0x56
 ;   j 8
-; block2: ; offset 0x5c
+; block2: ; offset 0x5a
 ;   fmv.d fa4, fa3
-; block3: ; offset 0x60
+; block3: ; offset 0x5e
 ;   ret
 
