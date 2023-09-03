@@ -20,7 +20,9 @@ block0:
 ;   auipc a0, 0
 ;   ld a0, 0xc(a0)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %my_global 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %my_global 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ret
 

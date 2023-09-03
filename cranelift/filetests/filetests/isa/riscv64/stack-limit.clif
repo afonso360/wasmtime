@@ -74,13 +74,16 @@ block0(v0: i64):
 ;   sd s0, 0(sp)
 ;   ori s0, sp, 0
 ;   bgeu sp, a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ; block1: ; offset 0x18
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %foo 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %foo 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr a2
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
@@ -123,13 +126,16 @@ block0(v0: i64):
 ;   ld t6, 0(a0)
 ;   ld t6, 4(t6)
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ; block1: ; offset 0x20
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %foo 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %foo 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr a2
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
@@ -165,7 +171,8 @@ block0(v0: i64):
 ;   ori s0, sp, 0
 ;   addi t6, a0, 0xb0
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   addi sp, sp, -0xb0
 ; block1: ; offset 0x20
 ;   addi sp, sp, 0xb0
@@ -208,19 +215,23 @@ block0(v0: i64):
 ;   sd s0, 0(sp)
 ;   ori s0, sp, 0
 ;   bgeu sp, a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   lui t5, 0x62
 ;   addi t5, t5, -0x580
 ;   add t6, t5, a0
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   lui a0, 0x62
 ;   addi a0, a0, -0x580
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
@@ -271,7 +282,8 @@ block0(v0: i64):
 ;   ld t6, 4(t6)
 ;   addi t6, t6, 0x20
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   addi sp, sp, -0x20
 ; block1: ; offset 0x28
 ;   addi sp, sp, 0x20
@@ -322,19 +334,23 @@ block0(v0: i64):
 ;   ld t6, 0(a0)
 ;   ld t6, 4(t6)
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   lui t5, 0x62
 ;   addi t5, t5, -0x580
 ;   add t6, t5, t6
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   lui a0, 0x62
 ;   addi a0, a0, -0x580
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
@@ -385,7 +401,8 @@ block0(v0: i64):
 ;   ld t6, 0(t6)
 ;   addi t6, t6, 0x20
 ;   bgeu sp, t6, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: stk_ovf
+;   c.unimp ; trap: stk_ovf
+;   c.unimp
 ;   addi sp, sp, -0x20
 ; block1: ; offset 0x30
 ;   addi sp, sp, 0x20

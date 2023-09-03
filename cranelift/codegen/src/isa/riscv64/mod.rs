@@ -171,6 +171,7 @@ impl TargetIsa for Riscv64Backend {
         let mut cs = Capstone::new()
             .riscv()
             .mode(arch::riscv::ArchMode::RiscV64)
+            .extra_mode([arch::riscv::ArchExtraMode::RiscVC].into_iter())
             .build()?;
         // Similar to AArch64, RISC-V uses inline constants rather than a separate
         // constant pool. We want to skip dissasembly over inline constants instead

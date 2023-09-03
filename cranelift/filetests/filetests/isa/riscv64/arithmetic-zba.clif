@@ -17,7 +17,8 @@ block0(v0: i64, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0x85, 0xa5, 0x08
+;   .byte 0x3b, 0x85
+;   c.addi a7, 9
 ;   ret
 
 function %sh1add(i64, i64) -> i64 {
@@ -35,7 +36,8 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x33, 0xa5, 0xa5, 0x20
+;   .byte 0x33, 0xa5
+;   c.addiw ra, 9
 ;   ret
 
 function %sh1add_uw(i64, i32) -> i64 {
@@ -54,7 +56,8 @@ block0(v0: i64, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0xa5, 0xa5, 0x20
+;   .byte 0x3b, 0xa5
+;   c.addiw ra, 9
 ;   ret
 
 function %sh2add(i64, i64) -> i64 {
@@ -72,7 +75,8 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x33, 0xc5, 0xa5, 0x20
+;   .byte 0x33, 0xc5
+;   c.addiw ra, 9
 ;   ret
 
 function %sh2add_uw(i64, i32) -> i64 {
@@ -91,7 +95,8 @@ block0(v0: i64, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0xc5, 0xa5, 0x20
+;   .byte 0x3b, 0xc5
+;   c.addiw ra, 9
 ;   ret
 
 function %sh3add(i64, i64) -> i64 {
@@ -109,7 +114,8 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x33, 0xe5, 0xa5, 0x20
+;   .byte 0x33, 0xe5
+;   c.addiw ra, 9
 ;   ret
 
 function %sh3add_uw(i64, i32) -> i64 {
@@ -128,7 +134,8 @@ block0(v0: i64, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0xe5, 0xa5, 0x20
+;   .byte 0x3b, 0xe5
+;   c.addiw ra, 9
 ;   ret
 
 ;; Same as %sh1add but with the operands reversed
@@ -147,7 +154,8 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x33, 0xa5, 0xa5, 0x20
+;   .byte 0x33, 0xa5
+;   c.addiw ra, 9
 ;   ret
 
 ;; Same as %sh1add but with an uextended const
@@ -167,7 +175,8 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x33, 0xa5, 0xa5, 0x20
+;   .byte 0x33, 0xa5
+;   c.addiw ra, 9
 ;   ret
 
 function %slli_uw(i32) -> i64 {
@@ -185,6 +194,7 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x1b, 0x15, 0x55, 0x08
+;   .byte 0x1b, 0x15
+;   c.addi a6, 0x15
 ;   ret
 

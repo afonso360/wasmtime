@@ -146,8 +146,10 @@ block3(v7: r64, v8: r64):
 ;   auipc a1, 0
 ;   ld a1, 0xc(a1)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %f 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %f 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   sd s11, 8(sp)
 ;   jalr a1
 ;   mv a2, sp

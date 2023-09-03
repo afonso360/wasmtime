@@ -38,8 +38,10 @@ block0(v0: i64):
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %sym 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %sym 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   fence rw, w
 ;   sd a0, 0(a2)
 ;   ret
@@ -102,8 +104,10 @@ block0(v0: i32):
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %sym 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %sym 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   fence rw, w
 ;   sw a0, 0(a2)
 ;   ret

@@ -16,7 +16,8 @@ block0(v0: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x56, 0x85, 0x6b
+;   .byte 0x13, 0x56
+;   c.lui s7, 1
 ;   srli a0, a2, 0x30
 ;   ret
 
@@ -34,7 +35,8 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x56, 0x85, 0x6b
+;   .byte 0x13, 0x56
+;   c.lui s7, 1
 ;   srli a0, a2, 0x20
 ;   ret
 
@@ -51,7 +53,8 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x55, 0x85, 0x6b
+;   .byte 0x13, 0x55
+;   c.lui s7, 1
 ;   ret
 
 function %bswap_i128(i128) -> i128 {
@@ -71,8 +74,10 @@ block0(v0: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   ori a5, a0, 0
-;   .byte 0x13, 0xd5, 0x85, 0x6b
+;   .byte 0x13, 0xd5
+;   c.lui s7, 1
 ;   ori a1, a5, 0
-;   .byte 0x93, 0xd5, 0x85, 0x6b
+;   .byte 0x93, 0xd5
+;   c.lui s7, 1
 ;   ret
 

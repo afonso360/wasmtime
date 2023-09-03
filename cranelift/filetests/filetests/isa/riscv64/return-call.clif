@@ -46,8 +46,10 @@ block0(v0: i64):
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %callee_i64 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %callee_i64 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
@@ -108,9 +110,12 @@ block0(v0: f64):
 ;   fmv.d.x fa5, a3
 ;   fadd.d ft0, ft0, fa5
 ;   ret
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0x30, 0x40
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.lw a2, 0x40(s0)
 
 function %call_f64(f64) -> f64 tail {
     fn0 = %callee_f64(f64) -> f64 tail
@@ -138,8 +143,10 @@ block0(v0: f64):
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %callee_f64 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %callee_f64 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
@@ -200,8 +207,10 @@ block0(v0: i8):
 ;   auipc a2, 0
 ;   ld a2, 0xc(a2)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %callee_i8 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %callee_i8 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld ra, 8(s0)
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
@@ -374,8 +383,10 @@ block0:
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %tail_callee_stack_args 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %tail_callee_stack_args 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld a0, 0x30(sp)
 ;   ld s1, 0x38(sp)
 ;   ld ra, 8(s0)
@@ -635,8 +646,10 @@ block2:
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %different_callee2 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %different_callee2 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld a1, 0x30(sp)
 ;   ld a0, 0x38(sp)
 ;   ld s1, 0x40(sp)
@@ -668,8 +681,10 @@ block2:
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %different_callee1 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %different_callee1 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   ld a1, 0x30(sp)
 ;   ld a0, 0x38(sp)
 ;   ld ra, 8(s0)

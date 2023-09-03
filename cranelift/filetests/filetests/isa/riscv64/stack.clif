@@ -77,8 +77,10 @@ block0:
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
@@ -170,8 +172,10 @@ block0:
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
@@ -264,8 +268,10 @@ block0(v0: i64):
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
@@ -965,8 +971,10 @@ block0(v0: i128):
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
@@ -1105,8 +1113,10 @@ block0:
 ;   auipc t5, 0
 ;   ld t5, 0xc(t5)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 %Probestack 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 %Probestack 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   jalr t5
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0

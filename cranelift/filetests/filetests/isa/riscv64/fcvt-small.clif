@@ -96,19 +96,23 @@ block0(v0: f32):
 ;   auipc t6, 0
 ;   lw t6, 0xc(t6)
 ;   j 8
-;   .byte 0x00, 0x00, 0x80, 0xbf
+;   c.unimp
+;   c.fsd fs0, 0x38(a5)
 ;   fmv.w.x fa3, t6
 ;   fle.s a0, fa0, fa3
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   lui t6, 0x43800
 ;   fmv.w.x fa3, t6
 ;   fle.s a0, fa3, fa0
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   fcvt.wu.s a0, fa0, rtz
 ;   j 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: bad_toint
+;   c.unimp ; trap: bad_toint
+;   c.unimp
 ;   ret
 
 function u0:0(f64) -> i8 {
@@ -129,24 +133,31 @@ block0(v0: f64):
 ;   auipc t6, 0
 ;   ld t6, 0xc(t6)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0xf0, 0xbf
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.fsd fa2, 0xf8(a5)
 ;   fmv.d.x fa3, t6
 ;   fle.d a0, fa0, fa3
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   auipc t6, 0
 ;   ld t6, 0xc(t6)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0x70, 0x40
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.lw a2, 0x44(s0)
 ;   fmv.d.x fa3, t6
 ;   fle.d a0, fa3, fa0
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   fcvt.wu.d a0, fa0, rtz
 ;   j 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: bad_toint
+;   c.unimp ; trap: bad_toint
+;   c.unimp
 ;   ret
 
 function u0:0(f32) -> i16 {
@@ -167,19 +178,23 @@ block0(v0: f32):
 ;   auipc t6, 0
 ;   lw t6, 0xc(t6)
 ;   j 8
-;   .byte 0x00, 0x00, 0x80, 0xbf
+;   c.unimp
+;   c.fsd fs0, 0x38(a5)
 ;   fmv.w.x fa3, t6
 ;   fle.s a0, fa0, fa3
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   lui t6, 0x47800
 ;   fmv.w.x fa3, t6
 ;   fle.s a0, fa3, fa0
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   fcvt.wu.s a0, fa0, rtz
 ;   j 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: bad_toint
+;   c.unimp ; trap: bad_toint
+;   c.unimp
 ;   ret
 
 function u0:0(f64) -> i16 {
@@ -200,23 +215,30 @@ block0(v0: f64):
 ;   auipc t6, 0
 ;   ld t6, 0xc(t6)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0xf0, 0xbf
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.fsd fa2, 0xf8(a5)
 ;   fmv.d.x fa3, t6
 ;   fle.d a0, fa0, fa3
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   auipc t6, 0
 ;   ld t6, 0xc(t6)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00
-;   .byte 0x00, 0x00, 0xf0, 0x40
+;   c.unimp
+;   c.unimp
+;   c.unimp
+;   c.lw a2, 0x44(s1)
 ;   fmv.d.x fa3, t6
 ;   fle.d a0, fa3, fa0
 ;   beqz a0, 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: int_ovf
+;   c.unimp ; trap: int_ovf
+;   c.unimp
 ;   fcvt.wu.d a0, fa0, rtz
 ;   j 8
-;   .byte 0x00, 0x00, 0x00, 0x00 ; trap: bad_toint
+;   c.unimp ; trap: bad_toint
+;   c.unimp
 ;   ret
 

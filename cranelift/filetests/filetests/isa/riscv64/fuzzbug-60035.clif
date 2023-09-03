@@ -105,8 +105,10 @@ block0:
 ;   auipc t0, 0
 ;   ld t0, 0xc(t0)
 ;   j 0xc
-;   .byte 0x00, 0x00, 0x00, 0x00 ; reloc_external Abs8 u1:7 0
-;   .byte 0x00, 0x00, 0x00, 0x00
+;   c.unimp ; reloc_external Abs8 u1:7 0
+;   c.unimp
+;   c.unimp
+;   c.unimp
 ;   sd t0, 0(sp)
 ;   ld t0, 0(sp)
 ;   jalr t0

@@ -15,6 +15,7 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0x05, 0x05, 0x08
+;   .byte 0x3b, 0x05
+;   c.addi a6, 1
 ;   ret
 

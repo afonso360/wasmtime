@@ -18,7 +18,8 @@ block0(v0: i8):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   ori a2, a0, 0x100
-;   .byte 0x1b, 0x15, 0x16, 0x60
+;   .byte 0x1b, 0x15
+;   .byte 0x16, 0x60
 ;   ret
 
 function %ctz_i16(i16) -> i16 {
@@ -38,8 +39,9 @@ block0(v0: i16):
 ; block0: ; offset 0x0
 ;   lui a2, 0x10
 ;   or a4, a0, a2
-;   .byte 0x1b, 0x15, 0x17, 0x60
-;   ret
+;   .byte 0x1b, 0x15
+;   auipc zero, 0x80676
+;   c.unimp
 
 function %ctz_i32(i32) -> i32 {
 block0(v0: i32):
@@ -54,7 +56,8 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x1b, 0x15, 0x15, 0x60
+;   .byte 0x1b, 0x15
+;   .byte 0x15, 0x60
 ;   ret
 
 function %ctz_i64(i64) -> i64 {
@@ -70,7 +73,8 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x15, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x15, 0x60
 ;   ret
 
 function %ctz_i128(i128) -> i128 {
@@ -90,8 +94,10 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x93, 0x96, 0x15, 0x60
-;   .byte 0x93, 0x17, 0x15, 0x60
+;   .byte 0x93, 0x96
+;   .byte 0x15, 0x60
+;   .byte 0x93, 0x17
+;   .byte 0x15, 0x60
 ;   beqz a0, 0xc
 ;   ori a1, zero, 0
 ;   j 8

@@ -18,7 +18,8 @@ block0(v0: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0x45, 0x05, 0x08
+;   .byte 0x3b, 0x45
+;   c.addi a6, 1
 ;   ret
 
 function %uextend8_64(i8) -> i64 {
@@ -50,7 +51,8 @@ block0(v0: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x3b, 0x45, 0x05, 0x08
+;   .byte 0x3b, 0x45
+;   c.addi a6, 1
 ;   ret
 
 ;;;; Sextend Rules
@@ -68,7 +70,8 @@ block0(v0: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x45, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x45, 0x60
 ;   ret
 
 function %sextend8_32(i8) -> i32 {
@@ -84,7 +87,8 @@ block0(v0: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x45, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x45, 0x60
 ;   ret
 
 function %sextend16_32(i16) -> i32 {
@@ -100,7 +104,8 @@ block0(v0: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x55, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x55, 0x60
 ;   ret
 
 function %sextend8_64(i8) -> i64 {
@@ -116,7 +121,8 @@ block0(v0: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x45, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x45, 0x60
 ;   ret
 
 function %sextend16_64(i16) -> i64 {
@@ -132,6 +138,7 @@ block0(v0: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   .byte 0x13, 0x15, 0x55, 0x60
+;   .byte 0x13, 0x15
+;   .byte 0x55, 0x60
 ;   ret
 
