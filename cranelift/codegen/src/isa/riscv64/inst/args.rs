@@ -6,7 +6,7 @@ use super::*;
 use crate::ir::condcodes::CondCode;
 
 use crate::isa::riscv64::inst::{reg_name, reg_to_gpr_num};
-use crate::isa::riscv64::lower::isle::generated_code::{CrOp, CrOpcodeSpace};
+use crate::isa::riscv64::lower::isle::generated_code::{COpcodeSpace, CrOp};
 use crate::machinst::isle::WritableReg;
 
 use std::fmt::{Display, Formatter, Result};
@@ -1900,12 +1900,12 @@ impl Display for CSR {
     }
 }
 
-impl CrOpcodeSpace {
+impl COpcodeSpace {
     pub fn bits(&self) -> u32 {
         match self {
-            CrOpcodeSpace::C0 => 0b00,
-            CrOpcodeSpace::C1 => 0b01,
-            CrOpcodeSpace::C2 => 0b10,
+            COpcodeSpace::C0 => 0b00,
+            COpcodeSpace::C1 => 0b01,
+            COpcodeSpace::C2 => 0b10,
         }
     }
 }
@@ -1919,10 +1919,10 @@ impl CrOp {
         }
     }
 
-    pub fn op(&self) -> CrOpcodeSpace {
+    pub fn op(&self) -> COpcodeSpace {
         // https://five-embeddev.com/riscv-isa-manual/latest/rvc-opcode-map.html#rvcopcodemap
         match self {
-            CrOp::CMv | CrOp::CAdd => CrOpcodeSpace::C2,
+            CrOp::CMv | CrOp::CAdd => COpcodeSpace::C2,
         }
     }
 }

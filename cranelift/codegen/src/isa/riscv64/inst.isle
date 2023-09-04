@@ -703,7 +703,7 @@
   (Bseti)
 ))
 
-(type CrOpcodeSpace (enum
+(type COpcodeSpace (enum
   (C0)
   (C1)
   (C2)
