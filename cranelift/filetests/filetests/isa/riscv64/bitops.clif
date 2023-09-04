@@ -1296,7 +1296,7 @@ block0(v0: i32, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   xor a0, a0, a1
+;   c.xor a0, a1
 ;   ret
 
 function %bxor_i64(i64, i64) -> i64 {
@@ -1312,7 +1312,7 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   xor a0, a0, a1
+;   c.xor a0, a1
 ;   ret
 
 function %bxor_i128(i128, i128) -> i128 {
@@ -1329,8 +1329,8 @@ block0(v0: i128, v1: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   xor a0, a0, a2
-;   xor a1, a1, a3
+;   c.xor a0, a2
+;   c.xor a1, a3
 ;   ret
 
 function %bxor_i64_constant(i64) -> i64 {
@@ -1384,7 +1384,7 @@ block0(v0: i64, v1: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   slli a4, a1, 3
-;   xor a0, a0, a4
+;   c.xor a0, a4
 ;   ret
 
 function %bxor_i64_constant_shift2(i64, i64) -> i64 {
@@ -1624,7 +1624,7 @@ block0(v0: i32, v1: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a4, a1
-;   xor a0, a0, a4
+;   c.xor a0, a4
 ;   ret
 
 function %bxor_not_i64(i64, i64) -> i64 {
@@ -1642,7 +1642,7 @@ block0(v0: i64, v1: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a4, a1
-;   xor a0, a0, a4
+;   c.xor a0, a4
 ;   ret
 
 function %bxor_not_i128(i128, i128) -> i128 {
@@ -1663,8 +1663,8 @@ block0(v0: i128, v1: i128):
 ; block0: ; offset 0x0
 ;   not a2, a2
 ;   not a3, a3
-;   xor a0, a0, a2
-;   xor a1, a1, a3
+;   c.xor a0, a2
+;   c.xor a1, a3
 ;   ret
 
 function %bxor_not_i64_constant(i64) -> i64 {
@@ -1685,7 +1685,7 @@ block0(v0: i64):
 ; block0: ; offset 0x0
 ;   addi a4, zero, 4
 ;   not a4, a4
-;   xor a0, a0, a4
+;   c.xor a0, a4
 ;   ret
 
 function %bxor_not_i64_constant_shift(i64, i64) -> i64 {
@@ -1707,7 +1707,7 @@ block0(v0: i64, v1: i64):
 ; block0: ; offset 0x0
 ;   slli a5, a1, 4
 ;   not a5, a5
-;   xor a0, a0, a5
+;   c.xor a0, a5
 ;   ret
 
 function %ishl_i128_i8(i128, i8) -> i128 {
