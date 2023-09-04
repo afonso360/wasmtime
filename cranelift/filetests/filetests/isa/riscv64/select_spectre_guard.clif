@@ -279,7 +279,7 @@ block0(v0: i16, v1: i8, v2: i8):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -324,7 +324,7 @@ block0(v0: i16, v1: i16, v2: i16):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -369,7 +369,7 @@ block0(v0: i16, v1: i32, v2: i32):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -414,7 +414,7 @@ block0(v0: i16, v1: i64, v2: i64):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -462,11 +462,11 @@ block0(v0: i16, v1: i128, v2: i128):
 ;   snez a5, a0
 ;   neg a5, a5
 ;   and a0, a1, a5
-;   and a2, a2, a5
+;   c.and a2, a5
 ;   not a7, a5
 ;   not a1, a5
 ;   and a3, a3, a7
-;   and a4, a4, a1
+;   c.and a4, a1
 ;   or a0, a0, a3
 ;   or a1, a2, a4
 ;   ret
@@ -512,7 +512,7 @@ block0(v0: i32, v1: i8, v2: i8):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -557,7 +557,7 @@ block0(v0: i32, v1: i16, v2: i16):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -602,7 +602,7 @@ block0(v0: i32, v1: i32, v2: i32):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -647,7 +647,7 @@ block0(v0: i32, v1: i64, v2: i64):
 ;   neg a3, a0
 ;   and a4, a1, a3
 ;   not a0, a3
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   or a0, a4, a2
 ;   ret
 
@@ -695,11 +695,11 @@ block0(v0: i32, v1: i128, v2: i128):
 ;   snez a5, a0
 ;   neg a5, a5
 ;   and a0, a1, a5
-;   and a2, a2, a5
+;   c.and a2, a5
 ;   not a7, a5
 ;   not a1, a5
 ;   and a3, a3, a7
-;   and a4, a4, a1
+;   c.and a4, a1
 ;   or a0, a0, a3
 ;   or a1, a2, a4
 ;   ret
@@ -955,7 +955,7 @@ block0(v0: i128, v1: i8, v2: i8):
 ;   andi a4, a4, 0xff
 ;   snez a4, a4
 ;   neg a0, a4
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   not a4, a0
 ;   and a0, a3, a4
 ;   or a0, a2, a0
@@ -996,7 +996,7 @@ block0(v0: i128, v1: i16, v2: i16):
 ;   andi a4, a4, 0xff
 ;   snez a4, a4
 ;   neg a0, a4
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   not a4, a0
 ;   and a0, a3, a4
 ;   or a0, a2, a0
@@ -1037,7 +1037,7 @@ block0(v0: i128, v1: i32, v2: i32):
 ;   andi a4, a4, 0xff
 ;   snez a4, a4
 ;   neg a0, a4
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   not a4, a0
 ;   and a0, a3, a4
 ;   or a0, a2, a0
@@ -1078,7 +1078,7 @@ block0(v0: i128, v1: i64, v2: i64):
 ;   andi a4, a4, 0xff
 ;   snez a4, a4
 ;   neg a0, a4
-;   and a2, a2, a0
+;   c.and a2, a0
 ;   not a4, a0
 ;   and a0, a3, a4
 ;   or a0, a2, a0

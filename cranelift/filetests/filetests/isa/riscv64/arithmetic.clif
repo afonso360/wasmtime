@@ -471,7 +471,7 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   and a0, a0, a1
+;   c.and a0, a1
 ;   ret
 
 function %f19(i64, i64) -> i64 {
@@ -521,7 +521,7 @@ block0(v0: i64, v1: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a4, a1
-;   and a0, a0, a4
+;   c.and a0, a4
 ;   ret
 
 function %f22(i64, i64) -> i64 {
