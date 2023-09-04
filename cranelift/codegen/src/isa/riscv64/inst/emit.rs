@@ -511,9 +511,15 @@ impl Inst {
                 sink.put2(encode_cr_type(CrOp::CMv, rd, rs));
             }
 
-            // C.AND
+            // CA Ops
             Inst::AluRRR {
-                alu_op: AluOPRRR::And,
+                alu_op:
+                    alu_op @ (AluOPRRR::And
+                    | AluOPRRR::Or
+                    | AluOPRRR::Xor
+                    | AluOPRRR::Sub
+                    | AluOPRRR::Addw
+                    | AluOPRRR::Subw),
                 rd,
                 rs1,
                 rs2,
@@ -522,36 +528,19 @@ impl Inst {
                 && reg_is_compressible(rs1)
                 && reg_is_compressible(rs2) =>
             {
-                sink.put2(encode_ca_type(CaOp::CAnd, rd, rs2));
+                let op = match alu_op {
+                    AluOPRRR::And => CaOp::CAnd,
+                    AluOPRRR::Or => CaOp::COr,
+                    AluOPRRR::Xor => CaOp::CXor,
+                    AluOPRRR::Sub => CaOp::CSub,
+                    AluOPRRR::Addw => CaOp::CAddw,
+                    AluOPRRR::Subw => CaOp::CSubw,
+                    _ => unreachable!(),
+                };
+
+                sink.put2(encode_ca_type(op, rd, rs2));
             }
 
-            // C.OR
-            Inst::AluRRR {
-                alu_op: AluOPRRR::Or,
-                rd,
-                rs1,
-                rs2,
-            } if has_zca
-                && rd.to_reg() == rs1
-                && reg_is_compressible(rs1)
-                && reg_is_compressible(rs2) =>
-            {
-                sink.put2(encode_ca_type(CaOp::COr, rd, rs2));
-            }
-
-            // C.XOR
-            Inst::AluRRR {
-                alu_op: AluOPRRR::Xor,
-                rd,
-                rs1,
-                rs2,
-            } if has_zca
-                && rd.to_reg() == rs1
-                && reg_is_compressible(rs1)
-                && reg_is_compressible(rs2) =>
-            {
-                sink.put2(encode_ca_type(CaOp::CXor, rd, rs2));
-            }
             _ => return false,
         }
 

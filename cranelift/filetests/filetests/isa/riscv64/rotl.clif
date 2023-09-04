@@ -51,7 +51,7 @@ block0(v0: i128, v1: i128):
 ; block1: ; offset 0x16
 ;   andi a5, a2, 0x3f
 ;   addi a3, zero, 0x40
-;   sub a3, a3, a5
+;   c.sub a3, a5
 ;   sll a4, a0, a5
 ;   srl s7, a1, a3
 ;   c.mv t2, a1

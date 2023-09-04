@@ -31,7 +31,7 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   sub a0, a0, a1
+;   c.sub a0, a1
 ;   ret
 
 function %f3(i64, i64) -> i64 {
@@ -629,7 +629,7 @@ block0(v0: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a3, zero, -1
-;   subw a0, a0, a3
+;   c.subw a0, a3
 ;   ret
 
 function %f28(i64) -> i64 {
@@ -648,7 +648,7 @@ block0(v0: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a3, zero, -1
-;   sub a0, a0, a3
+;   c.sub a0, a3
 ;   ret
 
 function %f29(i64) -> i64 {
@@ -753,7 +753,7 @@ block0(v0: i32, v1: i32, v2: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   mulw a5, a1, a2
-;   subw a0, a0, a5
+;   c.subw a0, a5
 ;   ret
 
 function %msub_i64(i64, i64, i64) -> i64 {
@@ -772,7 +772,7 @@ block0(v0: i64, v1: i64, v2: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   mul a5, a1, a2
-;   sub a0, a0, a5
+;   c.sub a0, a5
 ;   ret
 
 function %imul_sub_i32(i32, i32, i32) -> i32 {

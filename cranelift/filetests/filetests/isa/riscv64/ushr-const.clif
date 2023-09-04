@@ -406,7 +406,7 @@ block0(v0: i128):
 ;   addi a3, zero, 5
 ;   andi a4, a3, 0x3f
 ;   addi a2, zero, 0x40
-;   sub a2, a2, a4
+;   c.sub a2, a4
 ;   sll a5, a1, a2
 ;   beqz a4, 0xa
 ;   c.mv a2, a5
@@ -456,7 +456,7 @@ block0(v0: i128):
 ;   addi a3, zero, 5
 ;   andi a4, a3, 0x3f
 ;   addi a2, zero, 0x40
-;   sub a2, a2, a4
+;   c.sub a2, a4
 ;   sll a5, a1, a2
 ;   beqz a4, 0xa
 ;   c.mv a2, a5
@@ -506,7 +506,7 @@ block0(v0: i128):
 ;   addi a3, zero, 5
 ;   andi a4, a3, 0x3f
 ;   addi a2, zero, 0x40
-;   sub a2, a2, a4
+;   c.sub a2, a4
 ;   sll a5, a1, a2
 ;   beqz a4, 0xa
 ;   c.mv a2, a5
@@ -556,7 +556,7 @@ block0(v0: i128):
 ;   addi a3, zero, 5
 ;   andi a4, a3, 0x3f
 ;   addi a2, zero, 0x40
-;   sub a2, a2, a4
+;   c.sub a2, a4
 ;   sll a5, a1, a2
 ;   beqz a4, 0xa
 ;   c.mv a2, a5
