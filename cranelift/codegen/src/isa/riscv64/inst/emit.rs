@@ -524,6 +524,20 @@ impl Inst {
             {
                 sink.put2(encode_ca_type(CaOp::CAnd, rd, rs2));
             }
+
+            // C.OR
+            Inst::AluRRR {
+                alu_op: AluOPRRR::Or,
+                rd,
+                rs1,
+                rs2,
+            } if has_zca
+                && rd.to_reg() == rs1
+                && reg_is_compressible(rs1)
+                && reg_is_compressible(rs2) =>
+            {
+                sink.put2(encode_ca_type(CaOp::COr, rd, rs2));
+            }
             _ => return false,
         }
 

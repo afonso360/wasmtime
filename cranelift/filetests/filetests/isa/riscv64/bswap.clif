@@ -52,13 +52,13 @@ block0(v0: i32):
 ;   slli a2, a0, 8
 ;   srli a4, a0, 8
 ;   andi a1, a4, 0xff
-;   or a2, a2, a1
+;   c.or a2, a1
 ;   slli a4, a2, 0x10
 ;   srli a0, a0, 0x10
 ;   slli a2, a0, 8
 ;   srli a5, a0, 8
 ;   andi a0, a5, 0xff
-;   or a2, a2, a0
+;   c.or a2, a0
 ;   slli a5, a2, 0x30
 ;   srli a0, a5, 0x30
 ;   or a0, a4, a0
@@ -110,13 +110,13 @@ block0(v0: i64):
 ;   slli a2, a0, 8
 ;   srli a4, a0, 8
 ;   andi a1, a4, 0xff
-;   or a2, a2, a1
+;   c.or a2, a1
 ;   slli a4, a2, 0x10
 ;   srli a1, a0, 0x10
 ;   slli a2, a1, 8
 ;   srli a5, a1, 8
 ;   andi a1, a5, 0xff
-;   or a2, a2, a1
+;   c.or a2, a1
 ;   slli a5, a2, 0x30
 ;   srli a1, a5, 0x30
 ;   or a2, a4, a1
@@ -125,13 +125,13 @@ block0(v0: i64):
 ;   slli a2, a0, 8
 ;   srli a5, a0, 8
 ;   andi a1, a5, 0xff
-;   or a2, a2, a1
+;   c.or a2, a1
 ;   slli a5, a2, 0x10
 ;   srli a0, a0, 0x10
 ;   slli a2, a0, 8
 ;   srli a0, a0, 8
 ;   andi a0, a0, 0xff
-;   or a2, a2, a0
+;   c.or a2, a0
 ;   slli a0, a2, 0x30
 ;   srli a0, a0, 0x30
 ;   or a2, a5, a0
@@ -237,13 +237,13 @@ block0(v0: i128):
 ;   slli a3, a1, 8
 ;   srli a5, a1, 8
 ;   andi a2, a5, 0xff
-;   or a3, a3, a2
+;   c.or a3, a2
 ;   slli a5, a3, 0x10
 ;   srli a2, a1, 0x10
 ;   slli a3, a2, 8
 ;   srli a2, a2, 8
 ;   andi a2, a2, 0xff
-;   or a3, a3, a2
+;   c.or a3, a2
 ;   slli a2, a3, 0x30
 ;   srli a2, a2, 0x30
 ;   or a3, a5, a2
@@ -252,13 +252,13 @@ block0(v0: i128):
 ;   slli a3, a2, 8
 ;   srli a1, a2, 8
 ;   andi a1, a1, 0xff
-;   or a3, a3, a1
+;   c.or a3, a1
 ;   slli a1, a3, 0x10
 ;   srli a2, a2, 0x10
 ;   slli a3, a2, 8
 ;   srli a2, a2, 8
 ;   andi a2, a2, 0xff
-;   or a3, a3, a2
+;   c.or a3, a2
 ;   slli a2, a3, 0x30
 ;   srli a2, a2, 0x30
 ;   or a3, a1, a2
@@ -269,13 +269,13 @@ block0(v0: i128):
 ;   slli a5, a0, 8
 ;   srli a1, a0, 8
 ;   andi a3, a1, 0xff
-;   or a5, a5, a3
+;   c.or a5, a3
 ;   slli a1, a5, 0x10
 ;   srli a3, a0, 0x10
 ;   slli a5, a3, 8
 ;   srli a2, a3, 8
 ;   andi a3, a2, 0xff
-;   or a5, a5, a3
+;   c.or a5, a3
 ;   slli a2, a5, 0x30
 ;   srli a3, a2, 0x30
 ;   or a5, a1, a3
@@ -284,19 +284,19 @@ block0(v0: i128):
 ;   slli a5, a3, 8
 ;   srli a2, a3, 8
 ;   andi a4, a2, 0xff
-;   or a5, a5, a4
+;   c.or a5, a4
 ;   slli a2, a5, 0x10
 ;   srli a3, a3, 0x10
 ;   slli a5, a3, 8
 ;   srli a3, a3, 8
 ;   andi a3, a3, 0xff
-;   or a5, a5, a3
+;   c.or a5, a3
 ;   slli a3, a5, 0x30
 ;   srli a3, a3, 0x30
 ;   or a5, a2, a3
 ;   slli a2, a5, 0x20
 ;   srli a3, a2, 0x20
-;   or a1, a1, a3
+;   c.or a1, a3
 ;   c.mv a0, s5
 ;   addi sp, sp, 0x10
 ;   ld s5, -8(sp)

@@ -23,19 +23,19 @@ block0(v0: i8):
 ;   slli a2, a2, 7
 ;   addi a3, zero, 1
 ;   slli a3, a3, 0
-;   blez a4, 0x34
+;   blez a4, 0x32
 ;   and t5, a2, a1
-;   beq zero, t5, 8
-;   or a0, a0, a3
+;   beq zero, t5, 6
+;   c.or a0, a3
 ;   addi a4, a4, -1
 ;   srli a2, a2, 1
 ;   addi t5, zero, 8
 ;   rem t5, a4, t5
 ;   bnez t5, 0xc
 ;   srli a3, a3, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a3, a3, 1
-;   j -0x30
+;   j -0x2e
 ;   ret
 
 function %a(i16) -> i16 {
@@ -59,19 +59,19 @@ block0(v0: i16):
 ;   slli a2, a2, 0xf
 ;   addi a3, zero, 1
 ;   slli a3, a3, 8
-;   blez a4, 0x34
+;   blez a4, 0x32
 ;   and t5, a2, a0
-;   beq zero, t5, 8
-;   or a5, a5, a3
+;   beq zero, t5, 6
+;   c.or a5, a3
 ;   addi a4, a4, -1
 ;   srli a2, a2, 1
 ;   addi t5, zero, 8
 ;   rem t5, a4, t5
 ;   bnez t5, 0xc
 ;   srli a3, a3, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a3, a3, 1
-;   j -0x30
+;   j -0x2e
 ;   mv a1, zero
 ;   c.mv a2, a5
 ;   addi a3, zero, 0x38
@@ -106,19 +106,19 @@ block0(v0: i32):
 ;   slli a2, a2, 0x1f
 ;   addi a3, zero, 1
 ;   slli a3, a3, 0x18
-;   blez a4, 0x34
+;   blez a4, 0x32
 ;   and t5, a2, a0
-;   beq zero, t5, 8
-;   or a5, a5, a3
+;   beq zero, t5, 6
+;   c.or a5, a3
 ;   addi a4, a4, -1
 ;   srli a2, a2, 1
 ;   addi t5, zero, 8
 ;   rem t5, a4, t5
 ;   bnez t5, 0xc
 ;   srli a3, a3, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a3, a3, 1
-;   j -0x30
+;   j -0x2e
 ;   mv a1, zero
 ;   c.mv a2, a5
 ;   addi a3, zero, 0x38
@@ -162,19 +162,19 @@ block0(v0: i64):
 ;   slli a3, a3, 0x3f
 ;   addi a1, zero, 1
 ;   slli a1, a1, 0x38
-;   blez a2, 0x34
+;   blez a2, 0x32
 ;   and t5, a3, a5
-;   beq zero, t5, 8
-;   or a0, a0, a1
+;   beq zero, t5, 6
+;   c.or a0, a1
 ;   addi a2, a2, -1
 ;   srli a3, a3, 1
 ;   addi t5, zero, 8
 ;   rem t5, a2, t5
 ;   bnez t5, 0xc
 ;   srli a1, a1, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a1, a1, 1
-;   j -0x30
+;   j -0x2e
 ;   ret
 
 function %a(i128) -> i128 {
@@ -235,19 +235,19 @@ block0(v0: i128):
 ;   slli a4, a4, 0x3f
 ;   addi a2, zero, 1
 ;   slli a2, a2, 0x38
-;   blez a3, 0x34
+;   blez a3, 0x32
 ;   and t5, a4, a0
-;   beq zero, t5, 8
-;   or a1, a1, a2
+;   beq zero, t5, 6
+;   c.or a1, a2
 ;   addi a3, a3, -1
 ;   srli a4, a4, 1
 ;   addi t5, zero, 8
 ;   rem t5, a3, t5
 ;   bnez t5, 0xc
 ;   srli a2, a2, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a2, a2, 1
-;   j -0x30
+;   j -0x2e
 ;   c.mv a4, s11
 ;   mv s6, zero
 ;   c.mv a3, a4
@@ -265,19 +265,19 @@ block0(v0: i128):
 ;   slli a4, a4, 0x3f
 ;   addi a5, zero, 1
 ;   slli a5, a5, 0x38
-;   blez a2, 0x34
+;   blez a2, 0x32
 ;   and t5, a4, s6
-;   beq zero, t5, 8
-;   or a0, a0, a5
+;   beq zero, t5, 6
+;   c.or a0, a5
 ;   addi a2, a2, -1
 ;   srli a4, a4, 1
 ;   addi t5, zero, 8
 ;   rem t5, a2, t5
 ;   bnez t5, 0xc
 ;   srli a5, a5, 0xf
-;   j -0x28
+;   j -0x26
 ;   slli a5, a5, 1
-;   j -0x30
+;   j -0x2e
 ;   addi sp, sp, 0x10
 ;   ld s6, -8(sp)
 ;   ld s11, -0x10(sp)
@@ -1172,7 +1172,7 @@ block0(v0: i32, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   or a0, a0, a1
+;   c.or a0, a1
 ;   ret
 
 function %bor_i64(i64, i64) -> i64 {
@@ -1188,7 +1188,7 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   or a0, a0, a1
+;   c.or a0, a1
 ;   ret
 
 function %bor_i128(i128, i128) -> i128 {
@@ -1205,8 +1205,8 @@ block0(v0: i128, v1: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   or a0, a0, a2
-;   or a1, a1, a3
+;   c.or a0, a2
+;   c.or a1, a3
 ;   ret
 
 function %bor_i64_constant(i64) -> i64 {
@@ -1260,7 +1260,7 @@ block0(v0: i64, v1: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   slli a4, a1, 3
-;   or a0, a0, a4
+;   c.or a0, a4
 ;   ret
 
 function %bor_i64_constant_shift2(i64, i64) -> i64 {
@@ -1523,7 +1523,7 @@ block0(v0: i32, v1: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a4, a1
-;   or a0, a0, a4
+;   c.or a0, a4
 ;   ret
 
 function %bor_not_i64(i64, i64) -> i64 {
@@ -1541,7 +1541,7 @@ block0(v0: i64, v1: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   not a4, a1
-;   or a0, a0, a4
+;   c.or a0, a4
 ;   ret
 
 function %bor_not_i128(i128, i128) -> i128 {
@@ -1562,8 +1562,8 @@ block0(v0: i128, v1: i128):
 ; block0: ; offset 0x0
 ;   not a2, a2
 ;   not a3, a3
-;   or a0, a0, a2
-;   or a1, a1, a3
+;   c.or a0, a2
+;   c.or a1, a3
 ;   ret
 
 function %bor_not_i64_constant(i64) -> i64 {
@@ -1584,7 +1584,7 @@ block0(v0: i64):
 ; block0: ; offset 0x0
 ;   addi a4, zero, 4
 ;   not a4, a4
-;   or a0, a0, a4
+;   c.or a0, a4
 ;   ret
 
 function %bor_not_i64_constant_shift(i64, i64) -> i64 {
@@ -1606,7 +1606,7 @@ block0(v0: i64, v1: i64):
 ; block0: ; offset 0x0
 ;   slli a5, a1, 4
 ;   not a5, a5
-;   or a0, a0, a5
+;   c.or a0, a5
 ;   ret
 
 function %bxor_not_i32(i32, i32) -> i32 {
