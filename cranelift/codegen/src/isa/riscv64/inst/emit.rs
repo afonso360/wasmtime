@@ -562,6 +562,16 @@ impl Inst {
                 sink.put2(encode_cr2_type(CrOp::CJr, base));
             }
 
+            // C.JALR
+            Inst::Jalr { rd, base, offset }
+                if has_zca
+                    && rd.to_reg() == link_reg()
+                    && base != zero_reg()
+                    && offset.as_i16() == 0 =>
+            {
+                sink.put2(encode_cr2_type(CrOp::CJalr, base));
+            }
+
             _ => return false,
         }
 
