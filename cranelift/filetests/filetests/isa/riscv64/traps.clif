@@ -37,14 +37,14 @@ block0(v0: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a3, zero, 0x2a
-;   bne a0, a3, 0xc
+;   bne a0, a3, 0xa
 ;   addi a3, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   bnez a3, 8
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
-; block2: ; offset 0x1c
+; block2: ; offset 0x1a
 ;   c.unimp ; trap: user0
 ;   c.unimp
 

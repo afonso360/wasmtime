@@ -71,5 +71,5 @@ block2 cold:
 ;   ret
 ; block2: ; offset 0x10
 ;   addi a0, zero, 0x61
-;   j -8
+;   c.j -8
 

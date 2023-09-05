@@ -92,10 +92,10 @@ block0(v0: f32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.s a0, fa0, fa0
-;   beqz a0, 0x40
+;   beqz a0, 0x3c
 ;   auipc t6, 0
-;   lw t6, 0xc(t6)
-;   j 8
+;   lw t6, 0xa(t6)
+;   c.j 6
 ;   c.unimp
 ;   c.fsd fs0, 0x38(a5)
 ;   fmv.w.x fa3, t6
@@ -110,7 +110,7 @@ block0(v0: f32):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   fcvt.wu.s a0, fa0, rtz
-;   j 8
+;   c.j 6
 ;   c.unimp ; trap: bad_toint
 ;   c.unimp
 ;   ret
@@ -129,10 +129,10 @@ block0(v0: f64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.d a0, fa0, fa0
-;   beqz a0, 0x54
+;   beqz a0, 0x4e
 ;   auipc t6, 0
-;   ld t6, 0xc(t6)
-;   j 0xc
+;   ld t6, 0xa(t6)
+;   c.j 0xa
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp
@@ -143,8 +143,8 @@ block0(v0: f64):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   auipc t6, 0
-;   ld t6, 0xc(t6)
-;   j 0xc
+;   ld t6, 0xa(t6)
+;   c.j 0xa
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp
@@ -155,7 +155,7 @@ block0(v0: f64):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   fcvt.wu.d a0, fa0, rtz
-;   j 8
+;   c.j 6
 ;   c.unimp ; trap: bad_toint
 ;   c.unimp
 ;   ret
@@ -174,10 +174,10 @@ block0(v0: f32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.s a0, fa0, fa0
-;   beqz a0, 0x40
+;   beqz a0, 0x3c
 ;   auipc t6, 0
-;   lw t6, 0xc(t6)
-;   j 8
+;   lw t6, 0xa(t6)
+;   c.j 6
 ;   c.unimp
 ;   c.fsd fs0, 0x38(a5)
 ;   fmv.w.x fa3, t6
@@ -192,7 +192,7 @@ block0(v0: f32):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   fcvt.wu.s a0, fa0, rtz
-;   j 8
+;   c.j 6
 ;   c.unimp ; trap: bad_toint
 ;   c.unimp
 ;   ret
@@ -211,10 +211,10 @@ block0(v0: f64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.d a0, fa0, fa0
-;   beqz a0, 0x54
+;   beqz a0, 0x4e
 ;   auipc t6, 0
-;   ld t6, 0xc(t6)
-;   j 0xc
+;   ld t6, 0xa(t6)
+;   c.j 0xa
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp
@@ -225,8 +225,8 @@ block0(v0: f64):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   auipc t6, 0
-;   ld t6, 0xc(t6)
-;   j 0xc
+;   ld t6, 0xa(t6)
+;   c.j 0xa
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp
@@ -237,7 +237,7 @@ block0(v0: f64):
 ;   c.unimp ; trap: int_ovf
 ;   c.unimp
 ;   fcvt.wu.d a0, fa0, rtz
-;   j 8
+;   c.j 6
 ;   c.unimp ; trap: bad_toint
 ;   c.unimp
 ;   ret

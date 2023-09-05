@@ -379,20 +379,20 @@ block0(v0: i128):
 ;   c.sub a2, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a2
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a2, a0
-;   j 8
+;   c.j 6
 ;   mv a2, zero
 ;   sll a5, a1, a5
 ;   or a1, a2, a5
 ;   addi a2, zero, 0x40
 ;   andi a5, a3, 0x7f
-;   bgeu a5, a2, 0xa
-;   c.mv a0, a4
-;   j 8
-;   mv a0, zero
 ;   bgeu a5, a2, 8
-;   j 6
+;   c.mv a0, a4
+;   c.j 6
+;   mv a0, zero
+;   bgeu a5, a2, 6
+;   c.j 4
 ;   c.mv a1, a4
 ;   ret
 
@@ -428,20 +428,20 @@ block0(v0: i128):
 ;   c.sub a2, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a2
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a2, a0
-;   j 8
+;   c.j 6
 ;   mv a2, zero
 ;   sll a5, a1, a5
 ;   or a1, a2, a5
 ;   addi a2, zero, 0x40
 ;   andi a5, a3, 0x7f
-;   bgeu a5, a2, 0xa
-;   c.mv a0, a4
-;   j 8
-;   mv a0, zero
 ;   bgeu a5, a2, 8
-;   j 6
+;   c.mv a0, a4
+;   c.j 6
+;   mv a0, zero
+;   bgeu a5, a2, 6
+;   c.j 4
 ;   c.mv a1, a4
 ;   ret
 
@@ -477,20 +477,20 @@ block0(v0: i128):
 ;   c.sub a2, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a2
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a2, a0
-;   j 8
+;   c.j 6
 ;   mv a2, zero
 ;   sll a5, a1, a5
 ;   or a1, a2, a5
 ;   addi a2, zero, 0x40
 ;   andi a5, a3, 0x7f
-;   bgeu a5, a2, 0xa
-;   c.mv a0, a4
-;   j 8
-;   mv a0, zero
 ;   bgeu a5, a2, 8
-;   j 6
+;   c.mv a0, a4
+;   c.j 6
+;   mv a0, zero
+;   bgeu a5, a2, 6
+;   c.j 4
 ;   c.mv a1, a4
 ;   ret
 
@@ -526,20 +526,20 @@ block0(v0: i128):
 ;   c.sub a2, a5
 ;   sll a4, a0, a5
 ;   srl a0, a0, a2
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a2, a0
-;   j 8
+;   c.j 6
 ;   mv a2, zero
 ;   sll a5, a1, a5
 ;   or a1, a2, a5
 ;   addi a2, zero, 0x40
 ;   andi a5, a3, 0x7f
-;   bgeu a5, a2, 0xa
-;   c.mv a0, a4
-;   j 8
-;   mv a0, zero
 ;   bgeu a5, a2, 8
-;   j 6
+;   c.mv a0, a4
+;   c.j 6
+;   mv a0, zero
+;   bgeu a5, a2, 6
+;   c.j 4
 ;   c.mv a1, a4
 ;   ret
 
@@ -578,19 +578,19 @@ block0(v0: i128):
 ;   c.sub a3, a2
 ;   sll a5, a0, a2
 ;   srl a3, a0, a3
-;   beqz a2, 8
-;   j 8
+;   beqz a2, 6
+;   c.j 6
 ;   mv a3, zero
 ;   sll a0, a1, a2
 ;   or a1, a3, a0
 ;   addi a3, zero, 0x40
 ;   andi a2, a4, 0x7f
-;   bgeu a2, a3, 0xa
-;   c.mv a0, a5
-;   j 8
-;   mv a0, zero
 ;   bgeu a2, a3, 8
-;   j 6
+;   c.mv a0, a5
+;   c.j 6
+;   mv a0, zero
+;   bgeu a2, a3, 6
+;   c.j 4
 ;   c.mv a1, a5
 ;   ret
 

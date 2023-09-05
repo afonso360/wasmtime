@@ -235,15 +235,15 @@ block0(v0: i128, v1: f32, v2: f32):
 ;   fmv.d fa2, fa0
 ;   addi a3, zero, 0x2a
 ;   mv a4, zero
-;   bne a1, a4, 0x10
-;   bne a0, a3, 0xc
+;   bne a1, a4, 0xe
+;   bne a0, a3, 0xa
 ;   addi a3, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   andi a2, a3, 0xff
-;   beqz a2, 0xc
+;   beqz a2, 0xa
 ;   fmv.d fa0, fa2
-;   j 8
+;   c.j 6
 ;   fmv.d fa0, fa1
 ;   ret
 
@@ -271,15 +271,15 @@ block0(v0: i128, v1: f64, v2: f64):
 ;   fmv.d fa2, fa0
 ;   addi a3, zero, 0x2a
 ;   mv a4, zero
-;   bne a1, a4, 0x10
-;   bne a0, a3, 0xc
+;   bne a1, a4, 0xe
+;   bne a0, a3, 0xa
 ;   addi a3, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   andi a2, a3, 0xff
-;   beqz a2, 0xc
+;   beqz a2, 0xa
 ;   fmv.d fa0, fa2
-;   j 8
+;   c.j 6
 ;   fmv.d fa0, fa1
 ;   ret
 

@@ -44,8 +44,8 @@ block0(v0: i64):
 ;   c.mv s0, sp
 ; block1: ; offset 0xe
 ;   auipc a2, 0
-;   ld a2, 0xc(a2)
-;   j 0xc
+;   ld a2, 0xa(a2)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %callee_i64 0
 ;   c.unimp
 ;   c.unimp
@@ -141,8 +141,8 @@ block0(v0: f64):
 ;   c.mv s0, sp
 ; block1: ; offset 0xe
 ;   auipc a2, 0
-;   ld a2, 0xc(a2)
-;   j 0xc
+;   ld a2, 0xa(a2)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %callee_f64 0
 ;   c.unimp
 ;   c.unimp
@@ -175,9 +175,9 @@ block0(v0: i8):
 ;   mv a5, zero
 ;   andi a3, s1, 0xff
 ;   andi a5, a5, 0xff
-;   bne a3, a5, 0xc
+;   bne a3, a5, 0xa
 ;   addi s1, zero, 1
-;   j 8
+;   c.j 6
 ;   mv s1, zero
 ;   ret
 
@@ -205,8 +205,8 @@ block0(v0: i8):
 ;   c.mv s0, sp
 ; block1: ; offset 0xe
 ;   auipc a2, 0
-;   ld a2, 0xc(a2)
-;   j 0xc
+;   ld a2, 0xa(a2)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %callee_i8 0
 ;   c.unimp
 ;   c.unimp
@@ -381,8 +381,8 @@ block0:
 ;   sd s1, 0x18(sp)
 ;   sd a0, 0x20(sp)
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %tail_callee_stack_args 0
 ;   c.unimp
 ;   c.unimp
@@ -633,7 +633,7 @@ block2:
 ;   addi t2, zero, 0x7d
 ;   addi t1, zero, 0x82
 ;   addi t0, zero, 0x87
-;   bnez s1, 0x86
+;   bnez s1, 0x84
 ; block2: ; offset 0x8a
 ;   addi s1, zero, 0x8c
 ;   addi sp, sp, -0x30
@@ -644,8 +644,8 @@ block2:
 ;   sd t0, 0x20(sp)
 ;   sd s1, 0x28(sp)
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %different_callee2 0
 ;   c.unimp
 ;   c.unimp
@@ -670,7 +670,7 @@ block2:
 ;   addi sp, s0, -0x20
 ;   c.mv s0, t6
 ;   jr t0
-; block3: ; offset 0x10c
+; block3: ; offset 0x10a
 ;   ld s1, 0x10(sp)
 ;   addi sp, sp, -0x30
 ;   sd a1, 0(sp)
@@ -679,8 +679,8 @@ block2:
 ;   sd t1, 0x18(sp)
 ;   sd t0, 0x20(sp)
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %different_callee1 0
 ;   c.unimp
 ;   c.unimp

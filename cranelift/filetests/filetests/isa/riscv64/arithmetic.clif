@@ -106,13 +106,13 @@ block0(v0: i64, v1: i64):
 ;   addi a3, zero, -1
 ;   addi a5, zero, 1
 ;   slli a2, a5, 0x3f
-;   bne a3, a1, 0xc
+;   bne a3, a1, 0xa
 ;   addi a3, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
-;   bne a2, a0, 0xc
+;   bne a2, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   and a2, a3, a5
 ;   beqz a2, 8
@@ -151,13 +151,13 @@ block0(v0: i64):
 ;   addi a4, zero, -1
 ;   addi a5, zero, 1
 ;   slli a1, a5, 0x3f
-;   bne a4, a3, 0xc
+;   bne a4, a3, 0xa
 ;   addi a4, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a4, zero
-;   bne a1, a0, 0xc
+;   bne a1, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   and a1, a4, a5
 ;   beqz a1, 8
@@ -282,13 +282,13 @@ block0(v0: i32, v1: i32):
 ;   addi a4, zero, 1
 ;   slli a0, a4, 0x3f
 ;   slli a2, a3, 0x20
-;   bne a1, a5, 0xc
+;   bne a1, a5, 0xa
 ;   addi a4, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a4, zero
-;   bne a0, a2, 0xc
+;   bne a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   and a1, a4, a0
 ;   beqz a1, 8
@@ -335,13 +335,13 @@ block0(v0: i32):
 ;   addi a4, zero, 1
 ;   slli a0, a4, 0x3f
 ;   slli a2, a3, 0x20
-;   bne a1, a5, 0xc
+;   bne a1, a5, 0xa
 ;   addi a4, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a4, zero
-;   bne a0, a2, 0xc
+;   bne a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   and a1, a4, a0
 ;   beqz a1, 8
@@ -886,13 +886,13 @@ block0(v0: i64):
 ;   addi a4, zero, -1
 ;   addi a5, zero, 1
 ;   slli a1, a5, 0x3f
-;   bne a4, a3, 0xc
+;   bne a4, a3, 0xa
 ;   addi a4, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a4, zero
-;   bne a1, a0, 0xc
+;   bne a1, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   and a1, a4, a5
 ;   beqz a1, 8

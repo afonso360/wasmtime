@@ -171,8 +171,8 @@ block0:
 ;   sd s1, 0x18(sp)
 ;   sd a0, 0x20(sp)
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %tail_callee_stack_args 0
 ;   c.unimp
 ;   c.unimp
@@ -361,8 +361,8 @@ block0:
 ;   addi sp, sp, -0x30
 ;   c.mv s1, sp
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %tail_callee_stack_rets 0
 ;   c.unimp
 ;   c.unimp
@@ -589,8 +589,8 @@ block0:
 ;   addi a0, sp, 0x30
 ;   sd a0, 0x28(sp)
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %tail_callee_stack_args_and_rets 0
 ;   c.unimp
 ;   c.unimp

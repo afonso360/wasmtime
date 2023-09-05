@@ -55,24 +55,24 @@ block0(v0: i128, v1: i128):
 ;   sll a4, a0, a5
 ;   srl s7, a1, a3
 ;   c.mv t2, a1
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a1, s7
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   or a1, a4, a1
 ;   c.mv a4, t2
 ;   sll a4, a4, a5
 ;   srl a3, a0, a3
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a5, a3
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   or a3, a4, a5
 ;   addi a4, zero, 0x40
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a4, 0xa
+;   bgeu a5, a4, 8
 ;   c.mv a0, a1
-;   j 6
+;   c.j 4
 ;   c.mv a0, a3
 ;   bgeu a5, a4, 6
 ;   c.mv a1, a3
@@ -107,9 +107,9 @@ block0(v0: i64, v1: i64):
 ;   sub a1, a5, a3
 ;   sll a4, a0, a3
 ;   srl a5, a0, a1
-;   beqz a3, 0xa
+;   beqz a3, 8
 ;   c.mv a1, a5
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   or a0, a4, a1
 ;   ret
@@ -142,9 +142,9 @@ block0(v0: i32, v1: i32):
 ;   sub a0, a3, a1
 ;   sll a2, a5, a1
 ;   srl a3, a5, a0
-;   beqz a1, 0xa
+;   beqz a1, 8
 ;   c.mv a5, a3
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   or a0, a2, a5
 ;   ret
@@ -177,9 +177,9 @@ block0(v0: i16, v1: i16):
 ;   sub a0, a3, a1
 ;   sll a2, a5, a1
 ;   srl a3, a5, a0
-;   beqz a1, 0xa
+;   beqz a1, 8
 ;   c.mv a5, a3
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   or a0, a2, a5
 ;   ret
@@ -210,9 +210,9 @@ block0(v0: i8, v1: i8):
 ;   sub a4, a1, a5
 ;   sll a0, a3, a5
 ;   srl a1, a3, a4
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a3, a1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   c.or a0, a3
 ;   ret
@@ -244,9 +244,9 @@ block0(v0: i64):
 ;   sub a1, a5, a3
 ;   sll a4, a0, a3
 ;   srl a5, a0, a1
-;   beqz a3, 0xa
+;   beqz a3, 8
 ;   c.mv a1, a5
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   or a0, a4, a1
 ;   ret
@@ -282,9 +282,9 @@ block0(v0: i32):
 ;   sub a0, a3, a1
 ;   sll a2, a5, a1
 ;   srl a3, a5, a0
-;   beqz a1, 0xa
+;   beqz a1, 8
 ;   c.mv a5, a3
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   or a0, a2, a5
 ;   ret
@@ -320,9 +320,9 @@ block0(v0: i16):
 ;   sub a0, a3, a1
 ;   sll a2, a5, a1
 ;   srl a3, a5, a0
-;   beqz a1, 0xa
+;   beqz a1, 8
 ;   c.mv a5, a3
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   or a0, a2, a5
 ;   ret
@@ -356,9 +356,9 @@ block0(v0: i8):
 ;   sub a4, a1, a5
 ;   sll a0, a3, a5
 ;   srl a1, a3, a4
-;   beqz a5, 0xa
+;   beqz a5, 8
 ;   c.mv a3, a1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   c.or a0, a3
 ;   ret

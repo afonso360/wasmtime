@@ -144,8 +144,8 @@ block3(v7: r64, v8: r64):
 ;   c.mv a0, a1
 ;   c.mv s11, a1
 ;   auipc a1, 0
-;   ld a1, 0xc(a1)
-;   j 0xc
+;   ld a1, 0xa(a1)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %f 0
 ;   c.unimp
 ;   c.unimp
@@ -156,15 +156,15 @@ block3(v7: r64, v8: r64):
 ;   c.mv a1, s11
 ;   sd a1, 0(a2)
 ;   andi a1, a0, 0xff
-;   bnez a1, 0xe
-; block2: ; offset 0x52
+;   bnez a1, 0xc
+; block2: ; offset 0x50
 ;   c.mv a1, s11
 ;   ld a0, 0x10(sp)
-;   j 0xa
-; block3: ; offset 0x5c
+;   c.j 8
+; block3: ; offset 0x58
 ;   c.mv a0, s11
 ;   ld a1, 0x10(sp)
-; block4: ; offset 0x62
+; block4: ; offset 0x5e
 ;   c.mv a4, sp
 ;   ld a4, 0(a4)
 ;   c.mv a2, s7

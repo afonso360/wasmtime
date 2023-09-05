@@ -78,8 +78,8 @@ block0(v0: i64):
 ;   c.unimp
 ; block1: ; offset 0x16
 ;   auipc a2, 0
-;   ld a2, 0xc(a2)
-;   j 0xc
+;   ld a2, 0xa(a2)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %foo 0
 ;   c.unimp
 ;   c.unimp
@@ -130,8 +130,8 @@ block0(v0: i64):
 ;   c.unimp
 ; block1: ; offset 0x1e
 ;   auipc a2, 0
-;   ld a2, 0xc(a2)
-;   j 0xc
+;   ld a2, 0xa(a2)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %foo 0
 ;   c.unimp
 ;   c.unimp
@@ -226,8 +226,8 @@ block0(v0: i64):
 ;   lui a0, 0x62
 ;   addi a0, a0, -0x580
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -236,7 +236,7 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x56
+; block1: ; offset 0x54
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp
@@ -345,8 +345,8 @@ block0(v0: i64):
 ;   lui a0, 0x62
 ;   addi a0, a0, -0x580
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -355,7 +355,7 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x5e
+; block1: ; offset 0x5c
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp

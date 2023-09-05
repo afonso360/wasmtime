@@ -20,8 +20,8 @@ block0(v0: i8):
 ;   slli a2, a0, 0x38
 ;   srai a4, a2, 0x38
 ;   neg a0, a4
-;   blt a0, a4, 8
-;   j 6
+;   blt a0, a4, 6
+;   c.j 4
 ;   c.mv a0, a4
 ;   ret
 
@@ -44,8 +44,8 @@ block0(v0: i16):
 ;   slli a2, a0, 0x30
 ;   srai a4, a2, 0x30
 ;   neg a0, a4
-;   blt a0, a4, 8
-;   j 6
+;   blt a0, a4, 6
+;   c.j 4
 ;   c.mv a0, a4
 ;   ret
 
@@ -66,9 +66,9 @@ block0(v0: i32):
 ; block0: ; offset 0x0
 ;   sext.w a2, a0
 ;   neg a4, a2
-;   blt a4, a2, 0xa
+;   blt a4, a2, 8
 ;   c.mv a0, a4
-;   j 6
+;   c.j 4
 ;   c.mv a0, a2
 ;   ret
 

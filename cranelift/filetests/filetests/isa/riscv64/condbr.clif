@@ -15,9 +15,9 @@ block0(v0: i64, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bne a0, a1, 0xc
+;   bne a0, a1, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -34,10 +34,10 @@ block0(v0: i128, v1: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bne a1, a3, 0x10
-;   bne a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bne a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -55,9 +55,9 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bne a1, a3, 8
-;   beq a0, a2, 0xc
+;   beq a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -75,10 +75,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -96,10 +96,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -117,10 +117,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bltu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bltu a2, a0, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -138,10 +138,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bltu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bltu a2, a0, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -159,10 +159,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a2, a0, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -180,10 +180,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a2, a0, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -201,10 +201,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bltu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bltu a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -222,10 +222,10 @@ block0(v0: i128, v1: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bltu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bltu a0, a2, 0xa
 ;   addi a0, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a0, zero
 ;   ret
 
@@ -256,15 +256,15 @@ block2:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bne a0, a1, 0xc
+;   bne a0, a1, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
 ;   bnez a5, 0xc
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   addi a0, zero, 2
 ;   ret
-; block2: ; offset 0x1c
+; block2: ; offset 0x1a
 ;   addi a0, zero, 1
 ;   ret
 
@@ -292,11 +292,11 @@ block1:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bne a0, a1, 0xc
+;   bne a0, a1, 0xa
 ;   addi a4, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a4, zero
-; block1: ; offset 0x10
+; block1: ; offset 0xe
 ;   addi a0, zero, 1
 ;   ret
 
@@ -323,11 +323,11 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bnez a1, 8
-;   beqz a0, 0xc
+;   beqz a0, 0xa
 ;   addi a3, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a3, zero
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   ret
 
 function %i128_bricmp_eq(i128, i128) {
@@ -352,12 +352,12 @@ block1:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bne a1, a3, 0x10
-;   bne a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bne a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   ret
 
 function %i128_bricmp_ne(i128, i128) {
@@ -383,11 +383,11 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bne a1, a3, 8
-;   beq a0, a2, 0xc
+;   beq a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   ret
 
 function %i128_bricmp_slt(i128, i128) {
@@ -413,12 +413,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_ult(i128, i128) {
@@ -444,12 +444,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_sle(i128, i128) {
@@ -475,12 +475,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bltu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bltu a2, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_ule(i128, i128) {
@@ -506,12 +506,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a1, a3, 0xc
-;   bne a1, a3, 0x10
-;   bltu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bltu a2, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_sgt(i128, i128) {
@@ -537,12 +537,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a2, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_ugt(i128, i128) {
@@ -568,12 +568,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bgeu a2, a0, 0xc
+;   bne a1, a3, 0xe
+;   bgeu a2, a0, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_sge(i128, i128) {
@@ -599,12 +599,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   blt a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bltu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bltu a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i128_bricmp_uge(i128, i128) {
@@ -630,12 +630,12 @@ block1:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   bltu a3, a1, 0xc
-;   bne a1, a3, 0x10
-;   bltu a0, a2, 0xc
+;   bne a1, a3, 0xe
+;   bltu a0, a2, 0xa
 ;   addi a5, zero, 1
-;   j 8
+;   c.j 6
 ;   mv a5, zero
-; block1: ; offset 0x18
+; block1: ; offset 0x16
 ;   ret
 
 function %i8_brif(i8){

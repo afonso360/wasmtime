@@ -57,33 +57,33 @@ block5(v5: i32):
 ;   addi a3, zero, 4
 ;   bltu t6, a3, 0xc
 ;   auipc a3, 0
-;   jalr zero, a3, 0x54
+;   jalr zero, a3, 0x4c
 ;   auipc a2, 0
 ;   slli a3, t6, 3
 ;   add a2, a2, a3
 ;   jalr zero, a2, 0x10
 ;   auipc a3, 0
-;   jalr zero, a3, 0x34
+;   jalr zero, a3, 0x2e
 ;   auipc a3, 0
-;   jalr zero, a3, 0x24
+;   jalr zero, a3, 0x20
 ;   auipc a3, 0
-;   jalr zero, a3, 0x1c
+;   jalr zero, a3, 0x18
 ;   auipc a3, 0
-;   jalr zero, a3, 0xc
+;   jalr zero, a3, 0xa
 ; block1: ; offset 0x48
-;   j 0xc
-; block2: ; offset 0x4c
+;   c.j 8
+; block2: ; offset 0x4a
 ;   addi a5, zero, 3
-;   j 0x18
-; block3: ; offset 0x54
+;   c.j 0x12
+; block3: ; offset 0x50
 ;   addi a5, zero, 2
-;   j 0x10
-; block4: ; offset 0x5c
+;   c.j 0xc
+; block4: ; offset 0x56
 ;   addi a5, zero, 1
-;   j 8
-; block5: ; offset 0x64
+;   c.j 6
+; block5: ; offset 0x5c
 ;   addi a5, zero, 4
-; block6: ; offset 0x68
+; block6: ; offset 0x60
 ;   c.add a0, a5
 ;   ret
 

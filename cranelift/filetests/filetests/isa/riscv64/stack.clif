@@ -75,8 +75,8 @@ block0:
 ;   lui a0, 0x18
 ;   addi a0, a0, 0x6b0
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -85,7 +85,7 @@ block0:
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
 ;   add sp, t6, sp
-; block1: ; offset 0x3a
+; block1: ; offset 0x38
 ;   c.mv a0, sp
 ;   lui t6, 0x18
 ;   addi t6, t6, 0x6b0
@@ -170,8 +170,8 @@ block0:
 ;   lui a0, 0x18
 ;   addi a0, a0, 0x6b0
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -180,7 +180,7 @@ block0:
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
 ;   add sp, t6, sp
-; block1: ; offset 0x3a
+; block1: ; offset 0x38
 ;   c.mv a1, sp
 ;   ld a0, 0(a1)
 ;   lui t6, 0x18
@@ -266,8 +266,8 @@ block0(v0: i64):
 ;   lui a0, 0x18
 ;   addi a0, a0, 0x6b0
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -276,7 +276,7 @@ block0(v0: i64):
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
 ;   add sp, t6, sp
-; block1: ; offset 0x3a
+; block1: ; offset 0x38
 ;   c.mv a2, sp
 ;   sd a0, 0(a2)
 ;   lui t6, 0x18
@@ -969,8 +969,8 @@ block0(v0: i128):
 ;   lui a0, 0x18
 ;   addi a0, a0, 0x6b0
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -979,7 +979,7 @@ block0(v0: i128):
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
 ;   add sp, t6, sp
-; block1: ; offset 0x3a
+; block1: ; offset 0x38
 ;   c.mv a3, sp
 ;   sd a0, 0(a3)
 ;   sd a1, 8(a3)
@@ -1111,8 +1111,8 @@ block0:
 ;   lui a0, 0x18
 ;   addi a0, a0, 0x6b0
 ;   auipc t5, 0
-;   ld t5, 0xc(t5)
-;   j 0xc
+;   ld t5, 0xa(t5)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 %Probestack 0
 ;   c.unimp
 ;   c.unimp
@@ -1121,7 +1121,7 @@ block0:
 ;   lui t6, 0xfffe8
 ;   addi t6, t6, -0x6b0
 ;   add sp, t6, sp
-; block1: ; offset 0x3a
+; block1: ; offset 0x38
 ;   c.mv a2, sp
 ;   ld a0, 0(a2)
 ;   ld a1, 8(a2)

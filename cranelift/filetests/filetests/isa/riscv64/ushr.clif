@@ -401,22 +401,22 @@ block0(v0: i128, v1: i8):
 ;   addi a3, zero, 0x40
 ;   c.sub a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xa
+;   beqz a4, 8
 ;   c.mv a3, a5
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi t0, zero, 0x40
 ;   srl a3, a1, a4
 ;   andi a4, a2, 0x7f
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a0, a5
-;   j 6
+;   c.j 4
 ;   c.mv a0, a3
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a1, a3
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   ret
 
@@ -448,22 +448,22 @@ block0(v0: i128, v1: i16):
 ;   addi a3, zero, 0x40
 ;   c.sub a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xa
+;   beqz a4, 8
 ;   c.mv a3, a5
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi t0, zero, 0x40
 ;   srl a3, a1, a4
 ;   andi a4, a2, 0x7f
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a0, a5
-;   j 6
+;   c.j 4
 ;   c.mv a0, a3
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a1, a3
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   ret
 
@@ -495,22 +495,22 @@ block0(v0: i128, v1: i32):
 ;   addi a3, zero, 0x40
 ;   c.sub a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xa
+;   beqz a4, 8
 ;   c.mv a3, a5
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi t0, zero, 0x40
 ;   srl a3, a1, a4
 ;   andi a4, a2, 0x7f
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a0, a5
-;   j 6
+;   c.j 4
 ;   c.mv a0, a3
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a1, a3
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   ret
 
@@ -542,22 +542,22 @@ block0(v0: i128, v1: i64):
 ;   addi a3, zero, 0x40
 ;   c.sub a3, a4
 ;   sll a5, a1, a3
-;   beqz a4, 0xa
+;   beqz a4, 8
 ;   c.mv a3, a5
-;   j 8
+;   c.j 6
 ;   mv a3, zero
 ;   srl a5, a0, a4
 ;   or a5, a3, a5
 ;   addi t0, zero, 0x40
 ;   srl a3, a1, a4
 ;   andi a4, a2, 0x7f
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a0, a5
-;   j 6
+;   c.j 4
 ;   c.mv a0, a3
-;   bgeu a4, t0, 0xa
+;   bgeu a4, t0, 8
 ;   c.mv a1, a3
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   ret
 
@@ -589,20 +589,20 @@ block0(v0: i128, v1: i128):
 ;   addi a3, zero, 0x40
 ;   c.sub a3, a5
 ;   sll a3, a1, a3
-;   beqz a5, 8
-;   j 8
+;   beqz a5, 6
+;   c.j 6
 ;   mv a3, zero
 ;   srl a4, a0, a5
 ;   or a0, a3, a4
 ;   addi a3, zero, 0x40
 ;   srl a4, a1, a5
 ;   andi a5, a2, 0x7f
-;   bgeu a5, a3, 8
-;   j 6
+;   bgeu a5, a3, 6
+;   c.j 4
 ;   c.mv a0, a4
-;   bgeu a5, a3, 0xa
+;   bgeu a5, a3, 8
 ;   c.mv a1, a4
-;   j 8
+;   c.j 6
 ;   mv a1, zero
 ;   ret
 

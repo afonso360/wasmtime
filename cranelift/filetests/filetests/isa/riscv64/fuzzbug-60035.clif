@@ -103,8 +103,8 @@ block0:
 ;   addi sp, sp, -0xc0
 ; block1: ; offset 0x66
 ;   auipc t0, 0
-;   ld t0, 0xc(t0)
-;   j 0xc
+;   ld t0, 0xa(t0)
+;   c.j 0xa
 ;   c.unimp ; reloc_external Abs8 u1:7 0
 ;   c.unimp
 ;   c.unimp
