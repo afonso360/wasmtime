@@ -552,6 +552,16 @@ impl Inst {
                 sink.put2(encode_cj_type(CjOp::CJ, Imm12::zero()));
             }
 
+            // C.JR
+            Inst::Jalr { rd, base, offset }
+                if has_zca
+                    && rd.to_reg() == zero_reg()
+                    && base != zero_reg()
+                    && offset.as_i16() == 0 =>
+            {
+                sink.put2(encode_cr2_type(CrOp::CJr, base));
+            }
+
             _ => return false,
         }
 
@@ -900,7 +910,7 @@ impl Inst {
                             0,
                         )
                         .into_iter()
-                        .for_each(|i| i.emit(&[], sink, emit_info, state));
+                        .for_each(|i| i.emit_uncompressed(sink, emit_info, state, start_off));
                     }
                     ExternalName::LibCall(..)
                     | ExternalName::TestCase { .. }
@@ -926,7 +936,7 @@ impl Inst {
                             base: spilltmp_reg2(),
                             offset: Imm12::zero(),
                         }
-                        .emit(&[], sink, emit_info, state);
+                        .emit_uncompressed(sink, emit_info, state, start_off);
                     }
                 }
 
@@ -950,7 +960,7 @@ impl Inst {
                     base: info.rn,
                     offset: Imm12::zero(),
                 }
-                .emit(&[], sink, emit_info, state);
+                .emit_uncompressed(sink, emit_info, state, start_off);
 
                 let callee_pop_size = i64::from(info.callee_pop_size);
                 state.virtual_sp_offset -= callee_pop_size;
@@ -976,7 +986,7 @@ impl Inst {
                 sink.add_reloc(Reloc::RiscvCall, &callee, 0);
                 Inst::construct_auipc_and_jalr(None, writable_spilltmp_reg(), 0)
                     .into_iter()
-                    .for_each(|i| i.emit(&[], sink, emit_info, state));
+                    .for_each(|i| i.emit_uncompressed(sink, emit_info, state, start_off));
 
                 // `emit_return_call_common_sequence` emits an island if
                 // necessary, so we can safely disable the worst-case-size check
@@ -1028,7 +1038,9 @@ impl Inst {
                                     offset,
                                 )
                                 .into_iter()
-                                .for_each(|i| i.emit(&[], sink, emit_info, state));
+                                .for_each(|i| {
+                                    i.emit_uncompressed(sink, emit_info, state, start_off)
+                                });
                             }
                         } else {
                             // CondBr often generate Jal {dest : 0}, means otherwise no jump.
@@ -1067,7 +1079,7 @@ impl Inst {
                                 offset as i64,
                             )
                             .into_iter()
-                            .for_each(|i| i.emit(&[], sink, emit_info, state));
+                            .for_each(|i| i.emit_uncompressed(sink, emit_info, state, start_off));
                         }
                     }
                 }
@@ -1201,7 +1213,7 @@ impl Inst {
                 );
                 Inst::construct_auipc_and_jalr(None, tmp2, 0)
                     .iter()
-                    .for_each(|i| i.emit(&[], sink, emit_info, state));
+                    .for_each(|i| i.emit_uncompressed(sink, emit_info, state, start_off));
 
                 // Compute the jump table offset.
                 // We need to emit a PC relative offset,

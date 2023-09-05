@@ -54,7 +54,7 @@ block0(v0: i64):
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
 ;   c.mv s0, t6
-;   jr a2
+;   c.jr a2
 
 ;;;; Test colocated tail calls ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -151,7 +151,7 @@ block0(v0: f64):
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
 ;   c.mv s0, t6
-;   jr a2
+;   c.jr a2
 
 ;;;; Test passing `i8`s ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -215,7 +215,7 @@ block0(v0: i8):
 ;   ld t6, 0(s0)
 ;   addi sp, s0, 0x10
 ;   c.mv s0, t6
-;   jr a2
+;   c.jr a2
 
 ;;;; Test passing many arguments on stack ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -405,7 +405,7 @@ block0:
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
 ;   c.mv s0, t6
-;   jr t0
+;   c.jr t0
 
 ;;;; Test diff blocks with diff return calls with diff # of stack args ;;;;;;;;;
 
@@ -633,7 +633,7 @@ block2:
 ;   addi t2, zero, 0x7d
 ;   addi t1, zero, 0x82
 ;   addi t0, zero, 0x87
-;   bnez s1, 0x84
+;   bnez s1, 0x82
 ; block2: ; offset 0x8a
 ;   addi s1, zero, 0x8c
 ;   addi sp, sp, -0x30
@@ -669,8 +669,8 @@ block2:
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
 ;   c.mv s0, t6
-;   jr t0
-; block3: ; offset 0x10a
+;   c.jr t0
+; block3: ; offset 0x108
 ;   ld s1, 0x10(sp)
 ;   addi sp, sp, -0x30
 ;   sd a1, 0(sp)
@@ -703,5 +703,5 @@ block2:
 ;   sd t5, -0x20(s0)
 ;   addi sp, s0, -0x20
 ;   c.mv s0, t6
-;   jr t0
+;   c.jr t0
 
