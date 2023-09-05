@@ -1375,10 +1375,10 @@ where
     /// Generates an instruction(`iconst`/`fconst`/etc...) to introduce a constant value
     fn generate_const(&mut self, builder: &mut FunctionBuilder, ty: Type) -> Result<Value> {
         Ok(match self.u.datavalue(ty)? {
-            DataValue::I8(i) => builder.ins().iconst(ty, i as i64),
-            DataValue::I16(i) => builder.ins().iconst(ty, i as i64),
-            DataValue::I32(i) => builder.ins().iconst(ty, i as i64),
-            DataValue::I64(i) => builder.ins().iconst(ty, i as i64),
+            DataValue::I8(i) => builder.ins().iconst(ty, i as u8 as i64),
+            DataValue::I16(i) => builder.ins().iconst(ty, i as u16 as i64),
+            DataValue::I32(i) => builder.ins().iconst(ty, i as u32 as i64),
+            DataValue::I64(i) => builder.ins().iconst(ty, i),
             DataValue::I128(i) => {
                 let hi = builder.ins().iconst(I64, (i >> 64) as i64);
                 let lo = builder.ins().iconst(I64, i as i64);
