@@ -14,7 +14,6 @@ block0:
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   c.unimp ; trap: user0
-;   c.unimp
 
 function %g(i64) {
 block0(v0: i64):
@@ -46,7 +45,6 @@ block0(v0: i64):
 ;   ret
 ; block2: ; offset 0x1a
 ;   c.unimp ; trap: user0
-;   c.unimp
 
 function %h() {
 block0:
