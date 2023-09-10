@@ -732,6 +732,12 @@
   (CJ)
 ))
 
+;; Opcodes for the CB compressed instruction format
+(type CbOp (enum
+  (CBeqz)
+  (CBnez)
+))
+
 
 (type CsrRegOP (enum
   ;; Atomic Read/Write CSR

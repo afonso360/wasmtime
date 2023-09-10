@@ -92,7 +92,7 @@ block0(v0: f32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.s a0, fa0, fa0
-;   beqz a0, 0x3c
+;   c.beqz a0, 0x3a
 ;   auipc t6, 0
 ;   lw t6, 0xa(t6)
 ;   c.j 6
@@ -129,7 +129,7 @@ block0(v0: f64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.d a0, fa0, fa0
-;   beqz a0, 0x4e
+;   c.beqz a0, 0x4c
 ;   auipc t6, 0
 ;   ld t6, 0xa(t6)
 ;   c.j 0xa
@@ -174,7 +174,7 @@ block0(v0: f32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.s a0, fa0, fa0
-;   beqz a0, 0x3c
+;   c.beqz a0, 0x3a
 ;   auipc t6, 0
 ;   lw t6, 0xa(t6)
 ;   c.j 6
@@ -211,7 +211,7 @@ block0(v0: f64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   feq.d a0, fa0, fa0
-;   beqz a0, 0x4e
+;   c.beqz a0, 0x4c
 ;   auipc t6, 0
 ;   ld t6, 0xa(t6)
 ;   c.j 0xa

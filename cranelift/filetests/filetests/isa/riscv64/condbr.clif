@@ -322,12 +322,12 @@ block1:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   bnez a1, 8
+;   c.bnez a1, 6
 ;   beqz a0, 0xa
 ;   addi a3, zero, 1
 ;   c.j 6
 ;   mv a3, zero
-; block1: ; offset 0x12
+; block1: ; offset 0x10
 ;   ret
 
 function %i128_bricmp_eq(i128, i128) {

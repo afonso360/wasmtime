@@ -3,7 +3,7 @@
 use crate::binemit::StackMap;
 use crate::ir::{self, RelSourceLoc, TrapCode};
 use crate::isa::riscv64::inst::*;
-use crate::isa::riscv64::lower::isle::generated_code::{CaOp, CrOp};
+use crate::isa::riscv64::lower::isle::generated_code::{CaOp, CbOp, CrOp};
 use crate::machinst::{AllocationConsumer, Reg, Writable};
 use crate::trace;
 use cranelift_control::ControlPlane;
@@ -570,6 +570,35 @@ impl Inst {
                     && offset.as_i16() == 0 =>
             {
                 sink.put2(encode_cr2_type(CrOp::CJalr, base));
+            }
+
+            // C.BEQZ / C.BNEZ
+            Inst::CondBr {
+                taken: BranchTarget::Label(label),
+                not_taken: BranchTarget::ResolvedOffset(0),
+                kind:
+                    IntegerCompare {
+                        kind: kind @ (IntCC::Equal | IntCC::NotEqual),
+                        rs1,
+                        rs2,
+                    },
+            } if has_zca
+                && ((rs1 == zero_reg() && reg_is_compressible(rs2))
+                    || (rs2 == zero_reg() && reg_is_compressible(rs1))) =>
+            {
+                let rs = if rs1 == zero_reg() { rs2 } else { rs1 };
+                let (op, inv_op) = match kind {
+                    IntCC::Equal => (CbOp::CBeqz, CbOp::CBnez),
+                    IntCC::NotEqual => (CbOp::CBnez, CbOp::CBeqz),
+                    _ => unreachable!(),
+                };
+
+                let branch = encode_cb_type(op, rs, Imm9::zero());
+                let inverted = encode_cb_type(inv_op, rs, Imm9::zero()).to_le_bytes();
+
+                sink.use_label_at_offset(*start_off, label, LabelUse::RVCBranch);
+                sink.add_cond_branch(*start_off, *start_off + 2, label, &inverted[..]);
+                sink.put2(branch);
             }
 
             _ => return false,

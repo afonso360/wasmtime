@@ -38,7 +38,7 @@ block0(v0: i64, v1: i64x2, v2: i64x2):
 ;   addi t6, s0, 0x20
 ;   .byte 0x07, 0x86
 ;   .byte 0x0f, 0x02
-;   beqz a0, 0xa
+;   c.beqz a0, 8
 ;   .byte 0xd7, 0x37
 ;   .byte 0xa0, 0x9e
 ;   c.j 6
@@ -91,7 +91,7 @@ block0(v0: i32, v1: i32x4, v2: i32x4):
 ;   .byte 0x0f, 0x02
 ;   slli a2, a0, 0x20
 ;   srli a3, a2, 0x20
-;   beqz a3, 0xa
+;   c.beqz a3, 8
 ;   .byte 0xd7, 0x35
 ;   .byte 0xa0, 0x9e
 ;   c.j 6
@@ -144,7 +144,7 @@ block0(v0: i16, v1: i16x8, v2: i16x8):
 ;   .byte 0x0f, 0x02
 ;   slli a2, a0, 0x30
 ;   srli a3, a2, 0x30
-;   beqz a3, 0xa
+;   c.beqz a3, 8
 ;   .byte 0xd7, 0x35
 ;   .byte 0xa0, 0x9e
 ;   c.j 6
@@ -195,7 +195,7 @@ block0(v0: i8, v1: i8x16, v2: i8x16):
 ;   .byte 0x07, 0x86
 ;   .byte 0x0f, 0x02
 ;   andi a2, a0, 0xff
-;   beqz a2, 0xa
+;   c.beqz a2, 8
 ;   .byte 0xd7, 0x34
 ;   .byte 0xa0, 0x9e
 ;   c.j 6
@@ -244,7 +244,7 @@ block0(v0: i64, v1: f64x2, v2: f64x2):
 ;   addi t6, s0, 0x20
 ;   .byte 0x07, 0x86
 ;   .byte 0x0f, 0x02
-;   beqz a0, 0xa
+;   c.beqz a0, 8
 ;   .byte 0xd7, 0x37
 ;   .byte 0xa0, 0x9e
 ;   c.j 6
@@ -293,7 +293,7 @@ block0(v0: i64, v1: f32x4, v2: f32x4):
 ;   addi t6, s0, 0x20
 ;   .byte 0x07, 0x86
 ;   .byte 0x0f, 0x02
-;   beqz a0, 0xa
+;   c.beqz a0, 8
 ;   .byte 0xd7, 0x37
 ;   .byte 0xa0, 0x9e
 ;   c.j 6

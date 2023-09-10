@@ -142,7 +142,7 @@ block0(v0: i8, v1: i128, v2: i128):
 ;   c.j 6
 ;   mv a5, zero
 ;   andi a5, a5, 0xff
-;   beqz a5, 0xa
+;   c.beqz a5, 8
 ;   c.mv a0, t2
 ;   c.mv a1, a2
 ;   c.j 6
@@ -308,7 +308,7 @@ block0(v0: i16, v1: i128, v2: i128):
 ;   c.j 6
 ;   mv a0, zero
 ;   andi a5, a0, 0xff
-;   beqz a5, 0xa
+;   c.beqz a5, 8
 ;   c.mv a0, a7
 ;   c.mv a1, a2
 ;   c.j 6
@@ -474,7 +474,7 @@ block0(v0: i32, v1: i128, v2: i128):
 ;   c.j 6
 ;   mv a0, zero
 ;   andi a5, a0, 0xff
-;   beqz a5, 0xa
+;   c.beqz a5, 8
 ;   c.mv a0, a7
 ;   c.mv a1, a2
 ;   c.j 6
@@ -618,7 +618,7 @@ block0(v0: i64, v1: i128, v2: i128):
 ;   c.j 6
 ;   mv a5, zero
 ;   andi a5, a5, 0xff
-;   beqz a5, 0xa
+;   c.beqz a5, 8
 ;   c.mv a0, s8
 ;   c.mv a1, a2
 ;   c.j 6
@@ -659,7 +659,7 @@ block0(v0: i128, v1: i8, v2: i8):
 ;   c.j 6
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 8
+;   c.beqz a4, 6
 ;   c.mv a0, a2
 ;   c.j 4
 ;   c.mv a0, a3
@@ -693,7 +693,7 @@ block0(v0: i128, v1: i16, v2: i16):
 ;   c.j 6
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 8
+;   c.beqz a4, 6
 ;   c.mv a0, a2
 ;   c.j 4
 ;   c.mv a0, a3
@@ -727,7 +727,7 @@ block0(v0: i128, v1: i32, v2: i32):
 ;   c.j 6
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 8
+;   c.beqz a4, 6
 ;   c.mv a0, a2
 ;   c.j 4
 ;   c.mv a0, a3
@@ -761,7 +761,7 @@ block0(v0: i128, v1: i64, v2: i64):
 ;   c.j 6
 ;   mv a4, zero
 ;   andi a4, a4, 0xff
-;   beqz a4, 8
+;   c.beqz a4, 6
 ;   c.mv a0, a2
 ;   c.j 4
 ;   c.mv a0, a3

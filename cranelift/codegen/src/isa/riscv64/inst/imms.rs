@@ -159,6 +159,39 @@ impl Display for Imm5 {
     }
 }
 
+/// A Signed 9-bit immediate.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Imm9 {
+    value: i16,
+}
+
+impl Imm9 {
+    /// Create a 0 valued immediate.
+    pub fn zero() -> Self {
+        Self { value: 0 }
+    }
+
+    /// Create an signed 9-bit immediate from an i16.
+    pub fn maybe_from_i16(value: i16) -> Option<Self> {
+        if value >= -256 && value <= 255 {
+            Some(Self { value })
+        } else {
+            None
+        }
+    }
+
+    /// Bits for encoding.
+    pub fn bits(&self) -> u16 {
+        self.value as u16 & 0x1ff
+    }
+}
+
+impl Display for Imm9 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl Inst {
     pub(crate) fn imm_min() -> i64 {
         let imm20_max: i64 = (1 << 19) << 12;

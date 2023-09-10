@@ -241,7 +241,7 @@ block0(v0: i128, v1: f32, v2: f32):
 ;   c.j 6
 ;   mv a3, zero
 ;   andi a2, a3, 0xff
-;   beqz a2, 0xa
+;   c.beqz a2, 8
 ;   fmv.d fa0, fa2
 ;   c.j 6
 ;   fmv.d fa0, fa1
@@ -277,7 +277,7 @@ block0(v0: i128, v1: f64, v2: f64):
 ;   c.j 6
 ;   mv a3, zero
 ;   andi a2, a3, 0xff
-;   beqz a2, 0xa
+;   c.beqz a2, 8
 ;   fmv.d fa0, fa2
 ;   c.j 6
 ;   fmv.d fa0, fa1

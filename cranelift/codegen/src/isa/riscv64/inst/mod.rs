@@ -59,7 +59,9 @@ pub use crate::isa::riscv64::lower::isle::generated_code::{
     FloatSelectOP, FpuOPRR, FpuOPRRR, FpuOPRRRR, IntSelectOP, LoadOP, MInst as Inst, StoreOP, CSR,
     FRM,
 };
-use crate::isa::riscv64::lower::isle::generated_code::{CjOp, MInst, VecAluOpRRImm5, VecAluOpRRR};
+use crate::isa::riscv64::lower::isle::generated_code::{
+    CbOp, CjOp, MInst, VecAluOpRRImm5, VecAluOpRRR,
+};
 
 type BoxCallInfo = Box<CallInfo>;
 type BoxCallIndInfo = Box<CallIndInfo>;
@@ -1965,6 +1967,9 @@ pub enum LabelUse {
 
     /// 11-bit PC-relative jump offset. Equivalent to the `RVC_JUMP` relocation
     RVCJump,
+
+    /// 9-bit PC-relative branch offset. Equivalent to the `RVC_BRANCH` relocation
+    RVCBranch,
 }
 
 impl MachInstLabelUse for LabelUse {
@@ -1981,6 +1986,7 @@ impl MachInstLabelUse for LabelUse {
             }
             // RVCJump has the same range as B12 since the offset is multiplied by 2
             LabelUse::RVCJump | LabelUse::B12 => ((1 << 11) - 1) * 2,
+            LabelUse::RVCBranch => ((1 << 7) - 1) * 2,
         }
     }
 
@@ -1995,7 +2001,7 @@ impl MachInstLabelUse for LabelUse {
     /// Size of window into code needed to do the patch.
     fn patch_size(self) -> CodeOffset {
         match self {
-            LabelUse::RVCJump => 2,
+            LabelUse::RVCJump | LabelUse::RVCBranch => 2,
             LabelUse::Jal20 | LabelUse::B12 | LabelUse::PCRelHi20 | LabelUse::PCRelLo12I => 4,
             LabelUse::PCRel32 => 8,
         }
@@ -2022,7 +2028,7 @@ impl MachInstLabelUse for LabelUse {
     /// Is a veneer supported for this label reference type?
     fn supports_veneer(self) -> bool {
         match self {
-            Self::Jal20 | Self::B12 | Self::RVCJump => true,
+            Self::Jal20 | Self::B12 | Self::RVCJump | LabelUse::RVCBranch => true,
             _ => false,
         }
     }
@@ -2030,7 +2036,7 @@ impl MachInstLabelUse for LabelUse {
     /// How large is the veneer, if supported?
     fn veneer_size(self) -> CodeOffset {
         match self {
-            Self::B12 | Self::Jal20 | Self::RVCJump => 8,
+            Self::B12 | Self::Jal20 | Self::RVCJump | LabelUse::RVCBranch => 8,
             _ => unreachable!(),
         }
     }
@@ -2080,9 +2086,10 @@ impl LabelUse {
     }
 
     fn patch_raw_offset(self, buffer: &mut [u8], offset: i64) {
-        let insn = match self {
-            LabelUse::RVCJump => u16::from_le_bytes(buffer[..2].try_into().unwrap()) as u32,
-            _ => u32::from_le_bytes(buffer[..4].try_into().unwrap()),
+        let insn = match self.patch_size() {
+            2 => u16::from_le_bytes(buffer[..2].try_into().unwrap()) as u32,
+            4 | 8 => u32::from_le_bytes(buffer[..4].try_into().unwrap()),
+            _ => unreachable!(),
         };
 
         match self {
@@ -2160,6 +2167,22 @@ impl LabelUse {
                 buffer[0..2].clone_from_slice(&u16::to_le_bytes(encode_cj_type(
                     CjOp::CJ,
                     Imm12::from_bits(i16::try_from(offset).unwrap()),
+                )));
+            }
+            LabelUse::RVCBranch => {
+                debug_assert!(offset & 1 == 0);
+
+                let inst = u16::from_le_bytes(buffer[0..2].try_into().unwrap());
+                let funct3 = (inst >> 13) as u32;
+                let reg_num = (((inst >> 7) & 0b111) + 8) as usize;
+
+                let op = CbOp::from_funct3(funct3).expect("Invalid op for RVCBranch Label");
+                let reg = x_reg(reg_num);
+
+                buffer[0..2].clone_from_slice(&u16::to_le_bytes(encode_cb_type(
+                    op,
+                    reg,
+                    Imm9::maybe_from_i16(i16::try_from(offset).unwrap()).unwrap(),
                 )));
             }
         }

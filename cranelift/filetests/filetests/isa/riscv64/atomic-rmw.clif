@@ -119,7 +119,7 @@ block0(v0: i64, v1: i64):
 ;   and a4, a1, a3
 ;   not a4, a4
 ;   sc.d.aqrl a4, a4, (a0)
-;   bnez a4, -0x10
+;   c.bnez a4, -0x10
 ;   ret
 
 function %atomic_rmw_nand_i32(i64, i32) {
@@ -139,7 +139,7 @@ block0(v0: i64, v1: i32):
 ;   and a4, a1, a3
 ;   not a4, a4
 ;   sc.w.aqrl a4, a4, (a0)
-;   bnez a4, -0x10
+;   c.bnez a4, -0x10
 ;   ret
 
 function %atomic_rmw_or_i64(i64, i64) {

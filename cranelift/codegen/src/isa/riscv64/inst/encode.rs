@@ -9,8 +9,8 @@
 use super::*;
 use crate::isa::riscv64::inst::reg_to_gpr_num;
 use crate::isa::riscv64::lower::isle::generated_code::{
-    CaOp, CjOp, CrOp, VecAluOpRImm5, VecAluOpRR, VecAluOpRRImm5, VecAluOpRRR, VecAluOpRRRImm5,
-    VecAluOpRRRR, VecElementWidth, VecOpCategory, VecOpMasking,
+    CaOp, CbOp, CjOp, CrOp, VecAluOpRImm5, VecAluOpRR, VecAluOpRRImm5, VecAluOpRRR,
+    VecAluOpRRRImm5, VecAluOpRRRR, VecElementWidth, VecOpCategory, VecOpMasking,
 };
 use crate::machinst::isle::WritableReg;
 use crate::Reg;
@@ -385,6 +385,39 @@ pub fn encode_cj_type(op: CjOp, imm: Imm12) -> u16 {
     let mut bits = 0;
     bits |= unsigned_field_width(op.op().bits(), 2);
     bits |= unsigned_field_width(imm_field, 11) << 2;
+    bits |= unsigned_field_width(op.funct3(), 3) << 13;
+    bits.try_into().unwrap()
+}
+
+// Encode a CB type instruction.
+//
+// The imm field is a 8 bit signed immediate that is shifted left by 1
+// and then sign-extended and added to PC.
+//
+// 0--1-2-------6-7------9-10-----12-13-----15
+// |op |  imm[0] |  src   | imm[1] | funct3  |
+pub fn encode_cb_type(op: CbOp, rs: Reg, imm: Imm9) -> u16 {
+    debug_assert_eq!(imm.bits() & 1, 0);
+    let imm = (imm.bits() >> 1) as u8;
+
+    // Imm0 is a 5 bit field with the following positions
+    // [6:5|1:0|4]
+    let mut imm0 = 0;
+    imm0 |= ((imm >> 4) & 1) << 0;
+    imm0 |= ((imm >> 0) & 3) << 1;
+    imm0 |= ((imm >> 5) & 3) << 3;
+
+    // Imm1 is a 3 bit field with the following positions
+    // [7|3:2]
+    let mut imm1 = 0;
+    imm1 |= ((imm >> 2) & 3) << 0;
+    imm1 |= ((imm >> 7) & 1) << 2;
+
+    let mut bits = 0;
+    bits |= unsigned_field_width(op.op().bits(), 2);
+    bits |= unsigned_field_width(imm0 as u32, 5) << 2;
+    bits |= reg_to_compressed_gpr_num(rs) << 7;
+    bits |= unsigned_field_width(imm1 as u32, 3) << 10;
     bits |= unsigned_field_width(op.funct3(), 3) << 13;
     bits.try_into().unwrap()
 }

@@ -6,7 +6,7 @@ use super::*;
 use crate::ir::condcodes::CondCode;
 
 use crate::isa::riscv64::inst::{reg_name, reg_to_gpr_num};
-use crate::isa::riscv64::lower::isle::generated_code::{COpcodeSpace, CaOp, CjOp, CrOp};
+use crate::isa::riscv64::lower::isle::generated_code::{COpcodeSpace, CaOp, CbOp, CjOp, CrOp};
 use crate::machinst::isle::WritableReg;
 
 use std::fmt::{Display, Formatter, Result};
@@ -1973,6 +1973,31 @@ impl CjOp {
         // https://five-embeddev.com/riscv-isa-manual/latest/rvc-opcode-map.html#rvcopcodemap
         match self {
             CjOp::CJ => COpcodeSpace::C1,
+        }
+    }
+}
+
+impl CbOp {
+    pub fn from_funct3(funct3: u32) -> Option<Self> {
+        match funct3 {
+            0b110 => Some(CbOp::CBeqz),
+            0b111 => Some(CbOp::CBnez),
+            _ => None,
+        }
+    }
+
+    pub fn funct3(&self) -> u32 {
+        // https://github.com/michaeljclark/riscv-meta/blob/master/opcodes
+        match self {
+            CbOp::CBeqz => 0b110,
+            CbOp::CBnez => 0b111,
+        }
+    }
+
+    pub fn op(&self) -> COpcodeSpace {
+        // https://five-embeddev.com/riscv-isa-manual/latest/rvc-opcode-map.html#rvcopcodemap
+        match self {
+            CbOp::CBnez | CbOp::CBeqz => COpcodeSpace::C1,
         }
     }
 }
