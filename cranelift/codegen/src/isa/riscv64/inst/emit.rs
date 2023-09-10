@@ -601,6 +601,15 @@ impl Inst {
                 sink.put2(branch);
             }
 
+            // C.EBREAK
+            Inst::EBreak if has_zca => {
+                sink.put2(encode_cr_type(
+                    CrOp::EBreak,
+                    writable_zero_reg(),
+                    zero_reg(),
+                ));
+            }
+
             _ => return false,
         }
 
