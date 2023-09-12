@@ -106,7 +106,7 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   sext.w a0, a0
+;   c.addiw a0, 0
 ;   srai a1, a0, 0x3f
 ;   ret
 

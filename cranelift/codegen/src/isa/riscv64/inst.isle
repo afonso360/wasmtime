@@ -744,6 +744,7 @@
 ;; Opcodes for the CI compressed instruction format
 (type CiOp (enum
   (CAddi)
+  (CAddiw)
 ))
 
 
