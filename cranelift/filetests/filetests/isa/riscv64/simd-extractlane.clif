@@ -23,11 +23,11 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -37,7 +37,7 @@ block0(v0: i8x16):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i16x8_idx_0(i16x8) -> i16 {
@@ -61,11 +61,11 @@ block0(v0: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -77,7 +77,7 @@ block0(v0: i16x8):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i32x4_idx_0(i32x4) -> i32 {
@@ -101,11 +101,11 @@ block0(v0: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -117,7 +117,7 @@ block0(v0: i32x4):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i64x2_idx_0(i64x2) -> i64 {
@@ -141,11 +141,11 @@ block0(v0: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -157,7 +157,7 @@ block0(v0: i64x2):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_f32x4_idx_0(f32x4) -> f32 {
@@ -181,11 +181,11 @@ block0(v0: f32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -197,7 +197,7 @@ block0(v0: f32x4):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_f64x2_idx_0(f64x2) -> f64 {
@@ -221,11 +221,11 @@ block0(v0: f64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -237,7 +237,7 @@ block0(v0: f64x2):
 ;   c.lw s0, 0(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i8x16_idx_1(i8x16) -> i8 {
@@ -262,11 +262,11 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -278,7 +278,7 @@ block0(v0: i8x16):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i16x8_idx_1(i16x8) -> i16 {
@@ -303,11 +303,11 @@ block0(v0: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -321,7 +321,7 @@ block0(v0: i16x8):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i32x4_idx_1(i32x4) -> i32 {
@@ -346,11 +346,11 @@ block0(v0: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -364,7 +364,7 @@ block0(v0: i32x4):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_i64x2_idx_1(i64x2) -> i64 {
@@ -389,11 +389,11 @@ block0(v0: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -407,7 +407,7 @@ block0(v0: i64x2):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_f32x4_idx_1(f32x4) -> f32 {
@@ -432,11 +432,11 @@ block0(v0: f32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -450,7 +450,7 @@ block0(v0: f32x4):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %extractlane_f64x2_idx_1(f64x2) -> f64 {
@@ -475,11 +475,11 @@ block0(v0: f64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -493,6 +493,6 @@ block0(v0: f64x2):
 ;   c.lw s0, 0x40(a3)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

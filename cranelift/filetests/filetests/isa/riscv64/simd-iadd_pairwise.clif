@@ -35,11 +35,11 @@ block0(v0: i8x16, v1: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -49,7 +49,7 @@ block0(v0: i8x16, v1: i8x16):
 ;   .byte 0x87, 0x85
 ;   .byte 0x0f, 0x02
 ;   auipc a1, 0
-;   ld a1, 0x5e(a1)
+;   ld a1, 0x58(a1)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0xe4
@@ -63,7 +63,7 @@ block0(v0: i8x16, v1: i8x16):
 ;   .byte 0x57, 0x36
 ;   c.fld fa3, 0xb0(a3)
 ;   auipc a4, 0
-;   ld a4, 0x46(a4)
+;   ld a4, 0x40(a4)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0x65
@@ -82,10 +82,8 @@ block0(v0: i8x16, v1: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
-;   c.unimp
-;   c.unimp
 ;   c.unimp
 ;   c.li a0, -0xb
 ;   c.li a0, -0xb
@@ -129,11 +127,11 @@ block0(v0: i16x8, v1: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -143,7 +141,7 @@ block0(v0: i16x8, v1: i16x8):
 ;   .byte 0x87, 0x85
 ;   .byte 0x0f, 0x02
 ;   auipc a1, 0
-;   ld a1, 0x5e(a1)
+;   ld a1, 0x60(a1)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0xe4
@@ -157,7 +155,7 @@ block0(v0: i16x8, v1: i16x8):
 ;   .byte 0x57, 0x36
 ;   c.fldsp fs5, 0x130(sp)
 ;   auipc a4, 0
-;   ld a4, 0x46(a4)
+;   ld a4, 0x48(a4)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0x65
@@ -177,8 +175,10 @@ block0(v0: i16x8, v1: i16x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
+;   c.unimp
+;   c.unimp
 ;   c.unimp
 ;   c.li a0, -0xb
 ;   c.li a0, -0xb
@@ -222,11 +222,11 @@ block0(v0: i32x4, v1: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -236,7 +236,7 @@ block0(v0: i32x4, v1: i32x4):
 ;   .byte 0x87, 0x85
 ;   .byte 0x0f, 0x02
 ;   auipc a1, 0
-;   ld a1, 0x5e(a1)
+;   ld a1, 0x60(a1)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0xe4
@@ -250,7 +250,7 @@ block0(v0: i32x4, v1: i32x4):
 ;   .byte 0x57, 0x36
 ;   c.addiw s5, -0xc
 ;   auipc a4, 0
-;   ld a4, 0x46(a4)
+;   ld a4, 0x48(a4)
 ;   .byte 0x57, 0x70
 ;   c.beqz a1, 0x18
 ;   .byte 0x57, 0x65
@@ -270,8 +270,10 @@ block0(v0: i32x4, v1: i32x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
+;   c.unimp
+;   c.unimp
 ;   c.unimp
 ;   c.li a0, -0xb
 ;   c.li a0, -0xb

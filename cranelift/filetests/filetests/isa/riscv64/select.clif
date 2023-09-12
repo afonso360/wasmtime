@@ -604,13 +604,13 @@ block0(v0: i64, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s8, -8(sp)
-;   addi sp, sp, -0x10
-; block1: ; offset 0x16
+;   c.addi sp, -0x10
+; block1: ; offset 0x12
 ;   c.mv s8, a1
 ;   addi a5, zero, 0x2a
 ;   bne a0, a5, 0xa
@@ -624,11 +624,11 @@ block0(v0: i64, v1: i128, v2: i128):
 ;   c.j 6
 ;   c.mv a0, a3
 ;   c.mv a1, a4
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ld s8, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %select_icmp_i128_i8(i128, i8, i8) -> i8 {
@@ -802,15 +802,15 @@ block0(v0: i128, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s4, -8(sp)
 ;   sd s6, -0x10(sp)
 ;   sd s7, -0x18(sp)
-;   addi sp, sp, -0x20
-; block1: ; offset 0x1e
+;   c.addi sp, -0x20
+; block1: ; offset 0x1a
 ;   addi s6, zero, 0x2a
 ;   mv s7, zero
 ;   bne a1, s7, 0xe
@@ -831,6 +831,6 @@ block0(v0: i128, v1: i128, v2: i128):
 ;   ld s7, -0x18(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

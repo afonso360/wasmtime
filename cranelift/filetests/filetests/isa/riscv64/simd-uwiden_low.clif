@@ -25,11 +25,11 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -44,7 +44,7 @@ block0(v0: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %uwidenlow_i16x8(i16x8) -> i32x4 {
@@ -69,11 +69,11 @@ block0(v0: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -88,7 +88,7 @@ block0(v0: i16x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %uwidenlow_i32x4(i32x4) -> i64x2 {
@@ -113,11 +113,11 @@ block0(v0: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -132,7 +132,7 @@ block0(v0: i32x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %uwidenlow_twice_i8x16(i8x16) -> i32x4 {
@@ -158,11 +158,11 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -178,7 +178,7 @@ block0(v0: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %uwidenlow_twice_i16x8(i16x8) -> i64x2 {
@@ -204,11 +204,11 @@ block0(v0: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -224,7 +224,7 @@ block0(v0: i16x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %uwidenlow_triple_i8x16(i8x16) -> i64x2 {
@@ -251,11 +251,11 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -271,6 +271,6 @@ block0(v0: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

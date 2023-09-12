@@ -227,13 +227,13 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s5, -8(sp)
-;   addi sp, sp, -0x10
-; block1: ; offset 0x16
+;   c.addi sp, -0x10
+; block1: ; offset 0x12
 ;   slli a3, a1, 8
 ;   srli a5, a1, 8
 ;   andi a2, a5, 0xff
@@ -298,10 +298,10 @@ block0(v0: i128):
 ;   srli a3, a2, 0x20
 ;   c.or a1, a3
 ;   c.mv a0, s5
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ld s5, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

@@ -206,13 +206,13 @@ block0(v0: i8, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s8, -8(sp)
-;   addi sp, sp, -0x10
-; block1: ; offset 0x16
+;   c.addi sp, -0x10
+; block1: ; offset 0x12
 ;   addi a5, zero, 0x2a
 ;   andi a0, a0, 0xff
 ;   andi a5, a5, 0xff
@@ -231,11 +231,11 @@ block0(v0: i8, v1: i128, v2: i128):
 ;   and a2, a4, a2
 ;   or a0, a5, a0
 ;   c.or a1, a2
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ld s8, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %f(i16, i8, i8) -> i8 {
@@ -890,13 +890,13 @@ block0(v0: i64, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s6, -8(sp)
-;   addi sp, sp, -0x10
-; block1: ; offset 0x16
+;   c.addi sp, -0x10
+; block1: ; offset 0x12
 ;   addi a5, zero, 0x2a
 ;   bne a0, a5, 0xa
 ;   addi a0, zero, 1
@@ -913,11 +913,11 @@ block0(v0: i64, v1: i128, v2: i128):
 ;   and a1, a4, a1
 ;   c.or a0, a2
 ;   or a1, a5, a1
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ld s6, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %f(i128, i8, i8) -> i8 {
@@ -1124,13 +1124,13 @@ block0(v0: i128, v1: i128, v2: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s8, -8(sp)
-;   addi sp, sp, -0x10
-; block1: ; offset 0x16
+;   c.addi sp, -0x10
+; block1: ; offset 0x12
 ;   addi t2, zero, 0x2a
 ;   mv a6, zero
 ;   bne a1, a6, 0xe
@@ -1149,10 +1149,10 @@ block0(v0: i128, v1: i128, v2: i128):
 ;   and a3, a5, a3
 ;   or a0, a1, a0
 ;   or a1, a2, a3
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ld s8, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

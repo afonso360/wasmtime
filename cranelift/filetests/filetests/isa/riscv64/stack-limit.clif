@@ -69,13 +69,13 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   bgeu sp, a0, 6
 ;   c.unimp ; trap: stk_ovf
-; block1: ; offset 0x14
+; block1: ; offset 0x12
 ;   auipc a2, 0
 ;   ld a2, 0xa(a2)
 ;   c.j 0xa
@@ -86,7 +86,7 @@ block0(v0: i64):
 ;   jalr a2
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %stack_limit_gv_call_zero(i64 vmctx) {
@@ -118,7 +118,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -126,7 +126,7 @@ block0(v0: i64):
 ;   ld t6, 4(t6)
 ;   bgeu sp, t6, 6
 ;   c.unimp ; trap: stk_ovf
-; block1: ; offset 0x1c
+; block1: ; offset 0x1a
 ;   auipc a2, 0
 ;   ld a2, 0xa(a2)
 ;   c.j 0xa
@@ -137,7 +137,7 @@ block0(v0: i64):
 ;   jalr a2
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %stack_limit(i64 stack_limit) {
@@ -163,7 +163,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -171,11 +171,11 @@ block0(v0: i64):
 ;   bgeu sp, t6, 6
 ;   c.unimp ; trap: stk_ovf
 ;   addi sp, sp, -0xb0
-; block1: ; offset 0x1c
+; block1: ; offset 0x1a
 ;   addi sp, sp, 0xb0
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %huge_stack_limit(i64 stack_limit) {
@@ -207,7 +207,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -231,13 +231,13 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x50
+; block1: ; offset 0x4e
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %limit_preamble(i64 vmctx) {
@@ -269,7 +269,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -278,12 +278,12 @@ block0(v0: i64):
 ;   addi t6, t6, 0x20
 ;   bgeu sp, t6, 6
 ;   c.unimp ; trap: stk_ovf
-;   addi sp, sp, -0x20
-; block1: ; offset 0x24
+;   c.addi sp, -0x20
+; block1: ; offset 0x20
 ;   addi sp, sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %limit_preamble_huge(i64 vmctx) {
@@ -321,7 +321,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -347,13 +347,13 @@ block0(v0: i64):
 ;   lui t6, 0xfff9e
 ;   addi t6, t6, 0x580
 ;   add sp, t6, sp
-; block1: ; offset 0x58
+; block1: ; offset 0x56
 ;   lui t6, 0x62
 ;   addi t6, t6, -0x580
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %limit_preamble_huge_offset(i64 vmctx) {
@@ -383,7 +383,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -394,11 +394,11 @@ block0(v0: i64):
 ;   addi t6, t6, 0x20
 ;   bgeu sp, t6, 6
 ;   c.unimp ; trap: stk_ovf
-;   addi sp, sp, -0x20
-; block1: ; offset 0x2a
+;   c.addi sp, -0x20
+; block1: ; offset 0x26
 ;   addi sp, sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

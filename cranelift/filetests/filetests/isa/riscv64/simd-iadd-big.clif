@@ -27,11 +27,11 @@ block0(v0:i64x4, v1:i64x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s1)
 ;   addi t6, s0, 0x10
@@ -50,7 +50,7 @@ block0(v0:i64x4, v1:i64x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
 function %iadd_i64x8(i64x8, i64x8) -> i64x8 {
@@ -76,11 +76,11 @@ block0(v0:i64x8, v1:i64x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(a0)
 ;   addi t6, s0, 0x10
@@ -99,6 +99,6 @@ block0(v0:i64x8, v1:i64x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

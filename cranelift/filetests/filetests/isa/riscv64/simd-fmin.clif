@@ -31,11 +31,11 @@ block0(v0: f64x2, v1: f64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -53,7 +53,7 @@ block0(v0: f64x2, v1: f64x2):
 ;   .byte 0x57, 0x20
 ;   c.ld s1, 0xc8(a3)
 ;   auipc a1, 0
-;   ld a1, 0x2e(a1)
+;   ld a1, 0x30(a1)
 ;   .byte 0x57, 0xc7
 ;   c.li t3, -0x1f
 ;   .byte 0x57, 0x94
@@ -66,8 +66,10 @@ block0(v0: f64x2, v1: f64x2):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
+;   c.unimp
+;   c.unimp
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp
@@ -103,11 +105,11 @@ block0(v0: f32x4, v1: f32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-; block1: ; offset 0xe
+; block1: ; offset 0xc
 ;   .byte 0x57, 0x70
 ;   c.sw a0, 0x18(s0)
 ;   addi t6, s0, 0x10
@@ -137,6 +139,6 @@ block0(v0: f32x4, v1: f32x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 

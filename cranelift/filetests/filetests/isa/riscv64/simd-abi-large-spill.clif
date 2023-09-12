@@ -39,18 +39,18 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s1, -8(sp)
 ;   addi sp, sp, -0x410
-; block1: ; offset 0x16
+; block1: ; offset 0x14
 ;   c.mv s1, a0
 ;   .byte 0x57, 0x70
 ;   c.sw s1, 0x18(s1)
 ;   auipc t6, 0
-;   addi t6, t6, 0x44
+;   addi t6, t6, 0x46
 ;   .byte 0x87, 0xd5
 ;   .byte 0x0f, 0x02
 ;   .byte 0x57, 0x70
@@ -68,8 +68,10 @@ block0:
 ;   ld s1, -8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
+;   c.unimp
+;   c.unimp
 ;   c.unimp
 ;   c.unimp
 ;   c.unimp

@@ -9,7 +9,7 @@
 use super::*;
 use crate::isa::riscv64::inst::reg_to_gpr_num;
 use crate::isa::riscv64::lower::isle::generated_code::{
-    CaOp, CbOp, CjOp, CrOp, VecAluOpRImm5, VecAluOpRR, VecAluOpRRImm5, VecAluOpRRR,
+    CaOp, CbOp, CiOp, CjOp, CrOp, VecAluOpRImm5, VecAluOpRR, VecAluOpRRImm5, VecAluOpRRR,
     VecAluOpRRRImm5, VecAluOpRRRR, VecElementWidth, VecOpCategory, VecOpMasking,
 };
 use crate::machinst::isle::WritableReg;
@@ -418,6 +418,24 @@ pub fn encode_cb_type(op: CbOp, rs: Reg, imm: Imm9) -> u16 {
     bits |= unsigned_field_width(imm0 as u32, 5) << 2;
     bits |= reg_to_compressed_gpr_num(rs) << 7;
     bits |= unsigned_field_width(imm1 as u32, 3) << 10;
+    bits |= unsigned_field_width(op.funct3(), 3) << 13;
+    bits.try_into().unwrap()
+}
+
+// Encode a CI type instruction.
+//
+// The imm field is a 6 bit signed immediate.
+//
+// 0--1-2-------6-7-------11-12-----12-13-----15
+// |op | imm[4:0] |   src   | imm[5]  | funct3  |
+pub fn encode_ci_type(op: CiOp, rd: WritableReg, imm: Imm6) -> u16 {
+    let imm = imm.bits();
+
+    let mut bits = 0;
+    bits |= unsigned_field_width(op.op().bits(), 2);
+    bits |= unsigned_field_width((imm & 0x1f) as u32, 5) << 2;
+    bits |= reg_to_gpr_num(rd.to_reg()) << 7;
+    bits |= unsigned_field_width(((imm >> 5) & 1) as u32, 1) << 12;
     bits |= unsigned_field_width(op.funct3(), 3) << 13;
     bits.try_into().unwrap()
 }

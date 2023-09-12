@@ -75,7 +75,7 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   addi sp, sp, -0x10
+;   c.addi sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -101,7 +101,7 @@ block0:
 ;   fsd fs10, -0xa0(sp)
 ;   fsd fs11, -0xa8(sp)
 ;   addi sp, sp, -0xc0
-; block1: ; offset 0x66
+; block1: ; offset 0x64
 ;   auipc t0, 0
 ;   ld t0, 0xa(t0)
 ;   c.j 0xa
@@ -138,6 +138,6 @@ block0:
 ;   fld fs11, -0xa8(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   addi sp, sp, 0x10
+;   c.addi sp, 0x10
 ;   ret
 
