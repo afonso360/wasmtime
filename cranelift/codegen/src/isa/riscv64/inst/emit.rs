@@ -817,7 +817,7 @@ impl Inst {
                             rd,
                             imm: Imm20::from_bits(0),
                         }
-                        .emit(&[], sink, emit_info, state);
+                        .emit_uncompressed(sink, emit_info, state, start_off);
 
                         // Emit a relocation for the load. This patches the offset into the instruction.
                         sink.use_label_at_offset(sink.cur_offset(), label, LabelUse::PCRelLo12I);
@@ -1431,7 +1431,7 @@ impl Inst {
                             rd,
                             imm: Imm20::from_bits(0),
                         };
-                        inst.emit(&[], sink, emit_info, state);
+                        inst.emit_uncompressed(sink, emit_info, state, start_off);
 
                         // Emit an add to the address with a relocation.
                         // This later gets patched up with the correct offset.
@@ -1442,7 +1442,7 @@ impl Inst {
                             rs: rd.to_reg(),
                             imm12: Imm12::zero(),
                         }
-                        .emit(&[], sink, emit_info, state);
+                        .emit_uncompressed(sink, emit_info, state, start_off);
                     }
                     (amode, _, _) => {
                         unimplemented!("LoadAddr: {:?}", amode);
