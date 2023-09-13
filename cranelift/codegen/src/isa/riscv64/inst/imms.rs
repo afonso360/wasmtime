@@ -208,8 +208,12 @@ impl Imm6 {
         }
     }
 
+    pub fn maybe_from_i16(value: i16) -> Option<Self> {
+        value.try_into().ok().and_then(Imm6::maybe_from_i8)
+    }
+
     pub fn maybe_from_imm12(value: Imm12) -> Option<Self> {
-        value.as_i16().try_into().ok().and_then(Imm6::maybe_from_i8)
+        Imm6::maybe_from_i16(value.as_i16())
     }
 
     /// Bits for encoding.

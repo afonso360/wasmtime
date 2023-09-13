@@ -27,7 +27,7 @@ block0(v0: i8x16, v1: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -50,7 +50,7 @@ block0(v0: i8x16, v1: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_ne_i16(i16x8, i16x8) -> i16x8 {
@@ -78,7 +78,7 @@ block0(v0: i16x8, v1: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -105,7 +105,7 @@ block0(v0: i16x8, v1: i16x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_ne_i32(i32x4, i32x4) -> i32x4 {
@@ -133,7 +133,7 @@ block0(v0: i32x4, v1: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -160,7 +160,7 @@ block0(v0: i32x4, v1: i32x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_ne_i64(i64x2, i64x2) -> i64x2 {
@@ -188,7 +188,7 @@ block0(v0: i64x2, v1: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -215,7 +215,7 @@ block0(v0: i64x2, v1: i64x2):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_splat_rhs_eq_i64(i64x2, i64) -> i64x2 {
@@ -243,7 +243,7 @@ block0(v0: i64x2, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -267,7 +267,7 @@ block0(v0: i64x2, v1: i64):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_splat_lhs_eq_i64(i64x2, i64) -> i64x2 {
@@ -295,7 +295,7 @@ block0(v0: i64x2, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -319,7 +319,7 @@ block0(v0: i64x2, v1: i64):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_splat_const_rhs_eq_i64(i64x2) -> i64x2 {
@@ -348,7 +348,7 @@ block0(v0: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -371,7 +371,7 @@ block0(v0: i64x2):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %simd_icmp_splat_const_lhs_eq_i64(i64x2) -> i64x2 {
@@ -400,7 +400,7 @@ block0(v0: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -423,6 +423,6 @@ block0(v0: i64x2):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

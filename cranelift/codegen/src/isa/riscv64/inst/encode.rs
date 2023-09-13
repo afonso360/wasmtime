@@ -439,3 +439,19 @@ pub fn encode_ci_type(op: CiOp, rd: WritableReg, imm: Imm6) -> u16 {
     bits |= unsigned_field_width(op.funct3(), 3) << 13;
     bits.try_into().unwrap()
 }
+
+/// c.addi16sp is a regular CI op, but the immediate field is encoded in a weird way
+pub fn encode_c_addi16sp(imm: Imm6) -> u16 {
+    let imm = imm.bits();
+
+    // [6|1|3|5:4|2]
+    let mut enc_imm = 0;
+    enc_imm |= ((imm >> 5) & 1) << 5; //0
+    enc_imm |= ((imm >> 0) & 1) << 4; // 1
+    enc_imm |= ((imm >> 2) & 1) << 3; // 2
+    enc_imm |= ((imm >> 3) & 3) << 1; // 3
+    enc_imm |= ((imm >> 1) & 1) << 0; // 5
+    let enc_imm = Imm6::maybe_from_i8((enc_imm as i8) << 2 >> 2).unwrap();
+
+    encode_ci_type(CiOp::CAddi16sp, writable_stack_reg(), enc_imm)
+}

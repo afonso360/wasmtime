@@ -26,7 +26,7 @@ block0(v0: i8x16, v1: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -49,7 +49,7 @@ block0(v0: i8x16, v1: i8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_5(i16x8, i16) -> i16x8 {
@@ -76,7 +76,7 @@ block0(v0: i16x8, v1: i16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -101,7 +101,7 @@ block0(v0: i16x8, v1: i16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_2(i32x4, i32) -> i32x4 {
@@ -127,7 +127,7 @@ block0(v0: i32x4, v1: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -151,7 +151,7 @@ block0(v0: i32x4, v1: i32):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_0(i64x2, i64) -> i64x2 {
@@ -177,7 +177,7 @@ block0(v0: i64x2, v1: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -199,7 +199,7 @@ block0(v0: i64x2, v1: i64):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_0_in_f64x2(f64x2, f64) -> f64x2 {
@@ -225,7 +225,7 @@ block0(v0: f64x2, v1: f64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -247,7 +247,7 @@ block0(v0: f64x2, v1: f64):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_1_in_f64x2(f64x2, f64) -> f64x2 {
@@ -273,7 +273,7 @@ block0(v0: f64x2, v1: f64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -295,7 +295,7 @@ block0(v0: f64x2, v1: f64):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_3_in_f32x4(f32x4, f32) -> f32x4 {
@@ -321,7 +321,7 @@ block0(v0: f32x4, v1: f32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -345,7 +345,7 @@ block0(v0: f32x4, v1: f32):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_1_in_f32x4(f32x4, f32) -> f32x4 {
@@ -371,7 +371,7 @@ block0(v0: f32x4, v1: f32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -395,7 +395,7 @@ block0(v0: f32x4, v1: f32):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_const_15(i8x16) -> i8x16 {
@@ -423,7 +423,7 @@ block0(v0: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -446,7 +446,7 @@ block0(v0: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_const_5(i16x8) -> i16x8 {
@@ -474,7 +474,7 @@ block0(v0: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -499,7 +499,7 @@ block0(v0: i16x8):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_const_2(i32x4) -> i32x4 {
@@ -526,7 +526,7 @@ block0(v0: i32x4):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -549,7 +549,7 @@ block0(v0: i32x4):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %insertlane_const_0(i64x2) -> i64x2 {
@@ -576,7 +576,7 @@ block0(v0: i64x2):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -598,6 +598,6 @@ block0(v0: i64x2):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

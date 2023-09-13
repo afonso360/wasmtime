@@ -130,14 +130,14 @@ block3(v7: r64, v8: r64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s7, -8(sp)
 ;   sd s11, -0x10(sp)
-;   addi sp, sp, -0x30
-; block1: ; offset 0x18
+;   c.addi16sp sp, -0x30
+; block1: ; offset 0x16
 ;   sd a1, 0x10(sp)
 ;   c.mv s7, a2
 ;   c.mv a1, a0
@@ -157,23 +157,23 @@ block3(v7: r64, v8: r64):
 ;   sd a1, 0(a2)
 ;   andi a1, a0, 0xff
 ;   bnez a1, 0xc
-; block2: ; offset 0x4e
+; block2: ; offset 0x4c
 ;   c.mv a1, s11
 ;   ld a0, 0x10(sp)
 ;   c.j 8
-; block3: ; offset 0x56
+; block3: ; offset 0x54
 ;   c.mv a0, s11
 ;   ld a1, 0x10(sp)
-; block4: ; offset 0x5c
+; block4: ; offset 0x5a
 ;   c.mv a4, sp
 ;   ld a4, 0(a4)
 ;   c.mv a2, s7
 ;   sd a4, 0(a2)
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x30
 ;   ld s7, -8(sp)
 ;   ld s11, -0x10(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

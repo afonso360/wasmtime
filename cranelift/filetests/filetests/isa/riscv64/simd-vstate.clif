@@ -31,7 +31,7 @@ block0(v0: i8x16, v1: i16x8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -61,7 +61,7 @@ block0(v0: i8x16, v1: i16x8):
 ;   .byte 0x0f, 0x02
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 ;; When the block changes, we need to reemit the vector state instruction
@@ -103,7 +103,7 @@ block2(v6: i8x16, v7: i8x16):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -132,6 +132,6 @@ block2(v6: i8x16, v7: i8x16):
 ;   c.addi tp, 1
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

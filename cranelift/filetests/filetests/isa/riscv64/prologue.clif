@@ -174,7 +174,7 @@ block0(v0: f64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -189,8 +189,8 @@ block0(v0: f64):
 ;   fsd fs9, -0x48(sp)
 ;   fsd fs10, -0x50(sp)
 ;   fsd fs11, -0x58(sp)
-;   addi sp, sp, -0x60
-; block1: ; offset 0x3c
+;   c.addi16sp sp, -0x60
+; block1: ; offset 0x3a
 ;   fadd.d fa3, fa0, fa0
 ;   fadd.d fa4, fa0, fa0
 ;   fadd.d fa5, fa0, fa0
@@ -253,7 +253,7 @@ block0(v0: f64):
 ;   fadd.d fa3, fa3, fa4
 ;   fadd.d fa4, fa5, fa0
 ;   fadd.d fa0, fa3, fa4
-;   addi sp, sp, 0x60
+;   c.addi16sp sp, 0x60
 ;   fld fs0, -8(sp)
 ;   fld fs2, -0x10(sp)
 ;   fld fs3, -0x18(sp)
@@ -267,7 +267,7 @@ block0(v0: f64):
 ;   fld fs11, -0x58(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %f2(i64) -> i64 {
@@ -381,7 +381,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -392,8 +392,8 @@ block0(v0: i64):
 ;   sd s5, -0x28(sp)
 ;   sd s6, -0x30(sp)
 ;   sd s7, -0x38(sp)
-;   addi sp, sp, -0x40
-; block1: ; offset 0x2c
+;   c.addi16sp sp, -0x40
+; block1: ; offset 0x2a
 ;   add a1, a0, a0
 ;   add a2, a0, a1
 ;   add a3, a0, a2
@@ -430,7 +430,7 @@ block0(v0: i64):
 ;   add a2, a3, a4
 ;   add a1, a5, a1
 ;   add a0, a2, a1
-;   addi sp, sp, 0x40
+;   c.addi16sp sp, 0x40
 ;   ld s1, -8(sp)
 ;   ld s2, -0x10(sp)
 ;   ld s3, -0x18(sp)
@@ -440,6 +440,6 @@ block0(v0: i64):
 ;   ld s7, -0x38(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

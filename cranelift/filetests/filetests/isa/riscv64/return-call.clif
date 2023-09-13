@@ -38,7 +38,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -75,7 +75,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -135,7 +135,7 @@ block0(v0: f64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -199,7 +199,7 @@ block0(v0: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -242,7 +242,7 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -254,8 +254,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   ld s1, 0x30(s0)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x10
+;   c.addi16sp sp, 0x30
 ;   ret
 
 function %tail_caller_stack_args() -> i64 tail {
@@ -340,11 +340,11 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
@@ -374,7 +374,7 @@ block0:
 ;   addi t2, zero, 0x7d
 ;   addi s1, zero, 0x82
 ;   addi a0, zero, 0x87
-;   addi sp, sp, -0x30
+;   c.addi16sp sp, -0x30
 ;   sd t0, 0(sp)
 ;   sd t1, 8(sp)
 ;   sd t2, 0x10(sp)
@@ -432,7 +432,7 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -444,8 +444,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   ld s1, 0x30(s0)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x10
+;   c.addi16sp sp, 0x30
 ;   ret
 
 function %different_callee2(i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64) -> i64 tail {
@@ -472,7 +472,7 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -485,8 +485,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   ld s1, 0x38(s0)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x10
+;   c.addi16sp sp, 0x30
 ;   ret
 
 function %caller_of_different_callees(i64) -> i64 tail {
@@ -598,11 +598,11 @@ block2:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x20
+;   c.addi16sp sp, -0x20
 ; block1: ; offset 0xe
 ;   addi a0, zero, 0xa
 ;   sd a0, 0x10(sp)
@@ -633,10 +633,10 @@ block2:
 ;   addi t2, zero, 0x7d
 ;   addi t1, zero, 0x82
 ;   addi t0, zero, 0x87
-;   bnez s1, 0x82
+;   bnez s1, 0x80
 ; block2: ; offset 0x86
 ;   addi s1, zero, 0x8c
-;   addi sp, sp, -0x30
+;   c.addi16sp sp, -0x30
 ;   sd a1, 0(sp)
 ;   sd a0, 8(sp)
 ;   sd t2, 0x10(sp)
@@ -670,9 +670,9 @@ block2:
 ;   addi sp, s0, -0x20
 ;   c.mv s0, t6
 ;   c.jr t0
-; block3: ; offset 0x104
+; block3: ; offset 0x102
 ;   ld s1, 0x10(sp)
-;   addi sp, sp, -0x30
+;   c.addi16sp sp, -0x30
 ;   sd a1, 0(sp)
 ;   sd a0, 8(sp)
 ;   sd t2, 0x10(sp)

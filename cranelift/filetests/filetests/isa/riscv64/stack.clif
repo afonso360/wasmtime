@@ -27,17 +27,17 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   c.mv a0, sp
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %stack_addr_big() -> i64 {
@@ -68,7 +68,7 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -92,7 +92,7 @@ block0:
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %stack_load_small() -> i64 {
@@ -120,18 +120,18 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   c.mv a1, sp
 ;   ld a0, 0(a1)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %stack_load_big() -> i64 {
@@ -163,7 +163,7 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -188,7 +188,7 @@ block0:
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %stack_store_small(i64) {
@@ -216,18 +216,18 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   c.mv a2, sp
 ;   sd a0, 0(a2)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %stack_store_big(i64) {
@@ -259,7 +259,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -284,7 +284,7 @@ block0(v0: i64):
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i8_spill_slot(i8) -> i8, i64 {
@@ -645,7 +645,7 @@ block0(v0: i8):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -846,7 +846,7 @@ block0(v0: i8):
 ;   ld s11, -0x58(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_store(i128) {
@@ -875,19 +875,19 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   c.mv a3, sp
 ;   sd a0, 0(a3)
 ;   sd a1, 8(a3)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_store_inst_offset(i128) {
@@ -917,19 +917,19 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x20
+;   c.addi16sp sp, -0x20
 ; block1: ; offset 0xe
 ;   addi a3, sp, 0x20
 ;   sd a0, 0(a3)
 ;   sd a1, 8(a3)
-;   addi sp, sp, 0x20
+;   c.addi16sp sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_store_big(i128) {
@@ -962,7 +962,7 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -988,7 +988,7 @@ block0(v0: i128):
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_load() -> i128 {
@@ -1017,19 +1017,19 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   c.mv a2, sp
 ;   ld a0, 0(a2)
 ;   ld a1, 8(a2)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_load_inst_offset() -> i128 {
@@ -1059,19 +1059,19 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x20
+;   c.addi16sp sp, -0x20
 ; block1: ; offset 0xe
 ;   addi a2, sp, 0x20
 ;   ld a0, 0(a2)
 ;   ld a1, 8(a2)
-;   addi sp, sp, 0x20
+;   c.addi16sp sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %i128_stack_load_big() -> i128 {
@@ -1104,7 +1104,7 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -1130,6 +1130,6 @@ block0:
 ;   add sp, t6, sp
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

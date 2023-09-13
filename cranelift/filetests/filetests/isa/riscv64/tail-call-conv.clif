@@ -26,7 +26,7 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
@@ -38,8 +38,8 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   ld s1, 0x30(s0)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x10
+;   c.addi16sp sp, 0x30
 ;   ret
 
 function %tail_caller_stack_args() -> i64 tail {
@@ -130,11 +130,11 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
@@ -164,7 +164,7 @@ block0:
 ;   addi t2, zero, 0x7d
 ;   addi s1, zero, 0x82
 ;   addi a0, zero, 0x87
-;   addi sp, sp, -0x30
+;   c.addi16sp sp, -0x30
 ;   sd t0, 0(sp)
 ;   sd t1, 8(sp)
 ;   sd t2, 0x10(sp)
@@ -180,10 +180,10 @@ block0:
 ;   ld a0, 0x30(sp)
 ;   ld s1, 0x38(sp)
 ;   jalr t0
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 ;; Test the `tail` calling convention with non-tail calls and stack returns.
@@ -271,11 +271,11 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x20
+;   c.addi16sp sp, -0x20
 ; block1: ; offset 0xe
 ;   addi a3, zero, 0xa
 ;   sd a3, 0x10(sp)
@@ -314,10 +314,10 @@ block0:
 ;   ld a1, 0(sp)
 ;   ld a0, 8(sp)
 ;   ld s1, 0x10(sp)
-;   addi sp, sp, 0x20
+;   c.addi16sp sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %tail_caller_stack_rets() -> i64 tail {
@@ -353,12 +353,12 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ; block1: ; offset 0xc
-;   addi sp, sp, -0x30
+;   c.addi16sp sp, -0x30
 ;   c.mv s1, sp
 ;   auipc t0, 0
 ;   ld t0, 0xa(t0)
@@ -373,10 +373,10 @@ block0:
 ;   ld a0, 0x10(sp)
 ;   ld a2, 0x18(sp)
 ;   ld s1, 0x20(sp)
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x30
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 ;; Test the `tail` calling convention with non-tail calls and both stack
@@ -419,11 +419,11 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x20
+;   c.addi16sp sp, -0x20
 ; block1: ; offset 0xe
 ;   sd a0, 0(sp)
 ;   sd a2, 8(sp)
@@ -442,11 +442,11 @@ block0(v0: i64, v1: i64, v2: i64, v3: i64, v4: i64, v5: i64, v6: i64, v7: i64, v
 ;   ld a0, 0(sp)
 ;   ld a2, 8(sp)
 ;   ld a4, 0x10(sp)
-;   addi sp, sp, 0x20
+;   c.addi16sp sp, 0x20
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
-;   addi sp, sp, 0x30
+;   c.addi16sp sp, 0x10
+;   c.addi16sp sp, 0x30
 ;   ret
 
 function %tail_caller_stack_args_and_rets() -> i64 tail {
@@ -546,11 +546,11 @@ block0:
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0xe
 ;   addi s1, zero, 0xa
 ;   sd s1, 8(sp)
@@ -580,7 +580,7 @@ block0:
 ;   addi t2, zero, 0x7d
 ;   addi s1, zero, 0x82
 ;   addi a0, zero, 0x87
-;   addi sp, sp, -0x60
+;   c.addi16sp sp, -0x60
 ;   sd t0, 0(sp)
 ;   sd t1, 8(sp)
 ;   sd t2, 0x10(sp)
@@ -603,10 +603,10 @@ block0:
 ;   ld a2, 0x10(sp)
 ;   ld a4, 0x18(sp)
 ;   ld s1, 0x20(sp)
-;   addi sp, sp, 0x30
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x30
+;   c.addi16sp sp, 0x10
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 

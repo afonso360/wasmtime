@@ -209,13 +209,13 @@ block0(v0: i128):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ;   sd ra, 8(sp)
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ;   sd s6, -8(sp)
 ;   sd s11, -0x10(sp)
-;   c.addi sp, -0x10
+;   c.addi16sp sp, -0x10
 ; block1: ; offset 0x16
 ;   c.mv s11, a1
 ;   c.mv a1, a0
@@ -278,12 +278,12 @@ block0(v0: i128):
 ;   c.j -0x26
 ;   slli a5, a5, 1
 ;   c.j -0x2c
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ld s6, -8(sp)
 ;   ld s11, -0x10(sp)
 ;   ld ra, 8(sp)
 ;   ld s0, 0(sp)
-;   c.addi sp, 0x10
+;   c.addi16sp sp, 0x10
 ;   ret
 
 function %b(i8) -> i8 {
