@@ -266,9 +266,9 @@ block0(v0: i16, v1: i8, v2: i8):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x30
+;   c.slli a0, 0x30
 ;   srli a3, a0, 0x30
-;   slli a4, a4, 0x30
+;   c.slli a4, 0x30
 ;   srli a0, a4, 0x30
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -311,9 +311,9 @@ block0(v0: i16, v1: i16, v2: i16):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x30
+;   c.slli a0, 0x30
 ;   srli a3, a0, 0x30
-;   slli a4, a4, 0x30
+;   c.slli a4, 0x30
 ;   srli a0, a4, 0x30
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -356,9 +356,9 @@ block0(v0: i16, v1: i32, v2: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x30
+;   c.slli a0, 0x30
 ;   srli a3, a0, 0x30
-;   slli a4, a4, 0x30
+;   c.slli a4, 0x30
 ;   srli a0, a4, 0x30
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -401,9 +401,9 @@ block0(v0: i16, v1: i64, v2: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x30
+;   c.slli a0, 0x30
 ;   srli a3, a0, 0x30
-;   slli a4, a4, 0x30
+;   c.slli a4, 0x30
 ;   srli a0, a4, 0x30
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -450,9 +450,9 @@ block0(v0: i16, v1: i128, v2: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   slli a0, a0, 0x30
+;   c.slli a0, 0x30
 ;   srli a0, a0, 0x30
-;   slli a5, a5, 0x30
+;   c.slli a5, 0x30
 ;   srli a5, a5, 0x30
 ;   bne a0, a5, 0xa
 ;   addi a5, zero, 1
@@ -499,9 +499,9 @@ block0(v0: i32, v1: i8, v2: i8):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a3, a0, 0x20
-;   slli a4, a4, 0x20
+;   c.slli a4, 0x20
 ;   srli a0, a4, 0x20
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -544,9 +544,9 @@ block0(v0: i32, v1: i16, v2: i16):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a3, a0, 0x20
-;   slli a4, a4, 0x20
+;   c.slli a4, 0x20
 ;   srli a0, a4, 0x20
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -589,9 +589,9 @@ block0(v0: i32, v1: i32, v2: i32):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a3, a0, 0x20
-;   slli a4, a4, 0x20
+;   c.slli a4, 0x20
 ;   srli a0, a4, 0x20
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -634,9 +634,9 @@ block0(v0: i32, v1: i64, v2: i64):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a4, zero, 0x2a
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a3, a0, 0x20
-;   slli a4, a4, 0x20
+;   c.slli a4, 0x20
 ;   srli a0, a4, 0x20
 ;   bne a3, a0, 0xa
 ;   addi a3, zero, 1
@@ -683,9 +683,9 @@ block0(v0: i32, v1: i128, v2: i128):
 ; Disassembled:
 ; block0: ; offset 0x0
 ;   addi a5, zero, 0x2a
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a0, a0, 0x20
-;   slli a5, a5, 0x20
+;   c.slli a5, 0x20
 ;   srli a5, a5, 0x20
 ;   bne a0, a5, 0xa
 ;   addi a5, zero, 1

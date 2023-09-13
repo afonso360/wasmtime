@@ -76,7 +76,7 @@ block0(v0: i16, v1: f32, v2: f32):
 ;   addi a3, zero, 0x2a
 ;   slli a5, a0, 0x30
 ;   srli a1, a5, 0x30
-;   slli a3, a3, 0x30
+;   c.slli a3, 0x30
 ;   srli a5, a3, 0x30
 ;   beq a1, a5, 8
 ;   fmv.d fa0, fa1
@@ -105,7 +105,7 @@ block0(v0: i16, v1: f64, v2: f64):
 ;   addi a3, zero, 0x2a
 ;   slli a5, a0, 0x30
 ;   srli a1, a5, 0x30
-;   slli a3, a3, 0x30
+;   c.slli a3, 0x30
 ;   srli a5, a3, 0x30
 ;   beq a1, a5, 8
 ;   fmv.d fa0, fa1
@@ -134,7 +134,7 @@ block0(v0: i32, v1: f32, v2: f32):
 ;   addi a3, zero, 0x2a
 ;   slli a5, a0, 0x20
 ;   srli a1, a5, 0x20
-;   slli a3, a3, 0x20
+;   c.slli a3, 0x20
 ;   srli a5, a3, 0x20
 ;   beq a1, a5, 8
 ;   fmv.d fa0, fa1
@@ -163,7 +163,7 @@ block0(v0: i32, v1: f64, v2: f64):
 ;   addi a3, zero, 0x2a
 ;   slli a5, a0, 0x20
 ;   srli a1, a5, 0x20
-;   slli a3, a3, 0x20
+;   c.slli a3, 0x20
 ;   srli a5, a3, 0x20
 ;   beq a1, a5, 8
 ;   fmv.d fa0, fa1

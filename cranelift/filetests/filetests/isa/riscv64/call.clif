@@ -72,7 +72,7 @@ block0(v0: i32):
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ; block1: ; offset 0xc
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a0, a0, 0x20
 ;   auipc a5, 0
 ;   ld a5, 0xa(a5)
@@ -99,7 +99,7 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srli a0, a0, 0x20
 ;   ret
 
@@ -132,7 +132,7 @@ block0(v0: i32):
 ;   sd s0, 0(sp)
 ;   c.mv s0, sp
 ; block1: ; offset 0xc
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srai a0, a0, 0x20
 ;   auipc a5, 0
 ;   ld a5, 0xa(a5)
@@ -159,7 +159,7 @@ block0(v0: i32):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 0x20
+;   c.slli a0, 0x20
 ;   srai a0, a0, 0x20
 ;   ret
 

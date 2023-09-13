@@ -672,6 +672,18 @@ impl Inst {
                 let imm6 = Imm6::maybe_from_imm12(imm12).unwrap();
                 sink.put2(encode_ci_type(CiOp::CAddiw, rd, imm6));
             }
+
+            // C.SLLI
+            Inst::AluRRImm12 {
+                alu_op: AluOPRRI::Slli,
+                rd,
+                rs,
+                imm12,
+            } if has_zca && rd.to_reg() == rs && rs != zero_reg() && imm12.as_i16() != 0 => {
+                let shift = ((imm12.as_i16() & 0x3f) as i8) << 2 >> 2;
+                let imm6 = Imm6::maybe_from_i8(shift).unwrap();
+                sink.put2(encode_ci_type(CiOp::CSlli, rd, imm6));
+            }
             _ => return false,
         }
 

@@ -275,7 +275,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 5
+;   c.slli a0, 5
 ;   ret
 
 function %ishl_i64_const_i16(i64) -> i64 {
@@ -292,7 +292,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 5
+;   c.slli a0, 5
 ;   ret
 
 function %ishl_i64_const_i32(i64) -> i64 {
@@ -309,7 +309,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 5
+;   c.slli a0, 5
 ;   ret
 
 function %ishl_i64_const_i64(i64) -> i64 {
@@ -326,7 +326,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 5
+;   c.slli a0, 5
 ;   ret
 
 function %ishl_i64_const_i128(i64) -> i64 {
@@ -344,7 +344,7 @@ block0(v0: i64):
 ;
 ; Disassembled:
 ; block0: ; offset 0x0
-;   slli a0, a0, 5
+;   c.slli a0, 5
 ;   ret
 
 function %ishl_i128_const_i8(i128) -> i128 {

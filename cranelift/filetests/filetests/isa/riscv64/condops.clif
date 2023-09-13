@@ -121,7 +121,7 @@ block0(v0: i32, v1: i8, v2: i8):
 ;   addi a3, zero, 0x2a
 ;   slli a5, a0, 0x20
 ;   srli a4, a5, 0x20
-;   slli a3, a3, 0x20
+;   c.slli a3, 0x20
 ;   srli a5, a3, 0x20
 ;   beq a4, a5, 8
 ;   c.mv a0, a2
