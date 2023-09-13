@@ -586,7 +586,7 @@ block0:
 ;   sd t2, 0x10(sp)
 ;   sd s1, 0x18(sp)
 ;   sd a0, 0x20(sp)
-;   addi a0, sp, 0x30
+;   c.addi4spn a0, sp, 0x30
 ;   sd a0, 0x28(sp)
 ;   auipc t0, 0
 ;   ld t0, 0xa(t0)
