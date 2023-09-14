@@ -1158,6 +1158,20 @@ impl Inst {
                     .iter()
                     .for_each(|i| i.emit_uncompressed(sink, emit_info, state, start_off));
 
+                // This is the last place where we can safely emit an island.
+                // After this, all calculations depend on the PC. So we cannot emit anything in the middle.
+                //
+                // PC calculations are 4 instruction. And each entry in the jump table is 2 instructions, so 8 bytes.
+                // Check if we need to emit a jump table here to support that jump.
+                let inst_count = 4 + (targets.len() * 2);
+                let distance = (inst_count * Inst::UNCOMPRESSED_INSTRUCTION_SIZE as usize) as u32;
+                if sink.island_needed(distance) {
+                    let jump_around_label = sink.get_label();
+                    Inst::gen_jump(jump_around_label).emit(&[], sink, emit_info, state);
+                    sink.emit_island(distance + 4, &mut state.ctrl_plane);
+                    sink.bind_label(jump_around_label, &mut state.ctrl_plane);
+                }
+
                 // Compute the jump table offset.
                 // We need to emit a PC relative offset,
                 sink.bind_label(label_compute_target, &mut state.ctrl_plane);
@@ -1203,16 +1217,8 @@ impl Inst {
 
                 // Emit the jump table.
                 //
-                // Each entry is a aupc + jalr to the target block. We also start with a island
+                // Each entry is a auipc + jalr to the target block. We also start with a island
                 // if necessary.
-
-                // Each entry in the jump table is 2 instructions, so 8 bytes. Check if
-                // we need to emit a jump table here to support that jump.
-                let distance =
-                    (targets.len() * 2 * Inst::UNCOMPRESSED_INSTRUCTION_SIZE as usize) as u32;
-                if sink.island_needed(distance) {
-                    sink.emit_island(distance, &mut state.ctrl_plane);
-                }
 
                 // Emit the jumps back to back
                 for target in targets.iter() {
