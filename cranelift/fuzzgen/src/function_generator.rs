@@ -1284,11 +1284,25 @@ where
         &mut self,
         n: u32,
     ) -> Result<(StackSlot, StackSize, StackAlignment, AACategory)> {
-        let first = self
+        self.stack_slot_with_size_and_aignment(n, 0)
+    }
+
+    /// Finds a stack slot with size of at least `size` bytes and an alignment of at least `align` bytes
+    fn stack_slot_with_size_and_aignment(
+        &mut self,
+        requested_size: u32,
+        requested_align: u32,
+    ) -> Result<(StackSlot, StackSize, StackAlignment, AACategory)> {
+        let slots: Vec<_> = self
             .resources
             .stack_slots
-            .partition_point(|&(_slot, size, _align, _category)| size < n);
-        Ok(*self.u.choose(&self.resources.stack_slots[first..])?)
+            .iter()
+            .filter(|(_slot, size, align, _category)| {
+                *size >= requested_size && *align >= requested_align
+            })
+            .collect();
+
+        Ok(**self.u.choose(&slots[..])?)
     }
 
     /// Generates an address that should allow for a store or a load.
@@ -1299,28 +1313,24 @@ where
     ///
     /// `min_size`: Controls the amount of space that the address should have.
     ///
-    /// `aligned`: When passed as true, the resulting address is guaranteed to be aligned
-    /// on an 8 byte boundary.
+    /// `min_alignment`: The minimum amount of alignment that the address should have.
     ///
     /// Returns a valid address and the maximum possible offset that still respects `min_size`.
     fn generate_load_store_address(
         &mut self,
         builder: &mut FunctionBuilder,
         min_size: u32,
-        aligned: bool,
+        min_alignment: u32,
     ) -> Result<(Value, u32, AACategory)> {
         // TODO: Currently our only source of addresses is stack_addr, but we
         // should add global_value, symbol_value eventually
         let (addr, available_size, category) = {
-            let (ss, slot_size, _align, category) = self.stack_slot_with_size(min_size)?;
+            let (ss, slot_size, _align, category) =
+                self.stack_slot_with_size_and_aignment(min_size, min_alignment)?;
 
             // stack_slot_with_size guarantees that slot_size >= min_size
             let max_offset = slot_size - min_size;
-            let offset = if aligned {
-                self.u.int_in_range(0..=max_offset / min_size)? * min_size
-            } else {
-                self.u.int_in_range(0..=max_offset)?
-            };
+            let offset = self.u.int_in_range(0..=max_offset / min_alignment)? * min_alignment;
 
             let base_addr = builder.ins().stack_addr(I64, ss, offset as i32);
             let available_size = slot_size.saturating_sub(offset);
@@ -1339,7 +1349,7 @@ where
     fn generate_address_and_memflags(
         &mut self,
         builder: &mut FunctionBuilder,
-        min_size: u32,
+        size: u32,
         is_atomic: bool,
     ) -> Result<(Value, MemFlags, Offset32)> {
         // Should we generate an aligned address
@@ -1350,14 +1360,9 @@ where
             self.isa.triple().architecture,
             Architecture::Aarch64(_) | Architecture::Riscv64(_)
         );
+
         let aligned = if is_atomic && requires_aligned_atomics {
             true
-        } else if min_size > 8 {
-            // TODO: We currently can't guarantee that a stack_slot will be aligned on a 16 byte
-            // boundary. We don't have a way to specify alignment when creating stack slots, and
-            // cranelift only guarantees 8 byte alignment between stack slots.
-            // See: https://github.com/bytecodealliance/wasmtime/issues/5922#issuecomment-1457926624
-            false
         } else {
             bool::arbitrary(self.u)?
         };
@@ -1373,7 +1378,7 @@ where
         }
 
         let (address, max_offset, category) =
-            self.generate_load_store_address(builder, min_size, aligned)?;
+            self.generate_load_store_address(builder, size, size)?;
 
         // Set the Alias Analysis bits on the memflags
         category.update_memflags(&mut flags);
