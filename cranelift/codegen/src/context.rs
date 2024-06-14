@@ -15,6 +15,7 @@ use crate::egraph::EgraphPass;
 use crate::flowgraph::ControlFlowGraph;
 use crate::ir::Function;
 use crate::isa::TargetIsa;
+use crate::jump_threading::JumpThreadingPass;
 use crate::legalizer::simple_legalize;
 use crate::loop_analysis::LoopAnalysis;
 use crate::machinst::{CompiledCode, CompiledCodeStencil};
@@ -384,6 +385,29 @@ impl Context {
         log::debug!("egraph stats: {:?}", pass.stats);
         trace!("pinned_union_count: {}", pass.eclasses.pinned_union_count);
         trace!("After egraph optimization:\n{}", self.func.display());
+
+        self.verify_if(fisa)
+    }
+
+    /// Run the jump threading pass
+    pub fn jump_threading_pass<'a, FOI>(&mut self, fisa: FOI) -> CodegenResult<()>
+    where
+        FOI: Into<FlagsOrIsa<'a>>,
+    {
+        let _tt = timing::jump_threading();
+
+        trace!("About to run jump threading pass:\n{}", self.func.display());
+        let fisa = fisa.into();
+        let mut pass = JumpThreadingPass::new(
+            &mut self.func,
+            &mut self.cfg,
+            &self.domtree,
+            &self.loop_analysis,
+            &fisa.flags,
+        );
+        pass.run();
+        // log::debug!("jump threading stats: {:?}", pass.stats);
+        trace!("After jump threading pass:\n{}", self.func.display());
 
         self.verify_if(fisa)
     }

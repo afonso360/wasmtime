@@ -61,6 +61,7 @@ define_passes! {
     flowgraph: "Control flow graph",
     domtree: "Dominator tree",
     loop_analysis: "Loop analysis",
+    jump_threading: "Jump Threading",
     preopt: "Pre-legalization rewriting",
     egraph: "Egraph based optimizations",
     gvn: "Global value numbering",
