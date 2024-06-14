@@ -73,6 +73,7 @@ mod egraph;
 mod inst_predicates;
 mod isle_prelude;
 mod iterators;
+mod jump_threading;
 mod legalizer;
 mod nan_canonicalization;
 mod opts;

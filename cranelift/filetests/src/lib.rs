@@ -22,6 +22,7 @@ mod test_cat;
 mod test_compile;
 mod test_domtree;
 mod test_interpret;
+mod test_jump_threading;
 mod test_legalizer;
 mod test_optimize;
 mod test_print_cfg;
@@ -86,6 +87,7 @@ pub fn run_passes(
 fn new_subtest(parsed: &TestCommand) -> anyhow::Result<Box<dyn subtest::SubTest>> {
     match parsed.command {
         "alias-analysis" => test_alias_analysis::subtest(parsed),
+        "jump-threading" => test_jump_threading::subtest(parsed),
         "cat" => test_cat::subtest(parsed),
         "compile" => test_compile::subtest(parsed),
         "domtree" => test_domtree::subtest(parsed),
