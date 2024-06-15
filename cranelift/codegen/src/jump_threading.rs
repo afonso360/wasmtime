@@ -128,9 +128,9 @@ impl JumpThreadAction {
 
                 // Now that we are done, we should update the successors of the pred block
                 jt.cfg.recompute_block(jt.func, pred);
-                jt.domtree.clear();
-                jt.domtree.compute(jt.func, jt.cfg);
-                jt.loop_analysis.clear();
+                // jt.domtree.clear();
+                // jt.domtree.compute(jt.func, jt.cfg);
+                // jt.loop_analysis.clear();
             }
         }
     }
@@ -199,14 +199,18 @@ impl<'a> JumpThreadingPass<'a> {
                 action.run(self)
             }
         }
+
+        // Now that we're done rebuild whatever structures might be necessary
+        // The CFG is always kept up to date, so we don't need to rebuild it here.
+
+        self.domtree.clear();
+        self.domtree.compute(self.func, self.cfg);
+        // jt.loop_analysis.clear();
     }
 
     fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
-        // If the block is unreachable, we can simply delete it and shouldn't
-        // need to worry about it anymore
-        if !self.domtree.is_reachable(block) {
-            return smallvec![JumpThreadAction::Delete(block)];
-        }
+        // We assume that all blocks are reachable, and that unreachable blocks
+        // were removed in previous passes.
 
         // If we only have one predecessor, and that block only has one successor
         // we most definitley want to merge into it. We also check if the terminator
