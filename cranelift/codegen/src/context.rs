@@ -190,6 +190,10 @@ impl Context {
         self.eliminate_unreachable_code(isa)?;
         self.remove_constant_phis(isa)?;
 
+        if opt_level != OptLevel::None {
+            self.jump_threading_pass(isa)?;
+        }
+
         self.func.dfg.resolve_all_aliases();
 
         if opt_level != OptLevel::None {
@@ -405,7 +409,6 @@ impl Context {
             &mut self.loop_analysis,
         );
         pass.run();
-        // log::debug!("jump threading stats: {:?}", pass.stats);
         trace!("After jump threading pass:\n{}", self.func.display());
 
         self.verify_if(fisa)
