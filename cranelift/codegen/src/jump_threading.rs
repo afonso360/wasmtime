@@ -5,16 +5,15 @@ use smallvec::{smallvec, SmallVec};
 
 use crate::cursor::{Cursor, FuncCursor};
 use crate::dominator_tree::DominatorTree;
-use crate::flowgraph::ControlFlowGraph;
-use crate::ir::{Block, Function};
+use crate::flowgraph::{BlockPredecessor, ControlFlowGraph};
+use crate::ir::{Block, Function, Opcode};
 use crate::loop_analysis::LoopAnalysis;
-use crate::settings::Flags;
 use crate::trace;
 use core::fmt;
 
 /// Represents a single action to be performed as part of the
 /// jump thread analysis.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 enum JumpThreadAction {
     /// This action skips this block and does not perform any transformations
     /// on it.
@@ -22,6 +21,18 @@ enum JumpThreadAction {
 
     /// Deletes this block from the function
     Delete(Block),
+
+    /// Merges a successor block into a predecessor block.
+    ///
+    /// This deletes the terminator instruction from the predecessor
+    /// block, and replaces it with the successor's one. If there
+    /// is any information to be gained by that transformation it will
+    /// be added to the block. (i.e. the terminator was a br_if and we
+    /// now know the value of the branch condition).
+    MergeIntoPredecessor {
+        successor: Block,
+        predecessor: BlockPredecessor,
+    },
 }
 
 impl fmt::Display for JumpThreadAction {
@@ -29,20 +40,21 @@ impl fmt::Display for JumpThreadAction {
         match self {
             JumpThreadAction::Skip => write!(f, "skip"),
             JumpThreadAction::Delete(block) => write!(f, "delete {block}"),
+            JumpThreadAction::MergeIntoPredecessor {
+                successor,
+                predecessor,
+            } => write!(f, "merge {successor} into {}", predecessor.block),
         }
     }
 }
 
 impl JumpThreadAction {
     fn run<'a>(self, jt: &mut JumpThreadingPass<'a>) {
-        let mut cursor = FuncCursor::new(jt.func);
-
         match self {
             JumpThreadAction::Skip => {}
             JumpThreadAction::Delete(block) => {
                 // Remove all instructions from `block`.
                 while let Some(inst) = jt.func.layout.first_inst(block) {
-                    trace!(" - {}", jt.func.dfg.display_inst(inst));
                     jt.func.layout.remove_inst(inst);
                 }
 
@@ -52,6 +64,73 @@ impl JumpThreadAction {
 
                 // Finally remove the block
                 jt.func.layout.remove_block(block);
+            }
+            JumpThreadAction::MergeIntoPredecessor {
+                successor,
+                predecessor,
+            } => {
+                let succ = successor;
+                let pred = predecessor.block;
+                let pred_inst = predecessor.inst;
+
+                debug_assert!(jt.cfg.pred_iter(succ).all(|b| b.block == pred));
+                debug_assert!(jt.func.layout.is_block_inserted(succ));
+                debug_assert!(jt.func.layout.is_block_inserted(pred));
+                // TODO: This shouldn't be necessary in the future
+                debug_assert_eq!(jt.cfg.pred_iter(succ).count(), 1);
+                debug_assert_eq!(jt.cfg.succ_iter(pred).count(), 1);
+
+                // If the branch instruction that lead us to this block wasn't an unconditional jump, then
+                // we have a conditional jump sequence that we should not break.
+                let branch_dests =
+                    jt.func.dfg.insts[pred_inst].branch_destination(&jt.func.dfg.jump_tables);
+
+                debug_assert_eq!(branch_dests.len(), 1);
+
+                let branch_args = branch_dests[0]
+                    .args_slice(&jt.func.dfg.value_lists)
+                    .to_vec();
+
+                // TODO: should we free the entity list associated with the block params?
+                let block_params = jt
+                    .func
+                    .dfg
+                    .detach_block_params(succ)
+                    .as_slice(&jt.func.dfg.value_lists)
+                    .to_vec();
+
+                debug_assert_eq!(block_params.len(), branch_args.len());
+
+                // // If there were any block parameters in block, then the last instruction in pred will
+                // // fill these parameters. Make the block params aliases of the terminator arguments.
+                for (block_param, arg) in block_params.into_iter().zip(branch_args) {
+                    if block_param != arg {
+                        jt.func.dfg.change_to_alias(block_param, arg);
+                    }
+                }
+
+                let layout = &mut jt.func.layout;
+                // Remove the terminator branch to the current block.
+                layout.remove_inst(pred_inst);
+
+                // Move all the instructions to the predecessor.
+                while let Some(inst) = layout.first_inst(succ) {
+                    layout.remove_inst(inst);
+                    layout.append_inst(inst, pred);
+                }
+
+                // If succ was cold, pred is now also cold. Except if it's the entry
+                // block which cannot be cold.
+                let pred_is_entry = layout.entry_block().unwrap() == pred;
+                if layout.is_cold(succ) && !pred_is_entry {
+                    layout.set_cold(pred);
+                }
+
+                // Now that we are done, we should update the successors of the pred block
+                jt.cfg.recompute_block(jt.func, pred);
+                jt.domtree.clear();
+                jt.domtree.compute(jt.func, jt.cfg);
+                jt.loop_analysis.clear();
             }
         }
     }
@@ -65,39 +144,34 @@ pub struct JumpThreadingPass<'a> {
     /// Dominator tree for the CFG, used to visit blocks in pre-order
     /// so we see value definitions before their uses, and also used for
     /// O(1) dominance checks.
-    domtree: &'a DominatorTree, //Preorder,
+    domtree: &'a mut DominatorTree, //Preorder,
+    // domtree_preorder: DominatorTreePreorder,
     /// Loop analysis results. We generally avoid performing actions
     /// on blocks belonging to loops since that can generate irreducible
     /// control flow
-    loop_analysis: &'a LoopAnalysis,
-    /// Compiler flags.
-    flags: &'a Flags,
+    loop_analysis: &'a mut LoopAnalysis,
 }
 
 impl<'a> JumpThreadingPass<'a> {
     pub fn new(
         func: &'a mut Function,
         cfg: &'a mut ControlFlowGraph,
-        domtree: &'a DominatorTree,
-        loop_analysis: &'a LoopAnalysis,
-        flags: &'a Flags,
+        domtree: &'a mut DominatorTree,
+        loop_analysis: &'a mut LoopAnalysis,
     ) -> Self {
-        // let mut domtree = DominatorTreePreorder::new();
-        // domtree.compute(raw_domtree, &func.layout);
+        // let mut domtree_preorder = DominatorTreePreorder::new();
+        // domtree_preorder.compute(domtree, &func.layout);
 
         Self {
             func,
             cfg,
             domtree,
+            // domtree_preorder,
             loop_analysis,
-            flags,
         }
     }
 
     pub fn run(&mut self) {
-        // let last_block = cursor.layout().last_block().unwrap();
-        // let mut stack = vec![last_block];
-
         // TODO: clean this up
         let blocks: Vec<_> = {
             let cursor = FuncCursor::new(self.func);
@@ -120,6 +194,7 @@ impl<'a> JumpThreadingPass<'a> {
                 }
             };
 
+            // Run all actions
             for action in actions.into_iter() {
                 action.run(self)
             }
@@ -131,6 +206,30 @@ impl<'a> JumpThreadingPass<'a> {
         // need to worry about it anymore
         if !self.domtree.is_reachable(block) {
             return smallvec![JumpThreadAction::Delete(block)];
+        }
+
+        // If we only have one predecessor, and that block only has one successor
+        // we most definitley want to merge into it. We also check if the terminator
+        // is a jump instruction, even with a since successor, we can still have differing
+        // block args, which has to be handled differently.
+        //
+        // We also don't need to worry about computing the cost of this merger
+        // since it can only reduce the total cost of the function.
+        let pred_count = self.cfg.pred_iter(block).count();
+        if pred_count == 1 {
+            let pred = self.cfg.pred_iter(block).nth(0).unwrap();
+            let pred_successors = self.cfg.succ_iter(pred.block).count();
+            let pred_inst = pred.inst;
+            let pred_opcode = self.func.dfg.insts[pred_inst].opcode();
+            if pred_successors == 1 && pred_opcode == Opcode::Jump {
+                return smallvec![
+                    JumpThreadAction::MergeIntoPredecessor {
+                        successor: block,
+                        predecessor: pred,
+                    },
+                    JumpThreadAction::Delete(block),
+                ];
+            }
         }
 
         smallvec![JumpThreadAction::Skip]
