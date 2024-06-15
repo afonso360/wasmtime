@@ -1,0 +1,18 @@
+test jump-threading precise-output
+target x86_64
+
+function %jump() -> i64 {
+block0:
+    jump block1
+
+block1:
+    v1 = iconst.i64 0
+    return v1
+}
+
+; function %jump() -> i64 fast {
+; block0:
+;     v1 = iconst.i64 0
+;     return v1  ; v1 = 0
+; }
+

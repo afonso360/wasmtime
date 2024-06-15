@@ -401,9 +401,8 @@ impl Context {
         let mut pass = JumpThreadingPass::new(
             &mut self.func,
             &mut self.cfg,
-            &self.domtree,
-            &self.loop_analysis,
-            &fisa.flags,
+            &mut self.domtree,
+            &mut self.loop_analysis,
         );
         pass.run();
         // log::debug!("jump threading stats: {:?}", pass.stats);
