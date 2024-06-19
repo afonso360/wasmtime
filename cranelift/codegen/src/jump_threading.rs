@@ -15,9 +15,9 @@ use core::fmt;
 /// jump thread analysis.
 #[derive(Debug)]
 enum JumpThreadAction {
-    /// This action skips this block and does not perform any transformations
-    /// on it.
-    Skip,
+    /// Evaluates the possible actions that we are able to take on this block
+    /// and pushes them into the action queue.
+    Analyze(Block),
 
     /// Deletes this block from the function
     Delete(Block),
@@ -42,16 +42,15 @@ enum JumpThreadAction {
 impl fmt::Display for JumpThreadAction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            JumpThreadAction::Skip => write!(f, "skip"),
+            JumpThreadAction::Analyze(block) => write!(f, "analyze {block}"),
             JumpThreadAction::Delete(block) => write!(f, "delete {block}"),
             JumpThreadAction::MergeIntoPredecessor {
                 successor,
                 predecessor,
             } => write!(f, "merge {successor} into {}", predecessor.block),
-            JumpThreadAction::ReplaceWithJump(block, _call) => write!(
-                f,
-                "replace {block} terminator with jump into", // TODO: Improve this: {}", call.display()
-            ),
+            JumpThreadAction::ReplaceWithJump(block, _call) => {
+                write!(f, "replace {block} terminator with jump",)
+            }
         }
     }
 }
@@ -59,7 +58,26 @@ impl fmt::Display for JumpThreadAction {
 impl JumpThreadAction {
     fn run<'a>(self, jt: &mut JumpThreadingPass<'a>) {
         match self {
-            JumpThreadAction::Skip => {}
+            JumpThreadAction::Analyze(block) => {
+                let mut actions = jt.analyze_block(block);
+
+                // Debug print the actions that we performed
+                #[cfg(feature = "trace-log")]
+                match actions.as_slice() {
+                    [] => trace!("Evaluating {block}: skip"),
+                    multi => {
+                        trace!("Evaluating {block}:");
+                        for action in multi {
+                            trace!("\t- {action}");
+                        }
+                    }
+                };
+
+                // The actions queue is always popped from the last place, so we need
+                // to reverse this set of action so that they get executed in their intended order.
+                actions.reverse();
+                jt.actions.extend(actions.into_iter());
+            }
             JumpThreadAction::Delete(block) => {
                 // Remove all instructions from `block`.
                 while let Some(inst) = jt.func.layout.first_inst(block) {
@@ -174,7 +192,10 @@ pub struct JumpThreadingPass<'a> {
     /// Loop analysis results. We generally avoid performing actions
     /// on blocks belonging to loops since that can generate irreducible
     /// control flow
-    loop_analysis: &'a mut LoopAnalysis,
+    _loop_analysis: &'a mut LoopAnalysis,
+
+    /// A queue of actions that we have pending
+    actions: Vec<JumpThreadAction>,
 }
 
 impl<'a> JumpThreadingPass<'a> {
@@ -182,7 +203,7 @@ impl<'a> JumpThreadingPass<'a> {
         func: &'a mut Function,
         cfg: &'a mut ControlFlowGraph,
         domtree: &'a mut DominatorTree,
-        loop_analysis: &'a mut LoopAnalysis,
+        _loop_analysis: &'a mut LoopAnalysis,
     ) -> Self {
         // let mut domtree_preorder = DominatorTreePreorder::new();
         // domtree_preorder.compute(domtree, &func.layout);
@@ -192,37 +213,25 @@ impl<'a> JumpThreadingPass<'a> {
             cfg,
             domtree,
             // domtree_preorder,
-            loop_analysis,
+            _loop_analysis,
+            actions: Vec::new(),
         }
     }
 
     pub fn run(&mut self) {
-        // TODO: clean this up
-        let blocks: Vec<_> = {
-            let cursor = FuncCursor::new(self.func);
-            let mut v: Vec<_> = cursor.layout().blocks().collect();
-            v.reverse();
-            v
-        };
-        for block in blocks {
-            let actions = self.analyze_block(block);
+        // Start by analyzing all blocks
+        self.actions
+            .extend(self.func.layout.blocks().map(JumpThreadAction::Analyze));
 
-            // Debug print the actions that we performed
-            #[cfg(feature = "trace-log")]
-            match actions.as_slice() {
-                [single] => trace!("Evaluating {block}: {single}"),
-                multi => {
-                    trace!("Evaluating {block}:");
-                    for action in multi {
-                        trace!("\t- {action}");
-                    }
-                }
-            };
+        // Run actions until we are done
+        while let Some(action) = self.actions.pop() {
+            // for block in blocks {
+            //     let actions = self.analyze_block(block);
 
-            // Run all actions
-            for action in actions.into_iter() {
-                action.run(self)
-            }
+            //     // Run all actions
+            //     for action in actions.into_iter() {
+            action.run(self)
+            //     }
         }
 
         // Now that we're done rebuild whatever structures might be necessary
@@ -284,6 +293,6 @@ impl<'a> JumpThreadingPass<'a> {
             }
         }
 
-        smallvec![JumpThreadAction::Skip]
+        smallvec![]
     }
 }
