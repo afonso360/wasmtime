@@ -6,7 +6,7 @@ use smallvec::{smallvec, SmallVec};
 use crate::cursor::{Cursor, FuncCursor};
 use crate::dominator_tree::DominatorTree;
 use crate::flowgraph::{BlockPredecessor, ControlFlowGraph};
-use crate::ir::{Block, Function, Opcode};
+use crate::ir::{Block, BlockCall, Function, InstBuilder, Opcode};
 use crate::loop_analysis::LoopAnalysis;
 use crate::trace;
 use core::fmt;
@@ -33,6 +33,10 @@ enum JumpThreadAction {
         successor: Block,
         predecessor: BlockPredecessor,
     },
+
+    /// Replace the terminator for this block with a jump into the
+    /// provided block call.
+    ReplaceWithJump(Block, BlockCall),
 }
 
 impl fmt::Display for JumpThreadAction {
@@ -44,6 +48,10 @@ impl fmt::Display for JumpThreadAction {
                 successor,
                 predecessor,
             } => write!(f, "merge {successor} into {}", predecessor.block),
+            JumpThreadAction::ReplaceWithJump(block, _call) => write!(
+                f,
+                "replace {block} terminator with jump into", // TODO: Improve this: {}", call.display()
+            ),
         }
     }
 }
@@ -101,8 +109,8 @@ impl JumpThreadAction {
 
                 debug_assert_eq!(block_params.len(), branch_args.len());
 
-                // // If there were any block parameters in block, then the last instruction in pred will
-                // // fill these parameters. Make the block params aliases of the terminator arguments.
+                // If there were any block parameters in block, then the last instruction in pred will
+                // fill these parameters. Make the block params aliases of the terminator arguments.
                 for (block_param, arg) in block_params.into_iter().zip(branch_args) {
                     if block_param != arg {
                         jt.func.dfg.change_to_alias(block_param, arg);
@@ -131,6 +139,23 @@ impl JumpThreadAction {
                 // jt.domtree.clear();
                 // jt.domtree.compute(jt.func, jt.cfg);
                 // jt.loop_analysis.clear();
+            }
+            JumpThreadAction::ReplaceWithJump(block, new_target) => {
+                debug_assert_eq!(jt.cfg.succ_iter(block).count(), 1);
+                let target_block = new_target.block(&jt.func.dfg.value_lists).clone();
+                let target_values = new_target.args_slice(&jt.func.dfg.value_lists).to_vec();
+
+                // Remove the terminator instruction on the block.
+                let terminator = jt.func.layout.last_inst(block).unwrap();
+                jt.func.layout.remove_inst(terminator);
+
+                // Insert the new terminator as the last instruction
+                let mut cursor = FuncCursor::new(jt.func).at_bottom(block);
+                cursor.ins().jump(target_block, &target_values[..]);
+
+                // We haven't changed the successor of this function, but we have changed
+                // the terminator instruction so we need to recompute the cfg for this block
+                jt.cfg.recompute_block(jt.func, block);
             }
         }
     }
@@ -211,6 +236,29 @@ impl<'a> JumpThreadingPass<'a> {
     fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
         // We assume that all blocks are reachable, and that unreachable blocks
         // were removed in previous passes.
+
+        // If all of our terminator block calls are the same we can replace it with a jump terminator.
+        // This can unlock further opportunities for optimization so we should reevaluate this block again.
+        let terminator = self.func.layout.last_inst(block).unwrap();
+        let branch_dests =
+            self.func.dfg.insts[terminator].branch_destination(&self.func.dfg.jump_tables);
+        let all_dests_equal = branch_dests.windows(2).all(|bc| {
+            let (lhs, rhs) = (bc[0], bc[1]);
+
+            let lhs_block = lhs.block(&self.func.dfg.value_lists);
+            let lhs_args = lhs.args_slice(&self.func.dfg.value_lists);
+
+            let rhs_block = rhs.block(&self.func.dfg.value_lists);
+            let rhs_args = rhs.args_slice(&self.func.dfg.value_lists);
+
+            lhs_block == rhs_block && lhs_args == rhs_args
+        });
+        if branch_dests.len() > 1 && all_dests_equal {
+            return smallvec![
+                JumpThreadAction::ReplaceWithJump(block, branch_dests[0]),
+                // JumpThreadAction::Analyze(block),
+            ];
+        }
 
         // If we only have one predecessor, and that block only has one successor
         // we most definitley want to merge into it. We also check if the terminator
