@@ -1,0 +1,27 @@
+test jump-threading precise-output
+target x86_64
+
+function %br_table_equal(i32) -> i64 {
+block0(v0: i32):
+    v1 = iconst.i64 0
+    br_table v0, block1(v1), [block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1), block1(v1)]
+
+block1(v3: i64):
+    store.i64 v3, v3
+    jump block2(v3)
+
+block2(v4: i64):
+    return v4
+}
+
+; function %br_table_equal(i32) -> i64 fast {
+; block0(v0: i32):
+;     v1 = iconst.i64 0
+;     jump block1(v1)  ; v1 = 0
+;
+; block1(v3: i64):
+;     v4 -> v3
+;     store v3, v3
+;     return v4
+; }
+
