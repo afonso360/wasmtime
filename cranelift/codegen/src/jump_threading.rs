@@ -49,7 +49,7 @@ impl fmt::Display for JumpThreadAction {
                 predecessor,
             } => write!(f, "merge {successor} into {}", predecessor.block),
             JumpThreadAction::ReplaceWithJump(block, _call) => {
-                write!(f, "replace {block} terminator with jump",)
+                write!(f, "replace {block} terminator with jump")
             }
         }
     }
@@ -59,6 +59,12 @@ impl JumpThreadAction {
     fn run<'a>(self, jt: &mut JumpThreadingPass<'a>) {
         match self {
             JumpThreadAction::Analyze(block) => {
+                // It may happen that we try to analyze a block but it has been previously deleted
+                // due to effects on other blocks.
+                if !jt.func.layout.is_block_inserted(block) {
+                    return;
+                }
+
                 let mut actions = jt.analyze_block(block);
 
                 // Debug print the actions that we performed
@@ -168,6 +174,7 @@ impl JumpThreadAction {
                 jt.func.layout.remove_inst(terminator);
 
                 // Insert the new terminator as the last instruction
+                // TODO: Copy srcloc
                 let mut cursor = FuncCursor::new(jt.func).at_bottom(block);
                 cursor.ins().jump(target_block, &target_values[..]);
 
@@ -265,29 +272,35 @@ impl<'a> JumpThreadingPass<'a> {
             ];
         }
 
-        // If we only have one predecessor, and that block only has one successor
+        // If we only have one successor, and that block only has one predecessor
         // we most definitley want to merge into it. We also check if the terminator
-        // is a jump instruction, even with a since successor, we can still have differing
-        // block args, which has to be handled differently.
+        // is a jump instruction, even with a singlesuccessor, we can still have
+        // differing block args, which has to be handled differently.
         //
         // We also don't need to worry about computing the cost of this merger
         // since it can only reduce the total cost of the function.
-        let pred_count = self.cfg.pred_iter(block).count();
-        if pred_count == 1 {
-            let pred = self.cfg.pred_iter(block).nth(0).unwrap();
-            let pred_successors = self.cfg.succ_iter(pred.block).count();
-            let pred_inst = pred.inst;
-            let pred_opcode = self.func.dfg.insts[pred_inst].opcode();
-            if pred_successors == 1 && pred_opcode == Opcode::Jump {
+        let succ_count = self.cfg.succ_iter(block).count();
+        if succ_count == 1 {
+            let succ = self.cfg.succ_iter(block).nth(0).unwrap();
+            let succ_predecessors = self.cfg.pred_iter(succ).count();
+            let terminator_opcode = self.func.dfg.insts[terminator].opcode();
+            if succ_predecessors == 1 && terminator_opcode == Opcode::Jump {
+                let merge_pred = self.cfg.pred_iter(succ).nth(0).unwrap();
+
                 return smallvec![
                     JumpThreadAction::MergeIntoPredecessor {
-                        successor: block,
-                        predecessor: pred,
+                        successor: succ,
+                        predecessor: merge_pred,
                     },
-                    JumpThreadAction::Delete(block),
+                    JumpThreadAction::Delete(succ),
                 ];
             }
         }
+
+        // TODO: Const evaluate br_table
+        // TODO: Const evaluate br_if
+        // TODO: Selectify br_if
+        // TODO: Inline jump blocks
 
         smallvec![]
     }

@@ -17,11 +17,9 @@ block2(v4: i64):
 ; function %brif_equal(i64) -> i64 fast {
 ; block0(v0: i64):
 ;     v1 = iconst.i64 0
-;     jump block1(v1)  ; v1 = 0
-;
-; block1(v3: i64):
+;     v3 -> v1
 ;     v4 -> v3
-;     store v3, v3
-;     return v4
+;     store v3, v3  ; v3 = 0, v3 = 0
+;     return v4  ; v4 = 0
 ; }
 
