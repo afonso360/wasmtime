@@ -225,13 +225,7 @@ impl<'a> JumpThreadingPass<'a> {
 
         // Run actions until we are done
         while let Some(action) = self.actions.pop() {
-            // for block in blocks {
-            //     let actions = self.analyze_block(block);
-
-            //     // Run all actions
-            //     for action in actions.into_iter() {
             action.run(self)
-            //     }
         }
 
         // Now that we're done rebuild whatever structures might be necessary
@@ -265,7 +259,9 @@ impl<'a> JumpThreadingPass<'a> {
         if branch_dests.len() > 1 && all_dests_equal {
             return smallvec![
                 JumpThreadAction::ReplaceWithJump(block, branch_dests[0]),
-                // JumpThreadAction::Analyze(block),
+                // Reanalyze this block since the jump terminator may now
+                // reveal better threading opportunities
+                JumpThreadAction::Analyze(block),
             ];
         }
 
