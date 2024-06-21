@@ -160,9 +160,6 @@ impl JumpThreadAction {
 
                 // Now that we are done, we should update the successors of the pred block
                 jt.cfg.recompute_block(jt.func, pred);
-                // jt.domtree.clear();
-                // jt.domtree.compute(jt.func, jt.cfg);
-                // jt.loop_analysis.clear();
             }
             JumpThreadAction::ReplaceWithJump(block, new_target) => {
                 let target_block = new_target.block(&jt.func.dfg.value_lists).clone();
@@ -198,7 +195,7 @@ pub struct JumpThreadingPass<'a> {
     /// Loop analysis results. We generally avoid performing actions
     /// on blocks belonging to loops since that can generate irreducible
     /// control flow
-    _loop_analysis: &'a mut LoopAnalysis,
+    loop_analysis: &'a mut LoopAnalysis,
 
     /// A queue of actions that we have pending
     actions: Vec<JumpThreadAction>,
@@ -209,17 +206,13 @@ impl<'a> JumpThreadingPass<'a> {
         func: &'a mut Function,
         cfg: &'a mut ControlFlowGraph,
         domtree: &'a mut DominatorTree,
-        _loop_analysis: &'a mut LoopAnalysis,
+        loop_analysis: &'a mut LoopAnalysis,
     ) -> Self {
-        // let mut domtree_preorder = DominatorTreePreorder::new();
-        // domtree_preorder.compute(domtree, &func.layout);
-
         Self {
             func,
             cfg,
             domtree,
-            // domtree_preorder,
-            _loop_analysis,
+            loop_analysis,
             actions: Vec::new(),
         }
     }
@@ -231,15 +224,16 @@ impl<'a> JumpThreadingPass<'a> {
 
         // Run actions until we are done
         while let Some(action) = self.actions.pop() {
-            action.run(self)
+            action.run(self);
         }
 
         // Now that we're done rebuild whatever structures might be necessary
         // The CFG is always kept up to date, so we don't need to rebuild it here.
-
         self.domtree.clear();
         self.domtree.compute(self.func, self.cfg);
-        // jt.loop_analysis.clear();
+        self.loop_analysis.clear();
+        self.loop_analysis
+            .compute(self.func, self.cfg, self.domtree);
     }
 
     fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
