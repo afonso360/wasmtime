@@ -167,11 +167,12 @@ impl JumpThreadAction {
 
                 // Remove the terminator instruction on the block.
                 let terminator = jt.func.layout.last_inst(block).unwrap();
+                let terminator_srcloc = jt.func.srcloc(terminator);
                 jt.func.layout.remove_inst(terminator);
 
                 // Insert the new terminator as the last instruction
-                // TODO: Copy srcloc
                 let mut cursor = FuncCursor::new(jt.func).at_bottom(block);
+                cursor.set_srcloc(terminator_srcloc);
                 cursor.ins().jump(target_block, &target_values[..]);
 
                 // We may have changed the successors of this function, and we definitley changed
