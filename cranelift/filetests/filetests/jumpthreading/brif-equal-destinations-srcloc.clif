@@ -1,0 +1,29 @@
+test jump-threading precise-output
+target x86_64
+
+function %brif_equal(i64) -> i64 {
+block0(v0: i64):
+@0001   v1 = iconst.i64 0
+@0002   brif v0, block1(v1), block2(v1)
+
+block1(v3: i64):
+@0003   store.i64 v3, v3
+@0004   brif v3, block2(v1), block2(v1)
+
+block2(v4: i64):
+@0005   return v4
+}
+
+; function %brif_equal(i64) -> i64 fast {
+;                                 block0(v0: i64):
+; @0001                               v1 = iconst.i64 0
+; @0002                               brif v0, block1(v1), block2(v1)  ; v1 = 0, v1 = 0
+;
+;                                 block1(v3: i64):
+; @0003                               store v3, v3
+; @0004                               jump block2(v1)  ; v1 = 0
+;
+;                                 block2(v4: i64):
+; @0005                               return v4
+; }
+
