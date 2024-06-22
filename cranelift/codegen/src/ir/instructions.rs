@@ -193,6 +193,18 @@ impl Opcode {
     pub fn constraints(self) -> OpcodeConstraints {
         OPCODE_CONSTRAINTS[self as usize - 1]
     }
+
+    /// Test whether the given opcode is unsafe to even consider as side-effect-free.
+    #[inline(always)]
+    pub fn trivially_has_side_effects(self) -> bool {
+        self.is_call()
+            || self.is_branch()
+            || self.is_terminator()
+            || self.is_return()
+            || self.can_trap()
+            || self.other_side_effects()
+            || self.can_store()
+    }
 }
 
 // This trait really belongs in cranelift-reader where it is used by the `.clif` file parser, but since
@@ -312,8 +324,6 @@ impl InstructionData {
     }
 
     /// Get a mutable slice of the destinations of this instruction, if it's a branch.
-    ///
-    /// `br_table` returns the empty slice.
     pub fn branch_destination_mut<'a>(
         &'a mut self,
         jump_tables: &'a mut ir::JumpTables,
@@ -350,6 +360,20 @@ impl InstructionData {
             for arg in block.args_slice_mut(pool) {
                 *arg = f(*arg);
             }
+        }
+    }
+
+    /// Replace the block calls used in this instruction.
+    pub fn map_branch_destinations(
+        &mut self,
+        pool: &mut ValueListPool,
+        jump_tables: &mut ir::JumpTables,
+        mut f: impl FnMut(BlockCall, Block, &[Value]) -> BlockCall,
+    ) {
+        for call in self.branch_destination_mut(jump_tables) {
+            let block = call.block(pool);
+            let args = call.args_slice(pool);
+            *call = f(*call, block, args)
         }
     }
 

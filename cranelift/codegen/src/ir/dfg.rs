@@ -866,6 +866,18 @@ impl DataFlowGraph {
         self.insts[inst].map_values(&mut self.value_lists, &mut self.jump_tables, body);
     }
 
+    /// Map a function over the branch destinations of the instruction.
+    pub fn map_inst_branch_destinations<F>(&mut self, inst: Inst, body: F)
+    where
+        F: FnMut(BlockCall, Block, &[Value]) -> BlockCall,
+    {
+        self.insts[inst].map_branch_destinations(
+            &mut self.value_lists,
+            &mut self.jump_tables,
+            body,
+        );
+    }
+
     /// Overwrite the instruction's value references with values from the iterator.
     /// NOTE: the iterator provided is expected to yield at least as many values as the instruction
     /// currently has.

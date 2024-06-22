@@ -1,0 +1,38 @@
+test jump-threading precise-output
+target x86_64
+
+function %inline_blockcall(i64) -> i64 {
+block0(v0: i64):
+    v1 = iconst.i64 10
+    v2 = imul v0, v1
+    v3 = iadd v2, v0
+    v4 = bxor v3, v2
+
+    v8 = ireduce.i32 v0
+    br_table v8, block2(v0), [block1(v1), block1(v2), block1(v3), block1(v4)]
+
+block1(v5: i64):
+    v6 = iadd v5, v5
+    jump block2(v6)
+
+block2(v7: i64):
+    return v7
+}
+
+; function %inline_blockcall(i64) -> i64 fast {
+; block0(v0: i64):
+;     v1 = iconst.i64 10
+;     v2 = imul v0, v1  ; v1 = 10
+;     v3 = iadd v2, v0
+;     v4 = bxor v3, v2
+;     v8 = ireduce.i32 v0
+;     v9 = iadd v1, v1  ; v1 = 10, v1 = 10
+;     v10 = iadd v2, v2
+;     v11 = iadd v3, v3
+;     v12 = iadd v4, v4
+;     br_table v8, block2(v0), [block2(v9), block2(v10), block2(v11), block2(v12)]
+;
+; block2(v7: i64):
+;     return v7
+; }
+
