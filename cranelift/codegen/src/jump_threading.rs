@@ -6,13 +6,14 @@ use smallvec::{smallvec, SmallVec};
 use crate::cursor::{Cursor, FuncCursor};
 use crate::dominator_tree::DominatorTree;
 use crate::flowgraph::{BlockPredecessor, ControlFlowGraph};
+use crate::ir::InstInserterBase;
 use crate::ir::{Block, BlockCall, Function, InstBuilder, InstructionData, Opcode, Value};
 use crate::loop_analysis::LoopAnalysis;
 use crate::trace;
 use core::fmt;
+use std::collections::HashMap;
 
-/// Represents a single action to be performed as part of the
-/// jump thread analysis.
+/// Represents a single action to be performed as part of the jump thread analysis.
 #[derive(Debug, PartialEq)]
 enum JumpThreadAction {
     /// Evaluates the possible actions that we are able to take on this block
@@ -37,6 +38,11 @@ enum JumpThreadAction {
     /// Replace the terminator for this block with a jump into the
     /// provided block call.
     ReplaceWithJump(Block, BlockCall),
+
+    /// When the terminator for a block is a br_if where both sides are
+    /// equal in destination, we replace the differing block args with
+    /// `select`'s and inline the block.
+    SelectifyBrIf(Block),
 }
 
 impl fmt::Display for JumpThreadAction {
@@ -50,6 +56,9 @@ impl fmt::Display for JumpThreadAction {
             } => write!(f, "merge {successor} into {}", predecessor.block),
             JumpThreadAction::ReplaceWithJump(block, _call) => {
                 write!(f, "replace {block} terminator with jump")
+            }
+            JumpThreadAction::SelectifyBrIf(block) => {
+                write!(f, "selectify {block}")
             }
         }
     }
@@ -108,7 +117,6 @@ impl JumpThreadAction {
                 debug_assert!(jt.cfg.pred_iter(succ).all(|b| b.block == pred));
                 debug_assert!(jt.func.layout.is_block_inserted(succ));
                 debug_assert!(jt.func.layout.is_block_inserted(pred));
-                // TODO: This shouldn't be necessary in the future
                 debug_assert_eq!(jt.cfg.pred_iter(succ).count(), 1);
                 debug_assert_eq!(jt.cfg.succ_iter(pred).count(), 1);
 
@@ -179,6 +187,96 @@ impl JumpThreadAction {
                 // the terminator instruction so we need to recompute the cfg for this block
                 jt.cfg.recompute_block(jt.func, block);
             }
+            JumpThreadAction::SelectifyBrIf(block) => {
+                let terminator = jt.func.layout.last_inst(block).unwrap();
+                let (brif_cond, branch_dests) = match jt.func.dfg.insts[terminator] {
+                    InstructionData::Brif { arg, blocks, .. } => (arg, blocks),
+                    _ => unreachable!("expected br_if"),
+                };
+                let target_block = branch_dests[0].block(&jt.func.dfg.value_lists);
+                let true_args = branch_dests[0].args_slice(&jt.func.dfg.value_lists).to_vec();
+                let false_args = branch_dests[1].args_slice(&jt.func.dfg.value_lists).to_vec();
+
+                // Delete the terminator instruction
+                jt.func.layout.remove_inst(terminator);
+
+                // Build a select for each different value
+                let mut cursor = FuncCursor::new(jt.func).at_bottom(block);
+                let call_args: Vec<_> = true_args
+                    .iter()
+                    .zip(false_args.iter())
+                    .map(|(&true_arg, &false_arg)| {
+                        if true_arg == false_arg {
+                            true_arg
+                        } else {
+                            cursor.ins().select(brif_cond, true_arg, false_arg)
+                        }
+                    })
+                    .collect();
+
+                // Copy all instructions from target block, into the current block.
+                Self::copy_block_instructions(&mut cursor, target_block, &call_args[..]);
+
+                // Finally recompute this block since we just changd the terminator
+                jt.cfg.recompute_block(jt.func, block);
+                
+            }
+        }
+    }
+
+    /// Clone all block instructions (except the terminator) into the target FuncCursor
+    /// call_args is the list of values that this block would have been called with
+    /// and provides the inital point to translate values.
+    ///
+    /// This function returns a map of the values in the original block, into the
+    /// new values that were inlined.
+    fn copy_block_instructions(
+        cursor: &mut FuncCursor,
+        block: Block,
+        call_args: &[Value],
+    ) -> HashMap<Value, Value> {
+        let block_params = cursor.func.dfg.block_params(block);
+        let mut block_to_call_map: HashMap<_, _> = block_params
+            .into_iter()
+            .zip(call_args)
+            .map(|(b, c)| (*b, *c))
+            .collect();
+
+        // We have to clone this into a vec so that we don't borrow the func layout
+        // while iterating it.
+        let block_insts: Vec<_> = cursor.func.layout.block_insts(block).collect();
+        for block_inst in block_insts.into_iter() {
+            let new_inst = cursor.func.dfg.clone_inst(block_inst);
+
+            // Translate all values in inst with new val
+            cursor.func.dfg.resolve_inst_aliases(new_inst);
+            cursor.func.dfg.map_inst_values(new_inst, |src_val| {
+                // It's possible to get a value that is not in this block, and so does
+                // not appear on the map. In that case we can fallback to the original value.
+                *block_to_call_map.get(&src_val).unwrap_or(&src_val)
+            });
+
+            cursor.set_srcloc(cursor.func.srcloc(block_inst));
+            cursor.insert_built_inst(new_inst);
+
+            let old_results = cursor.func.dfg.inst_results(block_inst);
+            let new_results = cursor.func.dfg.inst_results(new_inst);
+            block_to_call_map.extend(old_results.into_iter().zip(new_results));
+        }
+
+        block_to_call_map
+    }
+}
+
+pub struct JumpThreadingConfig {
+    /// When inlining blocks, how many "new" duplicate instructions are acceptable?
+    max_inline_cost: u32,
+}
+
+impl Default for JumpThreadingConfig {
+    fn default() -> Self {
+        Self {
+            max_inline_cost: 10,
         }
     }
 }
@@ -200,6 +298,9 @@ pub struct JumpThreadingPass<'a> {
 
     /// A queue of actions that we have pending
     actions: Vec<JumpThreadAction>,
+
+    /// A series of knobs that we can use to tune how this pass works.
+    config: JumpThreadingConfig,
 }
 
 impl<'a> JumpThreadingPass<'a> {
@@ -215,6 +316,7 @@ impl<'a> JumpThreadingPass<'a> {
             domtree,
             loop_analysis,
             actions: Vec::new(),
+            config: JumpThreadingConfig::default(),
         }
     }
 
@@ -255,17 +357,17 @@ impl<'a> JumpThreadingPass<'a> {
         // This can unlock further opportunities for optimization so we should reevaluate this block again.
         let branch_dests =
             self.func.dfg.insts[terminator].branch_destination(&self.func.dfg.jump_tables);
-        let all_dests_equal = branch_dests.windows(2).all(|bc| {
-            let (lhs, rhs) = (bc[0], bc[1]);
-
-            let lhs_block = lhs.block(&self.func.dfg.value_lists);
-            let lhs_args = lhs.args_slice(&self.func.dfg.value_lists);
-
-            let rhs_block = rhs.block(&self.func.dfg.value_lists);
-            let rhs_args = rhs.args_slice(&self.func.dfg.value_lists);
-
-            lhs_block == rhs_block && lhs_args == rhs_args
+        let all_dest_blocks_equal = branch_dests.windows(2).all(|bc| {
+            let lhs_block = bc[0].block(&self.func.dfg.value_lists);
+            let rhs_block = bc[1].block(&self.func.dfg.value_lists);
+            lhs_block == rhs_block
         });
+        let all_dest_args_equal = branch_dests.windows(2).all(|bc| {
+            let lhs_args = bc[0].args_slice(&self.func.dfg.value_lists);
+            let rhs_args = bc[1].args_slice(&self.func.dfg.value_lists);
+            lhs_args == rhs_args
+        });
+        let all_dests_equal = all_dest_blocks_equal && all_dest_args_equal;
         if branch_dests.len() > 1 && all_dests_equal {
             return smallvec![
                 JumpThreadAction::ReplaceWithJump(block, branch_dests[0]),
@@ -349,10 +451,52 @@ impl<'a> JumpThreadingPass<'a> {
             }
         }
 
-        // TODO: Selectify br_if
+        // When both branches of a br_if are the same, we can create a select
+        // instruction to replace the br_if. And inline the block.
+        if succ_count == 1 && all_dest_blocks_equal && terminator_opcode == Opcode::Brif {
+            // Count how many arguments are different between the two block calls
+            let true_args = branch_dests[0].args_slice(&self.func.dfg.value_lists);
+            let false_args = branch_dests[1].args_slice(&self.func.dfg.value_lists);
+
+            let differing_args_count = true_args
+                .iter()
+                .zip(false_args.iter())
+                .filter(|(true_arg, false_arg)| true_arg != false_arg)
+                .count() as u32;
+
+            let select_cost = self.opcode_cost(Opcode::Select);
+            let inline_cost = select_cost * differing_args_count;
+            if inline_cost < self.config.max_inline_cost {
+                let succ = self.cfg.succ_iter(block).nth(0).unwrap();
+                return smallvec![
+                    JumpThreadAction::SelectifyBrIf(block),
+                    // Reanalyze ourselves since there may be further optimization opportunities.
+                    JumpThreadAction::Analyze(block),
+                    // Reanalyze the successor since it may have become dead.
+                    JumpThreadAction::Analyze(succ),
+                ];
+            }
+        }
+
         // TODO: Inline blocks with jump terminators
 
         smallvec![]
+    }
+
+    /// Calculates a made up cost for a given opcode.
+    fn opcode_cost(&self, opcode: Opcode) -> u32 {
+        match opcode {
+            // Constants are pretty much free.
+            Opcode::Iconst | Opcode::F32const | Opcode::F64const => 1,
+
+            // Selects are somewhat expensive in this context, so we want to avoid too many
+            // of them.
+            Opcode::Select => 4,
+
+            // Everything else is 2. We could do something more complex, but we can't predict
+            // very well what is/is not going to get optimized out later.
+            _ => 2,
+        }
     }
 
     fn i64_from_iconst(&self, val: Value) -> Option<i64> {
