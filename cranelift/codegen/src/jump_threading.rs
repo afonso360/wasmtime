@@ -431,7 +431,11 @@ impl<'a> JumpThreadingPass<'a> {
                     .filter(|block| {
                         // We only want to reanalyze blocks that should be deleted, which means that
                         // they must have only one predecessor before this transform. (which is us)
-                        self.cfg.pred_iter(*block).count() == 1
+                        //
+                        // When considering the predecessors we want to take special attention to blocks
+                        // that reference themselves, since they have one extra predecessor that we
+                        // don't want to count.
+                        self.cfg.pred_iter(*block).filter(|pred| pred.block != *block).count() == 1
                     })
                     .chain(Some(block))
                     .map(JumpThreadAction::Analyze)
