@@ -184,6 +184,7 @@ where
         //   aarch64: https://github.com/bytecodealliance/wasmtime/issues/2735
         let bool_settings = [
             "enable_alias_analysis",
+            "enable_jump_threading",
             "enable_safepoints",
             "unwind_info",
             "preserve_frame_pointers",

@@ -54,6 +54,16 @@ pub(crate) fn define() -> SettingGroup {
     );
 
     settings.add_bool(
+        "enable_jump_threading",
+        "Perform jump threading optimizations",
+        r#"
+            This enables the use of simple jump threading optimizations.
+            Only effective when `opt_level` is `speed` or `speed_and_size`.
+        "#,
+        false,
+    );
+
+    settings.add_bool(
         "enable_verifier",
         "Run the Cranelift IR verifier at strategic times during compilation.",
         r#"

@@ -518,6 +518,7 @@ bb_padding_log2_minus_one = 0
 regalloc_checker = false
 regalloc_verbose_logs = false
 enable_alias_analysis = true
+enable_jump_threading = false
 enable_verifier = true
 enable_pcc = false
 is_pic = false
