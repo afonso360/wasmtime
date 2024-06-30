@@ -337,21 +337,7 @@ impl<'a> JumpThreadingPass<'a> {
         self.loop_analysis.clear();
         self.loop_analysis
             .compute(self.func, self.cfg, self.domtree);
-
-        // Perform some additional debug checks at the end of the pass
-        self.assert_end_state();
     }
-
-    /// Performs some debug checks at the end of the pass to make sure that we
-    /// didn't introduce any unexpected changes.
-    #[cfg(debug_assertions)]
-    fn assert_end_state(&self) {
-        // Check that all blocks are reachable from the entry block
-        debug_assert!(self.func.layout.blocks().all(|block| self.domtree.is_reachable(block)));
-    }
-
-    #[cfg(not(debug_assertions))]
-    fn assert_end_state(&self) {}
 
     fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
         let terminator = self.func.layout.last_inst(block).unwrap();

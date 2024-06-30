@@ -192,6 +192,9 @@ impl Context {
 
         if opt_level != OptLevel::None && isa.flags().enable_jump_threading() {
             self.jump_threading_pass(isa)?;
+            // The jump threading pass may leave some blocks unreachable. So run the
+            // unreachable code elimination pass again.
+            self.eliminate_unreachable_code(isa)?;
         }
 
         self.func.dfg.resolve_all_aliases();
