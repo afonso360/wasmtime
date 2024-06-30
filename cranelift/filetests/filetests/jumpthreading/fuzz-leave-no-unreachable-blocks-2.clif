@@ -1,0 +1,21 @@
+test jump-threading precise-output
+target x86_64
+
+function u1:0() -> i32x4, i32x4, i32x4 cold {
+block0:
+    v13 = iconst.i8 0
+    brif v13, block1, block2  ; v13 = 0
+
+block1 cold:
+    brif.i8 v13, block2, block1  ; v13 = 0
+
+block2 cold:
+    trap user0
+}
+
+; function u1:0() -> i32x4, i32x4, i32x4 cold {
+; block0:
+;     v13 = iconst.i8 0
+;     trap user0
+; }
+
