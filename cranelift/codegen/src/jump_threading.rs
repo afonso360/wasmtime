@@ -337,7 +337,21 @@ impl<'a> JumpThreadingPass<'a> {
         self.loop_analysis.clear();
         self.loop_analysis
             .compute(self.func, self.cfg, self.domtree);
+
+        // Perform some additional debug checks at the end of the pass
+        self.assert_end_state();
     }
+
+    /// Performs some debug checks at the end of the pass to make sure that we
+    /// didn't introduce any unexpected changes.
+    #[cfg(debug_assertions)]
+    fn assert_end_state(&self) {
+        // Check that all blocks are reachable from the entry block
+        debug_assert!(self.func.layout.blocks().all(|block| self.domtree.is_reachable(block)));
+    }
+
+    #[cfg(not(debug_assertions))]
+    fn assert_end_state(&self) {}
 
     fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
         let terminator = self.func.layout.last_inst(block).unwrap();
@@ -350,7 +364,8 @@ impl<'a> JumpThreadingPass<'a> {
         // During other transformations we may have ended up in a situation where this block
         // is now unreachable. So we should delete it.
         if pred_count == 0 && !is_entry_block {
-            return smallvec![JumpThreadAction::Delete(block)];
+            let actions = self.delete_block_actions(block).collect();
+            return actions;
         }
 
         // If all of our terminator block calls are the same we can replace it with a jump terminator.
@@ -441,13 +456,14 @@ impl<'a> JumpThreadingPass<'a> {
             if succ_predecessors == 1 && terminator_opcode == Opcode::Jump {
                 let merge_pred = self.cfg.pred_iter(succ).nth(0).unwrap();
 
-                return smallvec![
+                let mut actions = smallvec![
                     JumpThreadAction::MergeIntoPredecessor {
                         successor: succ,
                         predecessor: merge_pred,
                     },
-                    JumpThreadAction::Delete(succ),
                 ];
+                actions.extend(self.delete_block_actions(succ));
+                return actions;
             }
         }
 
@@ -481,6 +497,16 @@ impl<'a> JumpThreadingPass<'a> {
         // TODO: Inline blocks with jump terminators
 
         smallvec![]
+    }
+
+
+    /// Returns an iterator over all actions that will be taken to delete a block.
+    /// This includes deleting the block, and analyzing all of its successors since
+    /// they may now be deadcode.
+    fn delete_block_actions(&self, block: Block) -> impl Iterator<Item = JumpThreadAction> + '_ {
+        Some(JumpThreadAction::Delete(block))
+            .into_iter()
+            .chain(self.cfg.succ_iter(block).map(JumpThreadAction::Analyze))
     }
 
     /// Calculates a made up cost for a given opcode.
