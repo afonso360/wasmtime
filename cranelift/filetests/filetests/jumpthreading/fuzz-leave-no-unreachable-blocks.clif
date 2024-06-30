@@ -1,0 +1,53 @@
+test jump-threading precise-output
+target x86_64
+
+function u1:0() -> f64 system_v {
+    const0 = 0x00000000bcbce5e5e5e5e5e5e5e5e5e5
+    const1 = 0x00000000000000000000000000000000
+
+block0:
+    v36 = iconst.i8 0
+    v87 = iconst.i8 0
+    v93 = icmp_imm eq v36, 19  ; v36 = 0
+    brif v36, block1, block6  ; v36 = 0
+
+block1 cold:
+    brif.i8 v36, block2, block7  ; v36 = 0
+
+block2:
+    brif.i8 v36, block3, block4  ; v36 = 0
+
+block3:
+    trap user0
+
+block4:
+    brif.i8 v87, block10, block9  ; v87 = 0
+
+block10:
+    trap user0
+
+block9:
+    brif.i8 v93, block6, block14
+
+block14:
+    v94 = uextend.i32 v36  ; v36 = 0
+    trap user0
+
+block6 cold:
+    trap user0
+
+block7:
+    trap user0
+}
+
+; function u1:0() -> f64 system_v {
+;     const0 = 0x00000000bcbce5e5e5e5e5e5e5e5e5e5
+;     const1 = 0x00000000000000000000000000000000
+;
+; block0:
+;     v36 = iconst.i8 0
+;     v87 = iconst.i8 0
+;     v93 = icmp_imm eq v36, 19  ; v36 = 0
+;     trap user0
+; }
+
