@@ -393,6 +393,14 @@ impl DataFlowGraph {
         resolve_aliases(&self.values, value)
     }
 
+
+    /// Replace all values referenced in an instruction with their resolved
+    /// values if they were aliases.
+    pub fn resolve_inst_aliases(&mut self, inst: Inst) {
+        let resolved: SmallVec<[_; 16]> = self.inst_values(inst).map(|value| self.resolve_aliases(value)).collect();
+        self.overwrite_inst_values(inst, resolved.into_iter());
+    }
+
     /// Replace all uses of value aliases with their resolved values, and delete
     /// the aliases.
     pub fn resolve_all_aliases(&mut self) {
