@@ -244,6 +244,10 @@ impl JumpThreadAction {
                     jt.cfg
                         .succ_iter(*block)
                         .filter(|succ| succ != block)
+                        // Filter for blocks with one or fewer predecessors. It's only one, because
+                        // we haven't yet deleted the predecessor and updated the CFG. Once
+                        // this analyze runs it should become 0 predecessors.
+                        .filter(|succ| jt.cfg.pred_iter(*succ).count() <= 1)
                         .map(JumpThreadAction::Analyze),
                 );
             }
