@@ -74,6 +74,14 @@ impl JumpThreadAction {
 
                 let mut actions = jt.analyze_block(block);
 
+                // The actions above directly modify, but do not include any reanalyze actions, so we add
+                // those now.
+                let analyze_actions: SmallVec<[_; 8]> = actions
+                    .iter()
+                    .flat_map(|action| action.analyze_actions(jt))
+                    .collect();
+                actions.extend(analyze_actions);
+
                 // Debug print the actions that we performed
                 #[cfg(feature = "trace-log")]
                 match actions.as_slice() {
@@ -192,8 +200,12 @@ impl JumpThreadAction {
                     _ => unreachable!("expected br_if"),
                 };
                 let target_block = branch_dests[0].block(&jt.func.dfg.value_lists);
-                let true_args = branch_dests[0].args_slice(&jt.func.dfg.value_lists).to_vec();
-                let false_args = branch_dests[1].args_slice(&jt.func.dfg.value_lists).to_vec();
+                let true_args = branch_dests[0]
+                    .args_slice(&jt.func.dfg.value_lists)
+                    .to_vec();
+                let false_args = branch_dests[1]
+                    .args_slice(&jt.func.dfg.value_lists)
+                    .to_vec();
 
                 // Delete the terminator instruction
                 jt.func.layout.remove_inst(terminator);
@@ -211,15 +223,72 @@ impl JumpThreadAction {
                         }
                     })
                     .collect();
-            
+
                 // Transform the terminator into a jump
                 cursor.ins().jump(target_block, &call_args[..]);
 
                 // Finally recompute this block since we just changd the terminator
                 jt.cfg.recompute_block(jt.func, block);
-                
             }
         }
+    }
+
+    fn analyze_actions(&self, jt: &JumpThreadingPass<'_>) -> SmallVec<[JumpThreadAction; 8]> {
+        let mut actions = SmallVec::new();
+
+        match self {
+            JumpThreadAction::Analyze(_) => {}
+            JumpThreadAction::Delete(block) => {
+                // The successors of this block may now be dead, so we should reanalyze them.
+                actions.extend(
+                    jt.cfg
+                        .succ_iter(*block)
+                        .filter(|succ| succ != block)
+                        .map(JumpThreadAction::Analyze),
+                );
+            }
+            JumpThreadAction::MergeIntoPredecessor { predecessor, .. } => {
+                // The only remaining block after this operation is the preecessor.
+                actions.push(JumpThreadAction::Analyze(predecessor.block));
+            }
+            JumpThreadAction::ReplaceWithJump(block, _) => {
+                // We need to reanalyze both this block, and the previous successors. This block
+                // may now have other threading opportunities, and the previous successors
+                // may now have become dead code that we should eliminate.
+                actions.extend(
+                    jt.cfg
+                        .succ_iter(*block)
+                        .filter(|block| {
+                            // We only want to reanalyze blocks that should be deleted, which means that
+                            // they must have only one predecessor before this transform. (which is us)
+                            //
+                            // When considering the predecessors we want to take special attention to blocks
+                            // that reference themselves, since they have one extra predecessor that we
+                            // don't want to count.
+                            let pred_count = jt
+                                .cfg
+                                .pred_iter(*block)
+                                .filter(|pred| pred.block != *block)
+                                .count();
+
+                            pred_count == 1
+                        })
+                        .chain(Some(*block))
+                        .map(JumpThreadAction::Analyze),
+                );
+            }
+            JumpThreadAction::SelectifyBrIf(block) => {
+                // Reanalyze ourselves since there may be further optimization opportunities.
+                actions.push(JumpThreadAction::Analyze(*block));
+                // Reanalyze the successors since they may have become dead.
+                actions.extend(jt.cfg.succ_iter(*block).map(JumpThreadAction::Analyze));
+            }
+        };
+
+        // Make sure we don't accidentally analyze the same block multiple times
+        actions.dedup();
+
+        return actions;
     }
 }
 
@@ -285,7 +354,7 @@ impl<'a> JumpThreadingPass<'a> {
             action.run(self);
         }
 
-        // Now that we're done rebuild whatever structures might be necessary
+        // Now that we're done, rebuild whatever structures might be necessary
         // The CFG is always kept up to date, so we don't need to rebuild it here.
         self.domtree.clear();
         self.domtree.compute(self.func, self.cfg);
@@ -294,7 +363,7 @@ impl<'a> JumpThreadingPass<'a> {
             .compute(self.func, self.cfg, self.domtree);
     }
 
-    fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 1]> {
+    fn analyze_block(&mut self, block: Block) -> SmallVec<[JumpThreadAction; 8]> {
         let terminator = self.func.layout.last_inst(block).unwrap();
         let terminator_opcode = self.func.dfg.insts[terminator].opcode();
 
@@ -305,9 +374,10 @@ impl<'a> JumpThreadingPass<'a> {
         // During other transformations we may have ended up in a situation where this block
         // is now unreachable. So we should delete it.
         let is_unreachable = pred_count == 0 && !is_entry_block;
-        let is_infinite_loop = self.cfg.succ_iter(block).nth(0) == Some(block) && pred_count == 1 && succ_count == 1;
+        let is_infinite_loop =
+            self.cfg.succ_iter(block).nth(0) == Some(block) && pred_count == 1 && succ_count == 1;
         if is_unreachable || is_infinite_loop {
-            return self.delete_block_actions(block).collect();
+            return smallvec![JumpThreadAction::Delete(block)];
         }
 
         // If all of our terminator block calls are the same we can replace it with a jump terminator.
@@ -326,12 +396,7 @@ impl<'a> JumpThreadingPass<'a> {
         });
         let all_dests_equal = all_dest_blocks_equal && all_dest_args_equal;
         if branch_dests.len() > 1 && all_dests_equal {
-            return smallvec![
-                JumpThreadAction::ReplaceWithJump(block, branch_dests[0]),
-                // Reanalyze this block since the jump terminator may now
-                // reveal better threading opportunities
-                JumpThreadAction::Analyze(block),
-            ];
+            return smallvec![JumpThreadAction::ReplaceWithJump(block, branch_dests[0])];
         }
 
         // Const eval brif and br_table's
@@ -361,31 +426,7 @@ impl<'a> JumpThreadingPass<'a> {
                     _ => unreachable!(),
                 };
 
-                let mut actions =
-                    smallvec![JumpThreadAction::ReplaceWithJump(block, target_blockcall)];
-
-                // We need to reanalyze both this block, and the previous successors. This block
-                // may now have other threading opportunities, and the previous successors
-                // may now have become dead code that we should eliminate.
-                let mut reanalyze: Vec<_> = self
-                    .cfg
-                    .succ_iter(block)
-                    .filter(|block| {
-                        // We only want to reanalyze blocks that should be deleted, which means that
-                        // they must have only one predecessor before this transform. (which is us)
-                        //
-                        // When considering the predecessors we want to take special attention to blocks
-                        // that reference themselves, since they have one extra predecessor that we
-                        // don't want to count.
-                        self.cfg.pred_iter(*block).filter(|pred| pred.block != *block).count() == 1
-                    })
-                    .chain(Some(block))
-                    .map(JumpThreadAction::Analyze)
-                    .collect();
-                reanalyze.dedup();
-                actions.extend(reanalyze.into_iter());
-
-                return actions;
+                return smallvec![JumpThreadAction::ReplaceWithJump(block, target_blockcall)];
             }
         }
 
@@ -402,15 +443,13 @@ impl<'a> JumpThreadingPass<'a> {
             if succ_predecessors == 1 && terminator_opcode == Opcode::Jump && block != succ {
                 let merge_pred = self.cfg.pred_iter(succ).nth(0).unwrap();
 
-                let mut actions = smallvec![
+                return smallvec![
                     JumpThreadAction::MergeIntoPredecessor {
                         successor: succ,
                         predecessor: merge_pred,
                     },
-                    JumpThreadAction::Analyze(block),
+                    JumpThreadAction::Delete(succ),
                 ];
-                actions.extend(self.delete_block_actions(succ));
-                return actions;
             }
         }
 
@@ -433,30 +472,13 @@ impl<'a> JumpThreadingPass<'a> {
             let select_cost = self.opcode_cost(Opcode::Select);
             let inline_cost = select_cost * differing_args_count;
             if inline_cost < self.config.max_inline_cost {
-                let succ = self.cfg.succ_iter(block).nth(0).unwrap();
-                return smallvec![
-                    JumpThreadAction::SelectifyBrIf(block),
-                    // Reanalyze ourselves since there may be further optimization opportunities.
-                    JumpThreadAction::Analyze(block),
-                    // Reanalyze the successor since it may have become dead.
-                    JumpThreadAction::Analyze(succ),
-                ];
+                return smallvec![JumpThreadAction::SelectifyBrIf(block)];
             }
         }
 
         // TODO: Inline blocks with jump terminators
 
         smallvec![]
-    }
-
-
-    /// Returns an iterator over all actions that will be taken to delete a block.
-    /// This includes deleting the block, and analyzing all of its successors since
-    /// they may now be deadcode.
-    fn delete_block_actions(&self, block: Block) -> impl Iterator<Item = JumpThreadAction> + '_ {
-        Some(JumpThreadAction::Delete(block))
-            .into_iter()
-            .chain(self.cfg.succ_iter(block).map(JumpThreadAction::Analyze))
     }
 
     /// Calculates a made up cost for a given opcode.
