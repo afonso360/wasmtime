@@ -28,7 +28,7 @@ use crate::timing;
 use core::mem;
 
 /// A basic block denoted by its enclosing Block and last instruction.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct BlockPredecessor {
     /// Enclosing Block key.
     pub block: Block,

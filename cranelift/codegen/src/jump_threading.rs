@@ -6,15 +6,13 @@ use smallvec::{smallvec, SmallVec};
 use crate::cursor::{Cursor, FuncCursor};
 use crate::dominator_tree::DominatorTree;
 use crate::flowgraph::{BlockPredecessor, ControlFlowGraph};
-use crate::ir::InstInserterBase;
 use crate::ir::{Block, BlockCall, Function, InstBuilder, InstructionData, Opcode, Value};
 use crate::loop_analysis::LoopAnalysis;
 use crate::trace;
 use core::fmt;
-use std::collections::HashMap;
 
 /// Represents a single action to be performed as part of the jump thread analysis.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum JumpThreadAction {
     /// Evaluates the possible actions that we are able to take on this block
     /// and pushes them into the action queue.
@@ -213,58 +211,15 @@ impl JumpThreadAction {
                         }
                     })
                     .collect();
-
-                // Copy all instructions from target block, into the current block.
-                Self::copy_block_instructions(&mut cursor, target_block, &call_args[..]);
+            
+                // Transform the terminator into a jump
+                cursor.ins().jump(target_block, &call_args[..]);
 
                 // Finally recompute this block since we just changd the terminator
                 jt.cfg.recompute_block(jt.func, block);
                 
             }
         }
-    }
-
-    /// Clone all block instructions (except the terminator) into the target FuncCursor
-    /// call_args is the list of values that this block would have been called with
-    /// and provides the inital point to translate values.
-    ///
-    /// This function returns a map of the values in the original block, into the
-    /// new values that were inlined.
-    fn copy_block_instructions(
-        cursor: &mut FuncCursor,
-        block: Block,
-        call_args: &[Value],
-    ) -> HashMap<Value, Value> {
-        let block_params = cursor.func.dfg.block_params(block);
-        let mut block_to_call_map: HashMap<_, _> = block_params
-            .into_iter()
-            .zip(call_args)
-            .map(|(b, c)| (*b, *c))
-            .collect();
-
-        // We have to clone this into a vec so that we don't borrow the func layout
-        // while iterating it.
-        let block_insts: Vec<_> = cursor.func.layout.block_insts(block).collect();
-        for block_inst in block_insts.into_iter() {
-            let new_inst = cursor.func.dfg.clone_inst(block_inst);
-
-            // Translate all values in inst with new val
-            cursor.func.dfg.resolve_inst_aliases(new_inst);
-            cursor.func.dfg.map_inst_values(new_inst, |src_val| {
-                // It's possible to get a value that is not in this block, and so does
-                // not appear on the map. In that case we can fallback to the original value.
-                *block_to_call_map.get(&src_val).unwrap_or(&src_val)
-            });
-
-            cursor.set_srcloc(cursor.func.srcloc(block_inst));
-            cursor.insert_built_inst(new_inst);
-
-            let old_results = cursor.func.dfg.inst_results(block_inst);
-            let new_results = cursor.func.dfg.inst_results(new_inst);
-            block_to_call_map.extend(old_results.into_iter().zip(new_results));
-        }
-
-        block_to_call_map
     }
 }
 
@@ -349,9 +304,10 @@ impl<'a> JumpThreadingPass<'a> {
 
         // During other transformations we may have ended up in a situation where this block
         // is now unreachable. So we should delete it.
-        if pred_count == 0 && !is_entry_block {
-            let actions = self.delete_block_actions(block).collect();
-            return actions;
+        let is_unreachable = pred_count == 0 && !is_entry_block;
+        let is_infinite_loop = self.cfg.succ_iter(block).nth(0) == Some(block) && pred_count == 1 && succ_count == 1;
+        if is_unreachable || is_infinite_loop {
+            return self.delete_block_actions(block).collect();
         }
 
         // If all of our terminator block calls are the same we can replace it with a jump terminator.
@@ -443,7 +399,7 @@ impl<'a> JumpThreadingPass<'a> {
         if succ_count == 1 {
             let succ = self.cfg.succ_iter(block).nth(0).unwrap();
             let succ_predecessors = self.cfg.pred_iter(succ).count();
-            if succ_predecessors == 1 && terminator_opcode == Opcode::Jump {
+            if succ_predecessors == 1 && terminator_opcode == Opcode::Jump && block != succ {
                 let merge_pred = self.cfg.pred_iter(succ).nth(0).unwrap();
 
                 let mut actions = smallvec![
@@ -459,7 +415,10 @@ impl<'a> JumpThreadingPass<'a> {
         }
 
         // When both branches of a br_if are the same, we can create a select
-        // instruction to replace the br_if. And inline the block.
+        // instruction to replace all of the differing arguments, and replace the
+        // terminator with a jump into the target block.
+        //
+        // This hopefully unlocks further jump threading oportunities.
         if succ_count == 1 && all_dest_blocks_equal && terminator_opcode == Opcode::Brif {
             // Count how many arguments are different between the two block calls
             let true_args = branch_dests[0].args_slice(&self.func.dfg.value_lists);
