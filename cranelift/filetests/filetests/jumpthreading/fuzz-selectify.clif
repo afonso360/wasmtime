@@ -1,0 +1,130 @@
+test jump-threading precise-output
+target x86_64
+
+function u1:0() -> f64x2, i8, f64, i16x8, i8 uext, i8 sext, i8 sext, i8 sext, i16 sext, i16x8, i8 sext, i8x16, i128 sext fast {
+    const0 = 0x00000000000000000000000000000000
+
+block0:
+    v98 = iconst.i8 147
+    v165 = iconst.i32 0
+    v219 = vconst.i16x8 const0
+    v236 = iconst.i16 0
+    v237 = iconst.i32 0
+    v238 = umin v237, v237
+    v240 = iconst.i8 0
+    v241 = sshr v240, v236
+    v245 = iconst.i8 0
+    v243 = vconst.i16x8 const0
+    v275 = vconst.i16x8 const0
+    v277 = iconst.i8 0
+    v282 = iconst.i32 0
+    v286 = vconst.f64x2 const0
+    v288 = f64const 0.0
+    v289 = vconst.i16x8 const0
+    v290 = iconst.i16 0
+    v291 = vconst.i8x16 const0
+    v459 = iconst.i64 0
+    v292 = uextend.i128 v459
+    brif v98, block1, block4
+
+block1:
+    br_table v165, block2, []
+
+block2 cold:
+    brif.i8 v241, block3(v219, v238), block3(v243, v238)
+
+block3(v27: i16x8, v251: i32):
+    br_table v251, block4, [block11, block7, block4, block14(v245), block4, block11, block4, block13, block5, block8, block6, block2, block14(v245), block13, block13, block10]
+
+block4 cold:
+    trap user0
+
+block5:
+    trap user0
+
+block6 cold:
+    trap user0
+
+block7:
+    trap user0
+
+block8:
+    trap user0
+
+block10:
+    trap user0
+
+block11 cold:
+    br_table v282, block12, [block3(v275, v282), block13, block12, block14(v277), block14(v277), block14(v277), block14(v277), block14(v277), block14(v277), block14(v277), block14(v277), block14(v277), block12, block12, block12, block12]
+
+block12:
+    trap user0
+
+block13 cold:
+    trap user0
+
+block14(v287: i8) cold:
+    return v286, v287, v288, v289, v287, v287, v287, v287, v290, v289, v287, v291, v292
+}
+
+; function u1:0() -> f64x2, i8, f64, i16x8, i8 uext, i8 sext, i8 sext, i8 sext, i16 sext, i16x8, i8 sext, i8x16, i128 sext fast {
+;     const0 = 0x00000000000000000000000000000000
+;
+; block0:
+;     v98 = iconst.i8 147
+;     v165 = iconst.i32 0
+;     v219 = vconst.i16x8 const0
+;     v236 = iconst.i16 0
+;     v237 = iconst.i32 0
+;     v238 = umin v237, v237  ; v237 = 0, v237 = 0
+;     v240 = iconst.i8 0
+;     v241 = sshr v240, v236  ; v240 = 0, v236 = 0
+;     v245 = iconst.i8 0
+;     v243 = vconst.i16x8 const0
+;     v275 = vconst.i16x8 const0
+;     v277 = iconst.i8 0
+;     v282 = iconst.i32 0
+;     v286 = vconst.f64x2 const0
+;     v288 = f64const 0.0
+;     v289 = vconst.i16x8 const0
+;     v290 = iconst.i16 0
+;     v291 = vconst.i8x16 const0
+;     v459 = iconst.i64 0
+;     v292 = uextend.i128 v459  ; v459 = 0
+;     jump block2
+;
+; block2 cold:
+;     v460 = select.i16x8 v241, v219, v243  ; v219 = const0, v243 = const0
+;     jump block3(v460, v238)
+;
+; block3(v27: i16x8, v251: i32):
+;     br_table v251, block4, [block11, block7, block4, block14(v245), block4, block11, block4, block13, block5, block8, block6, block2, block14(v245), block13, block13, block10]  ; v245 = 0, v245 = 0
+;
+; block4 cold:
+;     trap user0
+;
+; block5:
+;     trap user0
+;
+; block6 cold:
+;     trap user0
+;
+; block7:
+;     trap user0
+;
+; block8:
+;     trap user0
+;
+; block10:
+;     trap user0
+;
+; block11 cold:
+;     jump block3(v275, v282)  ; v275 = const0, v282 = 0
+;
+; block13 cold:
+;     trap user0
+;
+; block14(v287: i8) cold:
+;     return v286, v287, v288, v289, v287, v287, v287, v287, v290, v289, v287, v291, v292  ; v286 = const0, v288 = 0.0, v289 = const0, v290 = 0, v289 = const0, v291 = const0
+; }
+
