@@ -451,6 +451,7 @@ impl<'a> JumpThreadingPass<'a> {
                         successor: succ,
                         predecessor: merge_pred,
                     },
+                    JumpThreadAction::Analyze(block),
                 ];
                 actions.extend(self.delete_block_actions(succ));
                 return actions;
