@@ -351,20 +351,6 @@ impl InstructionData {
         }
     }
 
-    /// Replace the block calls used in this instruction.
-    pub fn map_branch_destinations(
-        &mut self,
-        pool: &mut ValueListPool,
-        jump_tables: &mut ir::JumpTables,
-        mut f: impl FnMut(BlockCall, Block, &[Value]) -> BlockCall,
-    ) {
-        for call in self.branch_destination_mut(jump_tables) {
-            let block = call.block(pool);
-            let args = call.args_slice(pool);
-            *call = f(*call, block, args)
-        }
-    }
-
     /// If this is a trapping instruction, get its trap code. Otherwise, return
     /// `None`.
     pub fn trap_code(&self) -> Option<TrapCode> {
