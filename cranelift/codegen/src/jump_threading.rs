@@ -291,29 +291,32 @@ impl JumpThreadAction {
                     map
                 };
 
-                // Lets build a BlockCall that is equivalent to `new_target`, but with the values
-                // that we just replaced previously
+                // Prepare a set of values that we will replace the old block call with.
                 let new_target_values: Vec<_> = new_target_values
                     .into_iter()
-                    .map(|val| *block_to_call_map.get(&val).unwrap_or(&val))
+                    .map(|val| block_to_call_map[&val])
                     .collect();
-                let new_target = BlockCall::new(
-                    new_target_block,
-                    &new_target_values[..],
-                    &mut jt.func.dfg.value_lists,
-                );
 
                 // Update the terminator and replace all of the blockcalls into the new target
                 // block call.
-                jt.func
-                    .dfg
-                    .map_inst_branch_destinations(terminator, |call, block, values| {
-                        if block == inlined_block && values == inlined_call_values {
-                            new_target
-                        } else {
-                            call
-                        }
-                    });
+                let dfg = &mut jt.func.dfg;
+                let terminator_instdata = &mut dfg.insts[terminator];
+                let jump_tables = &mut dfg.jump_tables;
+                let value_lists = &mut dfg.value_lists;
+                
+                for dest in terminator_instdata
+                    .branch_destination_mut(jump_tables)
+                    .iter_mut()
+                {
+                    let block = dest.block(value_lists);
+                    let args = dest.args_slice(value_lists);
+
+                    if block == inlined_block && args == inlined_call_values {
+                        dest.set_block(new_target_block, value_lists);
+                        dest.clear(value_lists);
+                        dest.extend(new_target_values.iter().copied(), value_lists);
+                    }
+                }
                 jt.func.layout.append_inst(terminator, caller_block);
 
                 // We have changed the sucessors of this function, so we now get to recompute it.
@@ -416,11 +419,10 @@ impl JumpThreadAction {
 
             // Translate all values in inst with new val
             cursor.func.dfg.resolve_inst_aliases(new_inst);
-            cursor.func.dfg.map_inst_values(new_inst, |src_val| {
-                // It's possible to get a value that is not in this block, and so does
-                // not appear on the map. In that case we can fallback to the original value.
-                *block_to_call_map.get(&src_val).unwrap() //.unwrap_or(&src_val)
-            });
+            cursor
+                .func
+                .dfg
+                .map_inst_values(new_inst, |src_val| block_to_call_map[&src_val]);
 
             cursor.set_srcloc(cursor.func.srcloc(block_inst));
             cursor.insert_built_inst(new_inst);
