@@ -330,6 +330,7 @@ impl JumpThreadAction {
                 // Prepare a set of values that we will replace the old block call with.
                 let new_target_values: Vec<_> = new_target_values
                     .into_iter()
+                    .map(|val| jt.func.dfg.resolve_aliases(val))
                     .map(|val| block_to_call_map[&val])
                     .collect();
 
