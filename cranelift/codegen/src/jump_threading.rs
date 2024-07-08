@@ -1,6 +1,8 @@
 //! Jump Thread analysis and optimization pass.
 
+use alloc::string::String;
 use alloc::vec::Vec;
+use cranelift_entity::ListPool;
 use smallvec::{smallvec, SmallVec};
 
 use crate::cursor::{Cursor, FuncCursor};
@@ -61,24 +63,50 @@ enum JumpThreadAction {
     },
 }
 
-impl fmt::Display for JumpThreadAction {
+impl JumpThreadAction {
+    fn display<'a>(&'a self, pool: &'a ListPool<Value>) -> DisplayJumpThreadAction<'a> {
+        DisplayJumpThreadAction {
+            pool,
+            action: self.clone(),
+        }
+    }
+}
+
+struct DisplayJumpThreadAction<'a> {
+    pool: &'a ListPool<Value>,
+    action: JumpThreadAction,
+}
+
+impl<'a> DisplayJumpThreadAction<'a> {
+    fn format_blockcall(&self, blockcall: &BlockCall) -> String {
+        let block = blockcall.block(self.pool);
+        let args = blockcall.args_slice(self.pool);
+
+        let args_s = args.iter().map(|arg| format!("{arg}")).collect::<Vec<_>>().join(", ");
+
+        format!("{block}({args_s})")
+    }
+}
+
+impl<'a> fmt::Display for DisplayJumpThreadAction<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
+        match &self.action {
             JumpThreadAction::Analyze(block) => write!(f, "analyze {block}"),
             JumpThreadAction::Delete(block) => write!(f, "delete {block}"),
             JumpThreadAction::MergeIntoPredecessor {
                 successor,
                 predecessor,
             } => write!(f, "merge {successor} into {}", predecessor.block),
-            JumpThreadAction::ReplaceWithJump(block, _call) => {
-                write!(f, "replace {block} terminator with jump")
+            JumpThreadAction::ReplaceWithJump(block, call) => {
+                let blockcall_s = self.format_blockcall(&call);
+                write!(f, "replace {block} terminator with jump {blockcall_s}")
             }
             JumpThreadAction::SelectifyBrIf(block) => {
                 write!(f, "selectify {block}")
             }
-            JumpThreadAction::InlineBlockCall { caller_block, .. } => {
-                // TODO: We should print out this call
-                write!(f, "inline block_call? on {caller_block}")
+            JumpThreadAction::InlineBlockCall { caller_block, inlined_blockcall } => {
+                let blockcall_s = self.format_blockcall(&inlined_blockcall);
+                write!(f, "inline {blockcall_s} on {caller_block}")
             }
         }
     }
@@ -111,7 +139,7 @@ impl JumpThreadAction {
                     multi => {
                         trace!("Evaluating {block}:");
                         for action in multi {
-                            trace!("\t- {action}");
+                            trace!("\t- {}", action.display(&jt.func.dfg.value_lists));
                         }
                     }
                 };
