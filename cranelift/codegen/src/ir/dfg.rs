@@ -393,11 +393,13 @@ impl DataFlowGraph {
         resolve_aliases(&self.values, value)
     }
 
-
     /// Replace all values referenced in an instruction with their resolved
     /// values if they were aliases.
     pub fn resolve_inst_aliases(&mut self, inst: Inst) {
-        let resolved: SmallVec<[_; 16]> = self.inst_values(inst).map(|value| self.resolve_aliases(value)).collect();
+        let resolved: SmallVec<[_; 16]> = self
+            .inst_values(inst)
+            .map(|value| self.resolve_aliases(value))
+            .collect();
         self.overwrite_inst_values(inst, resolved.into_iter());
     }
 
@@ -627,9 +629,14 @@ impl ValueDef {
 
     /// Unwrap the block there the parameter is defined, or panic.
     pub fn unwrap_block(&self) -> Block {
-        match *self {
-            Self::Param(block, _) => block,
-            _ => panic!("Value is not a block parameter"),
+        self.block().expect("Value is not a block parameter")
+    }
+
+    /// Get the block where the value is defined, if any.
+    pub fn block(&self) -> Option<Block> {
+        match self {
+            Self::Param(block, _) => Some(*block),
+            _ => None,
         }
     }
 
@@ -872,6 +879,18 @@ impl DataFlowGraph {
         F: FnMut(Value) -> Value,
     {
         self.insts[inst].map_values(&mut self.value_lists, &mut self.jump_tables, body);
+    }
+
+    /// Map a function over the branch destinations of the instruction.
+    pub fn map_inst_branch_destinations<F>(&mut self, inst: Inst, body: F)
+    where
+        F: FnMut(BlockCall, Block, &[Value]) -> BlockCall,
+    {
+        self.insts[inst].map_branch_destinations(
+            &mut self.value_lists,
+            &mut self.jump_tables,
+            body,
+        );
     }
 
     /// Overwrite the instruction's value references with values from the iterator.

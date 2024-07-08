@@ -295,8 +295,6 @@ impl Default for VariableArgs {
 /// instructions.
 impl InstructionData {
     /// Get the destinations of this instruction, if it's a branch.
-    ///
-    /// `br_table` returns the empty slice.
     pub fn branch_destination<'a>(&'a self, jump_tables: &'a ir::JumpTables) -> &[BlockCall] {
         match self {
             Self::Jump {
@@ -350,6 +348,20 @@ impl InstructionData {
             for arg in block.args_slice_mut(pool) {
                 *arg = f(*arg);
             }
+        }
+    }
+
+    /// Replace the block calls used in this instruction.
+    pub fn map_branch_destinations(
+        &mut self,
+        pool: &mut ValueListPool,
+        jump_tables: &mut ir::JumpTables,
+        mut f: impl FnMut(BlockCall, Block, &[Value]) -> BlockCall,
+    ) {
+        for call in self.branch_destination_mut(jump_tables) {
+            let block = call.block(pool);
+            let args = call.args_slice(pool);
+            *call = f(*call, block, args)
         }
     }
 
