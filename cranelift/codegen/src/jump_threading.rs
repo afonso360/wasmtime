@@ -13,6 +13,7 @@ use crate::ir::InstInserterBase;
 use crate::ir::{Block, BlockCall, Function, InstBuilder, InstructionData, Opcode, Value};
 use crate::loop_analysis::LoopAnalysis;
 use crate::trace;
+use core::cmp::Ordering;
 use core::fmt;
 use std::collections::HashMap;
 
@@ -82,7 +83,11 @@ impl<'a> DisplayJumpThreadAction<'a> {
         let block = blockcall.block(self.pool);
         let args = blockcall.args_slice(self.pool);
 
-        let args_s = args.iter().map(|arg| format!("{arg}")).collect::<Vec<_>>().join(", ");
+        let args_s = args
+            .iter()
+            .map(|arg| format!("{arg}"))
+            .collect::<Vec<_>>()
+            .join(", ");
 
         format!("{block}({args_s})")
     }
@@ -104,7 +109,10 @@ impl<'a> fmt::Display for DisplayJumpThreadAction<'a> {
             JumpThreadAction::SelectifyBrIf(block) => {
                 write!(f, "selectify {block}")
             }
-            JumpThreadAction::InlineBlockCall { caller_block, inlined_blockcall } => {
+            JumpThreadAction::InlineBlockCall {
+                caller_block,
+                inlined_blockcall,
+            } => {
                 let blockcall_s = self.format_blockcall(&inlined_blockcall);
                 write!(f, "inline {blockcall_s} on {caller_block}")
             }
@@ -331,7 +339,7 @@ impl JumpThreadAction {
                 let terminator_instdata = &mut dfg.insts[terminator];
                 let jump_tables = &mut dfg.jump_tables;
                 let value_lists = &mut dfg.value_lists;
-                
+
                 for dest in terminator_instdata
                     .branch_destination_mut(jump_tables)
                     .iter_mut()
@@ -668,7 +676,7 @@ impl<'a> JumpThreadingPass<'a> {
             // We are going to duplicate this block, once per unique block call
             // from our predecessors. This is because different args into this
             // block will generate different instructions once inlined.
-            let mut inline_calls: SmallVec<[_; 8]> = self
+            let mut inline_calls: Vec<_> = self
                 .cfg
                 .pred_iter(block)
                 // Get all of the block calls in our predecessors
@@ -689,13 +697,23 @@ impl<'a> JumpThreadingPass<'a> {
             //
             // i.e. br_table v0, block0, [block1(v0), block1(v0), block1(v0)]
             // Only duplicates block1 once, since all args are the same.
-            inline_calls.dedup_by(|(a_caller, a_call), (b_caller, b_call)| {
-                let value_lists = &self.func.dfg.value_lists;
-                a_caller == b_caller
-                    && a_call.block(value_lists) == b_call.block(value_lists)
-                    && a_call.args_slice(value_lists) == b_call.args_slice(value_lists)
-            });
-            debug_assert!(!inline_calls.is_empty());
+            let inline_call_cmp =
+                |(a_caller, a_callee): &(Block, BlockCall),
+                 (b_caller, b_callee): &(Block, BlockCall)| {
+                    let value_lists = &self.func.dfg.value_lists;
+                    let a_block = a_callee.block(value_lists);
+                    let b_block = b_callee.block(value_lists);
+                    let a_args = a_callee.args_slice(value_lists);
+                    let b_args = b_callee.args_slice(value_lists);
+
+                    a_caller
+                        .cmp(b_caller)
+                        .then_with(|| a_block.cmp(&b_block))
+                        .then_with(|| a_args.cmp(b_args))
+                };
+            // Vec::dedup_by only dedup's consecutive elements, so we first sort the vector
+            inline_calls.sort_unstable_by(inline_call_cmp);
+            inline_calls.dedup_by(|a, b| inline_call_cmp(a, b) == Ordering::Equal);
 
             // Now we check if all of this duplication is still below the inline threshold
             let block_cost = self.block_cost(block);
