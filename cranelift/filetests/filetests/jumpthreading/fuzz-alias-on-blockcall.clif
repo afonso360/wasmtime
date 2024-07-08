@@ -1,0 +1,42 @@
+test jump-threading precise-output
+target x86_64
+
+function u1:0() -> i64, i64 sext, i32 sext, i8 sext, i16x8, i64 sext, i16x8, i16x8, i16x8, i16x8 fast {
+    const0 = 0x00000000000000000000000000000000
+
+block0:
+    v0 = vconst.i16x8 const0
+    v6 = iconst.i32 0
+    v7 = iconst.i8 0
+    v14 = iconst.i64 0
+    v60 = vconst.i16x8 const0
+    v68 = iconst.i32 0
+    br_table v6, block1, [block2, block2, block1, block1, block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0), block4(v0)]
+
+block1 cold:
+    trap user0
+
+block2 cold:
+    v28 = vconst.i16x8 const0
+    v44 -> v28
+    jump block4(v44)
+
+block4(v45: i16x8) cold:
+    return v14, v14, v68, v7, v60, v14, v60, v60, v60, v60
+}
+
+; function u1:0() -> i64, i64 sext, i32 sext, i8 sext, i16x8, i64 sext, i16x8, i16x8, i16x8, i16x8 fast {
+;     const0 = 0x00000000000000000000000000000000
+;
+; block0:
+;     v0 = vconst.i16x8 const0
+;     v6 = iconst.i32 0
+;     v7 = iconst.i8 0
+;     v14 = iconst.i64 0
+;     v60 = vconst.i16x8 const0
+;     v68 = iconst.i32 0
+;     v69 = vconst.i16x8 const0
+;     v45 -> v69
+;     return v14, v14, v68, v7, v60, v14, v60, v60, v60, v60  ; v14 = 0, v14 = 0, v68 = 0, v7 = 0, v60 = const0, v14 = 0, v60 = const0, v60 = const0, v60 = const0, v60 = const0
+; }
+
