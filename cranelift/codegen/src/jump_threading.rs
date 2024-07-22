@@ -8,14 +8,10 @@ use smallvec::{smallvec, SmallVec};
 use crate::cursor::{Cursor, FuncCursor};
 use crate::dominator_tree::DominatorTree;
 use crate::flowgraph::{BlockPredecessor, ControlFlowGraph};
-use crate::inst_predicates::has_side_effect;
-use crate::ir::InstInserterBase;
 use crate::ir::{Block, BlockCall, Function, InstBuilder, InstructionData, Opcode, Value};
 use crate::loop_analysis::LoopAnalysis;
 use crate::trace;
-use core::cmp::Ordering;
 use core::fmt;
-use std::collections::HashMap;
 
 /// Represents a single action to be performed as part of the jump thread analysis.
 #[derive(Debug, PartialEq, Clone)]
@@ -47,21 +43,6 @@ enum JumpThreadAction {
     /// equal in destination, we replace the differing block args with
     /// `select`'s and inline the block.
     SelectifyBrIf(Block),
-
-    /// This action replaces all instances of a block call with another block call
-    /// to a different block.
-    ///
-    /// `caller_block` is the block that we are going to be modifying, it should contain
-    /// a terminator with at least one instance of `inlined_blockcall`.
-    ///
-    /// `inlined_blockcall` should be a blockcall to a block that contains a `jump` terminator.
-    /// We then inline the body of the `inlined_blockcall` block into `caller_block` and
-    /// subsequently replace all instances of `inlined_blockcall` with the terminator
-    /// for the `jump` instruction.
-    InlineBlockCall {
-        caller_block: Block,
-        inlined_blockcall: BlockCall,
-    },
 }
 
 impl JumpThreadAction {
@@ -108,13 +89,6 @@ impl<'a> fmt::Display for DisplayJumpThreadAction<'a> {
             }
             JumpThreadAction::SelectifyBrIf(block) => {
                 write!(f, "selectify {block}")
-            }
-            JumpThreadAction::InlineBlockCall {
-                caller_block,
-                inlined_blockcall,
-            } => {
-                let blockcall_s = self.format_blockcall(&inlined_blockcall);
-                write!(f, "inline {blockcall_s} on {caller_block}")
             }
         }
     }
@@ -288,77 +262,6 @@ impl JumpThreadAction {
                 // Finally recompute this block since we just changd the terminator
                 jt.cfg.recompute_block(jt.func, block);
             }
-            JumpThreadAction::InlineBlockCall {
-                caller_block,
-                inlined_blockcall,
-            } => {
-                let inlined_block = inlined_blockcall.block(&jt.func.dfg.value_lists).clone();
-                let inlined_call_values = inlined_blockcall
-                    .args_slice(&jt.func.dfg.value_lists)
-                    .to_vec();
-                let inlined_block_terminator = jt.func.layout.last_inst(inlined_block).unwrap();
-                let inlined_block_branch_destinations = jt.func.dfg.insts[inlined_block_terminator]
-                    .branch_destination(&jt.func.dfg.jump_tables);
-                debug_assert_eq!(inlined_block_branch_destinations.len(), 1);
-
-                let new_target_block =
-                    inlined_block_branch_destinations[0].block(&jt.func.dfg.value_lists);
-                let new_target_values = inlined_block_branch_destinations[0]
-                    .args_slice(&jt.func.dfg.value_lists)
-                    .to_vec();
-
-                // In order to insert instructions into the block we first remove the
-                // current terminator from the block
-                let terminator = jt.func.layout.last_inst(caller_block).unwrap();
-                jt.func.layout.remove_inst(terminator);
-
-                // Inline all instructions from the call block, into the current block.
-                let block_to_call_map = {
-                    let mut cursor = FuncCursor::new(jt.func).at_bottom(caller_block);
-                    let map = Self::copy_block_instructions(
-                        &mut cursor,
-                        inlined_block,
-                        &inlined_call_values[..],
-                    );
-                    // The function above also copied the terminator for the call block, which we do not
-                    // want, so let remove that one.
-                    cursor.prev_inst();
-                    cursor.remove_inst();
-                    map
-                };
-
-                // Prepare a set of values that we will replace the old block call with.
-                let new_target_values: Vec<_> = new_target_values
-                    .into_iter()
-                    .map(|val| jt.func.dfg.resolve_aliases(val))
-                    .map(|val| block_to_call_map[&val])
-                    .collect();
-
-                // Update the terminator and replace all of the blockcalls into the new target
-                // block call.
-                let dfg = &mut jt.func.dfg;
-                let terminator_instdata = &mut dfg.insts[terminator];
-                let jump_tables = &mut dfg.jump_tables;
-                let value_lists = &mut dfg.value_lists;
-
-                for dest in terminator_instdata
-                    .branch_destination_mut(jump_tables)
-                    .iter_mut()
-                {
-                    let block = dest.block(value_lists);
-                    let args = dest.args_slice(value_lists);
-
-                    if block == inlined_block && args == inlined_call_values {
-                        dest.set_block(new_target_block, value_lists);
-                        dest.clear(value_lists);
-                        dest.extend(new_target_values.iter().copied(), value_lists);
-                    }
-                }
-                jt.func.layout.append_inst(terminator, caller_block);
-
-                // We have changed the sucessors of this function, so we now get to recompute it.
-                jt.cfg.recompute_block(jt.func, caller_block);
-            }
         }
     }
 
@@ -416,60 +319,12 @@ impl JumpThreadAction {
                 // Reanalyze the successors since they may have become dead.
                 actions.extend(jt.cfg.succ_iter(*block).map(JumpThreadAction::Analyze));
             }
-            JumpThreadAction::InlineBlockCall { caller_block, .. } => {
-                // Reanalyze the `caller`, since we just changed it's terminator
-                actions.push(JumpThreadAction::Analyze(*caller_block));
-            }
         };
 
         // Make sure we don't accidentally analyze the same block multiple times
         actions.dedup();
 
         return actions;
-    }
-
-    /// Clone all block instructions (except the terminator) into the target FuncCursor
-    /// call_args is the list of values that this block would have been called with
-    /// and provides the inital point to translate values.
-    ///
-    /// This function returns a map of the values in the original block, into the
-    /// new values that were inlined.
-    fn copy_block_instructions(
-        cursor: &mut FuncCursor,
-        block: Block,
-        call_args: &[Value],
-    ) -> HashMap<Value, Value> {
-        // Start our map with the block params, these map to the original values
-        // in the block call.
-        let block_params = cursor.func.dfg.block_params(block);
-        let mut block_to_call_map: HashMap<_, _> = block_params
-            .into_iter()
-            .zip(call_args)
-            .map(|(b, c)| (*b, *c))
-            .collect();
-
-        // We have to clone this into a vec so that we don't borrow the func layout
-        // while iterating it.
-        let block_insts: Vec<_> = cursor.func.layout.block_insts(block).collect();
-        for block_inst in block_insts.into_iter() {
-            let new_inst = cursor.func.dfg.clone_inst(block_inst);
-
-            // Translate all values in inst with new val
-            cursor.func.dfg.resolve_inst_aliases(new_inst);
-            cursor
-                .func
-                .dfg
-                .map_inst_values(new_inst, |src_val| block_to_call_map[&src_val]);
-
-            cursor.set_srcloc(cursor.func.srcloc(block_inst));
-            cursor.insert_built_inst(new_inst);
-
-            let old_results = cursor.func.dfg.inst_results(block_inst);
-            let new_results = cursor.func.dfg.inst_results(new_inst);
-            block_to_call_map.extend(old_results.into_iter().zip(new_results));
-        }
-
-        block_to_call_map
     }
 }
 
@@ -657,98 +512,7 @@ impl<'a> JumpThreadingPass<'a> {
             }
         }
 
-        // Try to inline our block into all of our predecessors. This clones all of
-        // the instructions in this block into the previous blocks, and replaces
-        // their block call with a block call into our successor.
-        //
-        // In a lot of cases, this will be free! For some reason we have a lot of
-        // empty blocks with a single jump into another block. Those blocks
-        // are a prime candidate for this transformation.
-        //
-        // However we are not limiting oursleves to empty blocks, we apply a cost
-        // model to this block and inline if the total cost is below some treshold.
-        if terminator_opcode == Opcode::Jump
-            && pred_count >= 1
-            && succ_count == 1
-            && !is_self_succ
-            && !self.block_has_side_effects(block)
-            && !self.block_references_extern_values(block)
-        {
-            // We are going to duplicate this block, once per unique block call
-            // from our predecessors. This is because different args into this
-            // block will generate different instructions once inlined.
-            let mut inline_calls: Vec<_> = self
-                .cfg
-                .pred_iter(block)
-                // Get all of the block calls in our predecessors
-                .flat_map(|pred| {
-                    self.func.dfg.insts[pred.inst]
-                        .branch_destination(&self.func.dfg.jump_tables)
-                        .into_iter()
-                        .copied()
-                        .map(move |call| (pred.block, call))
-                })
-                // Filter only for calls to our block
-                .filter(|(_, call)| call.block(&self.func.dfg.value_lists) == block)
-                .collect();
-
-            // Deduplicate all of the calls, we shouldn't need to inline multiple
-            // times for equivalent block calls, even if they appear at different
-            // positions in the terminator.
-            //
-            // i.e. br_table v0, block0, [block1(v0), block1(v0), block1(v0)]
-            // Only duplicates block1 once, since all args are the same.
-            let inline_call_cmp =
-                |(a_caller, a_callee): &(Block, BlockCall),
-                 (b_caller, b_callee): &(Block, BlockCall)| {
-                    let value_lists = &self.func.dfg.value_lists;
-                    let a_block = a_callee.block(value_lists);
-                    let b_block = b_callee.block(value_lists);
-                    let a_args = a_callee.args_slice(value_lists);
-                    let b_args = b_callee.args_slice(value_lists);
-
-                    a_caller
-                        .cmp(b_caller)
-                        .then_with(|| a_block.cmp(&b_block))
-                        .then_with(|| a_args.cmp(b_args))
-                };
-            // Vec::dedup_by only dedup's consecutive elements, so we first sort the vector
-            inline_calls.sort_unstable_by(inline_call_cmp);
-            inline_calls.dedup_by(|a, b| inline_call_cmp(a, b) == Ordering::Equal);
-
-            // Now we check if all of this duplication is still below the inline threshold
-            let block_cost = self.block_cost(block);
-            let inline_cost = block_cost * (inline_calls.len() as u32);
-            if inline_cost <= self.config.max_inline_cost {
-                let mut actions: SmallVec<_> = inline_calls
-                    .into_iter()
-                    .map(|(caller, call)| JumpThreadAction::InlineBlockCall {
-                        caller_block: caller,
-                        inlined_blockcall: call,
-                    })
-                    .collect();
-
-                // After all this, we finally get to delete this block!
-                actions.push(JumpThreadAction::Delete(block));
-
-                return actions;
-            }
-        }
-
         smallvec![]
-    }
-
-    /// Calculates some cost for a given block. This cost model does not include
-    /// terminators, since we'll usually want to evaluate the inlinable portion
-    /// of the block (i.e. everything except the terminator.)
-    fn block_cost(&self, block: Block) -> u32 {
-        self.func
-            .layout
-            .block_insts(block)
-            .map(|inst| self.func.dfg.insts[inst].opcode())
-            .filter(|opcode| opcode.is_terminator())
-            .map(|opcode| self.opcode_cost(opcode))
-            .sum()
     }
 
     /// Calculates a made up cost for a given opcode.
@@ -765,40 +529,6 @@ impl<'a> JumpThreadingPass<'a> {
             // very well what is/is not going to get optimized out later.
             _ => 2,
         }
-    }
-
-    /// Does this block have any side effectful instructions?
-    /// This analysis excludes the terminator instruction
-    fn block_has_side_effects(&self, block: Block) -> bool {
-        self.func
-            .layout
-            .block_insts(block)
-            .filter(|inst| !self.func.dfg.insts[*inst].opcode().is_terminator())
-            .any(|inst| has_side_effect(self.func, inst))
-    }
-
-    /// Does this block reference any values not defined in either the blockparams
-    /// or it's own instructions.
-    fn block_references_extern_values(&self, block: Block) -> bool {
-        let block_params = self.func.dfg.block_params(block).into_iter().copied();
-        let inst_values = self
-            .func
-            .layout
-            .block_insts(block)
-            .flat_map(|inst| self.func.dfg.inst_values(inst));
-
-        block_params.chain(inst_values).any(|val| {
-            let value_def = self.func.dfg.value_def(val);
-            let arg_block = value_def.block();
-            let inst_block = value_def
-                .inst()
-                .and_then(|def_inst| self.func.layout.inst_block(def_inst));
-
-            // Defaulting to true here is the safe choice
-            arg_block
-                .or(inst_block)
-                .map_or(true, |def_block| def_block != block)
-        })
     }
 
     fn i64_from_iconst(&self, val: Value) -> Option<i64> {

@@ -32,7 +32,7 @@ fn is_load_with_defined_trapping(opcode: Opcode, data: &InstructionData) -> bool
 /// Does the given instruction have any side-effect that would preclude it from being removed when
 /// its value is unused?
 #[inline(always)]
-pub(crate) fn has_side_effect(func: &Function, inst: Inst) -> bool {
+fn has_side_effect(func: &Function, inst: Inst) -> bool {
     let data = &func.dfg.insts[inst];
     let opcode = data.opcode();
     trivially_has_side_effects(opcode) || is_load_with_defined_trapping(opcode, data)
