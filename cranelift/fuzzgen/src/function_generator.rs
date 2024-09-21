@@ -735,9 +735,7 @@ fn valid_for_target(triple: &Triple, op: Opcode, args: &[Type], rets: &[Type]) -
                 args,
                 rets,
                 // TODO
-                (Opcode::UaddOverflow | Opcode::SaddOverflow),
                 (Opcode::UsubOverflow | Opcode::SsubOverflow),
-                (Opcode::UmulOverflow | Opcode::SmulOverflow),
                 // TODO
                 (
                     Opcode::Udiv | Opcode::Sdiv | Opcode::Urem | Opcode::Srem,
